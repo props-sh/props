@@ -1,6 +1,27 @@
-MIT License
+# props: A library for reading layered application settings in Java
+
+This library manages properties and secrets from multiple sources, giving users a unified API for loading type safe 
+system, environment, classpath and file based properties while also deciding which source takes precedence and how
+often the values should be refreshed.
+
+# Features
+
+- Access values once or repeatedly
+- Fast reads (values are cached until changed)
+- Events triggered when values change
+- Small core module with no third-party dependencies
+- Built with thread-safety in mind
+- Deterministic source precedence
+
+# Contributing to the project
+
+Please see the [contributor guide](./CONTRIBUTING.md).
+
+# License
 
 Copyright (c) 2021 Mihai Bojin
+
+Licensed under the MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
