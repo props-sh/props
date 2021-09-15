@@ -22,66 +22,84 @@
  * SOFTWARE.
  *
  */
-package sh.props;
 
-import sh.props.annotations.Nullable;
+package sh.props;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import sh.props.annotations.Nullable;
 
 class Layer {
-    private final Map<String, String> store = new HashMap<>();
-    @Nullable Layer prev;
-    @Nullable Layer next;
 
-    private final Source source;
-    private final Registry registry;
-    private final int priority;
+  private final HashMap<String, String> store = new HashMap<>();
+  private final Registry registry;
+  private final int priority;
+  @Nullable Layer prev;
+  @Nullable Layer next;
 
-    Layer(Source source, Registry registry, int priority) {
-        this.source = source;
-        this.registry = registry;
-        this.priority = priority;
+  Layer(Source source, Registry registry, int priority) {
+    source.apply(this::onReload);
+
+    this.registry = registry;
+    this.priority = priority;
+  }
+
+  // decides the priority of this layer, in the current registry
+  public int priority() {
+    return this.priority;
+  }
+
+  // retrieves the value for the specified key, from this layer alone
+  @Nullable
+  String get(String key) {
+    return this.store.get(key);
+  }
+
+  boolean containsKey(String key) {
+    return this.store.containsKey(key);
+  }
+
+  // processes the reloaded data
+  private void onReload(Map<String, String> freshValues) {
+    // iterate over the current values
+    var it = this.store.entrySet().iterator();
+    while (it.hasNext()) {
+      var entry = it.next();
+      var existingKey = entry.getKey();
+
+      // check if the updated map still contains this key
+      if (!freshValues.containsKey(existingKey)) {
+        // the key was deleted
+        // remove the entry from the underlying store
+        it.remove();
+
+        // and notify the registry that this layer no longer defines this key
+        this.registry.unbindKey(existingKey, this);
+        continue;
+      }
+
+      // retrieve the (potentially) new value
+      String maybeNewValue = freshValues.get(existingKey);
+
+      // check if the value has changed
+      if (!Objects.equals(this.store.get(existingKey), maybeNewValue)) {
+        // if it has changed, update it
+        entry.setValue(maybeNewValue);
+
+        // and notify that registry that we have a new value
+        this.registry.updateKey(existingKey, this);
+
+        // then remove it from the new map
+        // so that we end up with a map containing only new entries
+        freshValues.remove(existingKey);
+      }
     }
 
-    // decides the priority of this layer, in the current registry
-    public int priority() {
-        return priority;
-    }
+    // finally, add the new entries to the store
+    this.store.putAll(freshValues);
 
-    // retrieves the value for the specified key, from this layer alone
-    @Nullable String get(String key) {
-        return store.get(key);
-    }
-
-    boolean containsKey(String key) {
-        return store.containsKey(key);
-    }
-
-    // processes the reloaded data
-    public void onReload(final Map<String, String> freshValues) {
-        for (String existingKey : store.keySet()) {
-            if (!freshValues.containsKey(existingKey)) {
-                // key was deleted
-                store.remove(existingKey);
-                registry.unbindKey(existingKey, this);
-                continue;
-            }
-
-            String updatedValue = freshValues.get(existingKey);
-            if (!Objects.equals(store.get(existingKey), updatedValue)) {
-                // key was modified
-                // update it
-                store.put(existingKey, updatedValue);
-                registry.updateKey(existingKey, this);
-                // and remove it from the new map
-                freshValues.remove(existingKey);
-            }
-        }
-
-        // only new keys are left
-        store.putAll(freshValues);
-        freshValues.keySet().forEach(key -> registry.bindKey(key, this));
-    }
+    // and notify the registry of any keys that this layer now defines
+    freshValues.keySet().forEach(key -> this.registry.bindKey(key, this));
+  }
 }

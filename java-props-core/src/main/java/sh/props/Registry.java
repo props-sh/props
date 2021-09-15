@@ -22,110 +22,127 @@
  * SOFTWARE.
  *
  */
+
 package sh.props;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class Registry {
-    private final ConcurrentHashMap<String, Layer> owners = new ConcurrentHashMap<>();
 
-    @Nullable
-    Layer topLayer = null;
+  private final ConcurrentHashMap<String, Layer> owners = new ConcurrentHashMap<>();
 
-    // registers ownership of a layer over a key
-    void bindKey(String key, Layer layer) {
-        // finds the current owner
-        Layer owner = owners.get(key);
+  @Nullable Layer topLayer = null;
 
-        // determines if ownership change is required
-        if (owner == null || owner.priority() < layer.priority()) {
-            // change the current owner
-            owners.put(key, layer);
-            // TODO: notify subscribers of update
+  // registers ownership of a layer over a key
+  void bindKey(String key, Layer layer) {
+    // finds the current owner
+    Layer owner = this.owners.get(key);
+
+    // determines if ownership change is required
+    if (owner == null || owner.priority() < layer.priority()) {
+      // change the current owner
+      this.owners.put(key, layer);
+      // TODO: notify subscribers of update
+    }
+  }
+
+  // unregisters ownership of a layer over a key
+  void unbindKey(String key, Layer layer) {
+    // finds the current owner
+    Layer owner = this.owners.get(key);
+
+    // determines if ownership change is required
+    if (owner != null && owner == layer) {
+      // change the current owner
+      while (layer.prev != null) {
+        layer = layer.prev;
+        if (layer.containsKey(key)) {
+          // update the owner
+          this.owners.put(key, layer);
+          // TODO: notify subscribers of update
+          return;
         }
+      }
+
+      // we could not replace the owner
+      // it means this key is not defined in any layer
+      this.owners.remove(key);
+      // TODO: notify subscribers of update
     }
 
-    // unregisters ownership of a layer over a key
-    void unbindKey(String key, Layer layer) {
-        // finds the current owner
-        final Layer owner = owners.get(key);
+    // nothing to do, ownership did not change
+  }
 
-        // determines if ownership change is required
-        if (owner != null && owner == layer) {
-            // change the current owner
-            while (layer.prev != null) {
-                layer = layer.prev;
-                if (layer.containsKey(key)) {
-                    // update the owner
-                    owners.put(key, layer);
-                    // TODO: notify subscribers of update
-                    return;
-                }
-            }
+  void updateKey(String key, Layer layer) {
+    // finds the current owner
+    Layer owner = this.owners.get(key);
 
-            // we could not replace the owner
-            // it means this key is not defined in any layer
-            owners.remove(key);
-            // TODO: notify subscribers of update
-        }
+    // determines if the specified layer owns the key
+    if (owner == layer) {
+      // TODO: notify subscribers of update
+    }
+  }
 
-        // nothing to do, ownership did not change
+  /**
+   * Retrieves the value for the specified key.
+   *
+   * @param key the key to retrieve
+   * @param clz a class object used to pass a type reference
+   * @param <T> a type that we'll cast the return to
+   * @return the effective value, or <code>null</code> if not found
+   */
+  @Nullable
+  public <T> T get(String key, Class<T> clz) {
+    // finds the owner
+    Layer owner = this.owners.get(key);
+
+    // no owner found, the key does not exist in the registry
+    if (owner == null) {
+      return null;
     }
 
-    void updateKey(String key, Layer layer) {
-        // finds the current owner
-        Layer owner = owners.get(key);
+    // retrieves the value
+    String effectiveValue = owner.get(key);
 
-        // determines if the specified layer owns the key
-        if (owner == layer) {
-            // TODO: notify subscribers of update
-        }
+    // casts it
+    // TODO: this won't work in production due to effectiveValue always being a string
+    //       and will require props v1's implementation
+    return clz.cast(effectiveValue);
+  }
+
+  public static class Builder {
+
+    List<Source> sources = new ArrayList<>();
+
+    public Builder source(Source source) {
+      this.sources.add(source);
+      return this;
     }
 
-    // retrieves the value for the specified key
-    @Nullable public <T> T get(String key, Class<T> clz) {
-        // finds the owner
-        Layer owner = owners.get(key);
+    /**
+     * Builds a registry object, given the sources that were already added.
+     *
+     * @return a configured {@link Registry} object
+     */
+    public Registry build() {
+      Registry registry = new Registry();
+      int counter = 0;
+      @Nullable Layer tail = null;
 
-        // no owner found, the key does not exist in the registry
-        if (owner == null) {
-            return null;
+      for (Source source : this.sources) {
+        Layer layer = new Layer(source, registry, counter++);
+        layer.prev = tail;
+        if (tail != null) {
+          tail.next = layer;
         }
+        tail = layer;
+      }
+      registry.topLayer = tail;
 
-        // retrieves the value
-        String effectiveValue = owner.get(key);
-
-        // casts it
-        return clz.cast(effectiveValue);
+      return registry;
     }
-
-    public static class Builder {
-        List<Source> sources = new ArrayList<>();
-
-        private Builder source(Source source) {
-            sources.add(source);
-            return this;
-        }
-
-        public Registry build() {
-            final Registry registry = new Registry();
-            int counter = 0;
-            @Nullable Layer tail = null;
-
-            for (Source source : sources) {
-                Layer layer = new Layer(source, registry, counter++);
-                layer.prev = tail;
-                if (tail != null) {
-                    tail.next = layer;
-                }
-                tail = layer;
-            }
-            registry.topLayer = tail;
-
-            return registry;
-        }
-    }
+  }
 }

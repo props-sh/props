@@ -22,10 +22,15 @@
  * SOFTWARE.
  *
  */
+
 package sh.props;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public interface Source {
-    Map<String, String> read();
+
+  Map<String, String> read();
+
+  void apply(Consumer<Map<String, String>> values);
 }
