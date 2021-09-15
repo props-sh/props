@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "==> Running the pre-commit git hook..."
+./gradlew spotlessApply check test

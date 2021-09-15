@@ -16,6 +16,11 @@ Thank you for your interest in contributing to this library!
 - Clone your forked repository locally (`git clone https://github.com/[USERNAME]/props`)
 - Add this repo as an upstream: `git remote add upstream https://github.com/props-sh/props`
 
+## Install the Git Hooks
+
+Before writing any code, install the project's git hooks with `gradle gitHooks`,
+ensuring that any code you contribute is properly formatted and checked for any errors. 
+
 ## Usual actions
 
 - Build the project with: `gradle build`

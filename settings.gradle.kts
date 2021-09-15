@@ -19,7 +19,6 @@ pluginManagement {
         id("com.diffplug.spotless").version("5.14.3")
         id("net.ltgt.errorprone").version("2.0.2")
         id("me.champeau.jmh").version("0.6.5")
-        id("com.star-zero.gradle.githook").version("1.2.1")
     }
 }
 
