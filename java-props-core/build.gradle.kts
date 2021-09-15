@@ -1,5 +1,10 @@
 import net.ltgt.gradle.errorprone.errorprone
 
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
 plugins {
     `java-library`
     checkstyle
@@ -60,6 +65,16 @@ tasks.test {
 
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone.disableWarningsInGeneratedCode.set(true)
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.errorprone {
+        option("NullAway:AnnotatedPackages", "sh.props")
+    }
+}
+tasks.named("compileJava", JavaCompile::class) {
+    // The check defaults to a warning, bump it up to an error for the main sources
+    options.errorprone.error("NullAway")
 }
 
 tasks.jar {

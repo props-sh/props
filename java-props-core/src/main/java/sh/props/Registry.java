@@ -24,12 +24,16 @@
  */
 package sh.props;
 
+import sh.props.annotations.Nullable;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Registry {
     private final ConcurrentHashMap<String, Layer> owners = new ConcurrentHashMap<>();
-    Layer topLayer;
+
+    @Nullable
+    Layer topLayer = null;
 
     // registers ownership of a layer over a key
     void bindKey(String key, Layer layer) {
@@ -37,7 +41,7 @@ public class Registry {
         Layer owner = owners.get(key);
 
         // determines if ownership change is required
-        if (owner.priority() < layer.priority()) {
+        if (owner == null || owner.priority() < layer.priority()) {
             // change the current owner
             owners.put(key, layer);
             // TODO: notify subscribers of update
@@ -47,12 +51,12 @@ public class Registry {
     // unregisters ownership of a layer over a key
     void unbindKey(String key, Layer layer) {
         // finds the current owner
-        Layer owner = owners.get(key);
+        final Layer owner = owners.get(key);
 
         // determines if ownership change is required
-        if (owner == layer) {
+        if (owner != null && owner == layer) {
             // change the current owner
-            while (layer != null) {
+            while (layer.prev != null) {
                 layer = layer.prev;
                 if (layer.containsKey(key)) {
                     // update the owner
@@ -82,9 +86,14 @@ public class Registry {
     }
 
     // retrieves the value for the specified key
-    public <T> T get(String key, Class<T> clz) {
+    @Nullable public <T> T get(String key, Class<T> clz) {
         // finds the owner
         Layer owner = owners.get(key);
+
+        // no owner found, the key does not exist in the registry
+        if (owner == null) {
+            return null;
+        }
 
         // retrieves the value
         String effectiveValue = owner.get(key);
@@ -103,8 +112,8 @@ public class Registry {
 
         public Registry build() {
             final Registry registry = new Registry();
-            Layer tail = null;
             int counter = 0;
+            @Nullable Layer tail = null;
 
             for (Source source : sources) {
                 Layer layer = new Layer(source, registry, counter++);

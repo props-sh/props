@@ -24,14 +24,16 @@
  */
 package sh.props;
 
+import sh.props.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 class Layer {
     private final Map<String, String> store = new HashMap<>();
-    Layer prev;
-    Layer next;
+    @Nullable Layer prev;
+    @Nullable Layer next;
 
     private final Source source;
     private final Registry registry;
@@ -49,7 +51,7 @@ class Layer {
     }
 
     // retrieves the value for the specified key, from this layer alone
-    String get(String key) {
+    @Nullable String get(String key) {
         return store.get(key);
     }
 
