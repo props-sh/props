@@ -12,7 +12,7 @@ dependencies {
     errorprone(libs.nullaway)
 
     testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 java {
