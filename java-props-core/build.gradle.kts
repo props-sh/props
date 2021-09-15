@@ -50,7 +50,10 @@ spotless {
     }
 
     java {
-        googleJavaFormat("1.9").aosp()
+        removeUnusedImports()
+        googleJavaFormat("1.9")
+        trimTrailingWhitespace()
+        endWithNewline()
         licenseHeaderFile(rootProject.file("props.license.kt"))
     }
 }
@@ -63,6 +66,22 @@ tasks.test {
     maxHeapSize = "1G"
 }
 
+// needed to avoid ErrorProne logging an illegal reflective access warning
+tasks.withType<JavaCompile>().configureEach {
+    options.isFork = true
+    options.forkOptions.jvmArgs!!.addAll(listOf(
+        "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+        "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+        "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
+    ))
+}
 tasks.withType<JavaCompile>().configureEach {
     options.errorprone.disableWarningsInGeneratedCode.set(true)
 }
@@ -80,8 +99,8 @@ tasks.named("compileJava", JavaCompile::class) {
 tasks.jar {
     manifest {
         attributes(
-                "Implementation-Title" to "Gradle",
-                "Implementation-Version" to archiveVersion
+            "Implementation-Title" to "Gradle",
+            "Implementation-Version" to archiveVersion
         )
     }
 }
