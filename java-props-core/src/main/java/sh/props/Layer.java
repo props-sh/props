@@ -39,7 +39,9 @@ class Layer {
   @Nullable Layer next;
 
   Layer(Source source, Registry registry, int priority) {
-    source.apply(this::onReload);
+    // reads from source
+    // TODO: lazy or async load
+    this.onReload(source.read());
 
     this.registry = registry;
     this.priority = priority;

@@ -18,7 +18,6 @@
         <option value="finalPrivateMethod" />
         <option value="unnecessaryFinalOnLocalVariableOrParameter" />
         <option value="explicitTypeCanBeDiamond" />
-        <option value="suppressAnnotation" />
       </set>
     </option>
     <option name="configurationPath" value="" />

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Mihai Bojin
+ * Copyright (c) 2020 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,34 @@
  *
  */
 
-package sh.props;
+package sh.props.source;
 
-import java.util.Map;
+import java.util.Set;
+import sh.props.annotations.Nullable;
 
-public interface Source {
+public interface Resolver {
 
-  Map<String, String> read();
+  /** Returns a string identifying the resolver. */
+  String id();
+
+  /**
+   * Returns the value of the specified key, or <code>null</code> if the property is not defined.
+   */
+  @Nullable
+  String get(String key);
+
+  /**
+   * Reloads all properties managed by the implementing Resolver.
+   *
+   * @return a {@link Set} of all the property keys updated by the last execution of this method
+   */
+  Set<String> reload();
+
+  /**
+   * Returns <code>true</code> if the implementation can reload its properties, or <code>false
+   * </code> if it cannot.
+   */
+  default boolean isReloadable() {
+    return true;
+  }
 }

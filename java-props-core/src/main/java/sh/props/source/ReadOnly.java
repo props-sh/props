@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Mihai Bojin
+ * Copyright (c) 2020 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,19 @@
  *
  */
 
-package sh.props;
+package sh.props.source;
 
-import java.util.Map;
+import java.util.Set;
 
-public interface Source {
+public abstract class ReadOnly implements Resolver {
 
-  Map<String, String> read();
+  @Override
+  public final boolean isReloadable() {
+    return false;
+  }
+
+  @Override
+  public final Set<String> reload() {
+    return Set.of();
+  }
 }

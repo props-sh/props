@@ -23,11 +23,31 @@
  *
  */
 
-package sh.props;
+package sh.props.thread;
 
-import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
-public interface Source {
+/** Creates daemon {@link Thread}s. */
+public class DaemonThreadFactory implements ThreadFactory {
 
-  Map<String, String> read();
+  private final ThreadFactory factory;
+
+  /** Spawns threads using the default {@link ThreadFactory}. */
+  public DaemonThreadFactory() {
+    this(Executors.defaultThreadFactory());
+  }
+
+  /** Allows a custom {@link ThreadFactory} to be specified. */
+  public DaemonThreadFactory(ThreadFactory factory) {
+    this.factory = factory;
+  }
+
+  /** Creates a new daemon {@link Thread}. */
+  @Override
+  public Thread newThread(Runnable runnable) {
+    Thread thread = this.factory.newThread(runnable);
+    thread.setDaemon(true);
+    return thread;
+  }
 }

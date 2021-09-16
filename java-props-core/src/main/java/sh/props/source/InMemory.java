@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Mihai Bojin
+ * Copyright (c) 2020 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,50 @@
  *
  */
 
-package sh.props;
+package sh.props.source;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import sh.props.annotations.Nullable;
 
-public interface Source {
+/** Useful for tests, when the implementation requires overriding values. */
+public class InMemory implements Resolver {
 
-  Map<String, String> read();
+  private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
+  private final Set<String> updatedKeys = new HashSet<>();
+
+  /** Stores the specified (key, value) pair in memory. */
+  public void set(String key, String value) {
+    this.store.put(key, value);
+
+    synchronized (this) {
+      this.updatedKeys.add(key);
+    }
+  }
+
+  @Override
+  @Nullable
+  public String get(String key) {
+    return this.store.get(key);
+  }
+
+  @Override
+  public boolean isReloadable() {
+    return true;
+  }
+
+  @Override
+  public Set<String> reload() {
+    synchronized (this) {
+      Set<String> results = new HashSet<>(this.updatedKeys);
+      this.updatedKeys.clear();
+      return results;
+    }
+  }
+
+  @Override
+  public String id() {
+    return "MEMORY";
+  }
 }

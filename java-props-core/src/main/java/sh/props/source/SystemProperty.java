@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Mihai Bojin
+ * Copyright (c) 2020 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,21 @@
  *
  */
 
-package sh.props;
+package sh.props.source;
 
-import java.util.Map;
+import sh.props.annotations.Nullable;
 
-public interface Source {
+/** Loads system properties. */
+public class SystemProperty extends ReadOnly {
 
-  Map<String, String> read();
+  @Override
+  @Nullable
+  public String get(String key) {
+    return System.getProperty(key);
+  }
+
+  @Override
+  public String id() {
+    return "SYSTEM";
+  }
 }
