@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props;
+package sh.props.source;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.Source;
+import sh.props.interfaces.Source;
 import sh.props.thread.BackgroundExecutorFactory;
 
 public class ReloadableSource implements Source {

@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
+import sh.props.interfaces.Source;
 
 class Layer {
 
@@ -185,9 +185,15 @@ class Layer {
     this.store.putAll(freshValues);
 
     // count the number of times that the data was reloaded from the source
-    this.counterDataReloaded++;
+    this.incrementDataReloadedCounter();
 
     // and notify the registry of any keys that this layer now defines
     freshValues.keySet().forEach(key -> this.registry.bindKey(key, this));
+  }
+
+  // we do not care to be exact; see the explanation linked to the incremented field
+  @SuppressWarnings("NonAtomicVolatileUpdate")
+  private void incrementDataReloadedCounter() {
+    this.counterDataReloaded++;
   }
 }

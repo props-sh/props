@@ -23,51 +23,40 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
-import static java.lang.String.format;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import sh.props.annotations.Nullable;
+import sh.props.interfaces.Source;
 
-public class ClasspathPropertyFile implements Source {
+/** Loads system properties. */
+public class SystemProperties implements Source {
 
-  private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
-  private final String location;
+  private static final Logger log = Logger.getLogger(SystemProperties.class.getName());
 
   @Override
   public String id() {
-    return "classpath://" + this.location;
+    return "system";
   }
 
-  /** Constructs a {@link Source} which reads values from a property file in the classpath. */
-  public ClasspathPropertyFile(String location) {
-    this.location = location;
+  /**
+   * Overridden for performance reasons, to avoid converting the system {@link java.util.Properties}
+   * object to a {@link Map} before looking for the key.
+   *
+   * @param key the key to retrieve
+   * @return a value, or <code>null</code> if they key was not found
+   */
+  @Override
+  @Nullable
+  public String get(String key) {
+    return System.getProperty(key);
   }
 
   @Override
   public Map<String, String> read() {
-    try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
-      if (stream != null) {
-        return this.loadPropertiesFromStream(stream);
-      }
-
-      // the stream could not be opened
-      log.warning(() -> format("Could not find in classpath: %s", this.location));
-
-    } catch (IOException | IllegalArgumentException e) {
-      log.log(
-          Level.SEVERE,
-          e,
-          () -> format("Could not read properties from classpath: %s", this.location));
-    }
-
-    return Collections.emptyMap();
+    return this.readPropertiesToMap(System.getProperties());
   }
 
   @Override

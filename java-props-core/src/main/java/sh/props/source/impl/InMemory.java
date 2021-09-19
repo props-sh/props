@@ -23,39 +23,53 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Source;
 
-/** Loads system properties. */
-public class SystemProperties implements Source {
+/** Useful for tests, when the implementation requires overriding values. */
+public class InMemory implements Source {
 
-  private static final Logger log = Logger.getLogger(SystemProperties.class.getName());
+  private static final Logger log = Logger.getLogger(InMemory.class.getName());
+
+  private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
   @Override
   public String id() {
-    return "system";
+    return "memory";
   }
 
   /**
-   * Overridden for performance reasons, to avoid converting the system {@link java.util.Properties}
-   * object to a {@link Map} before looking for the key.
+   * Retrieves an unmodifiable map containing all (key,value) pairs defined in the {@link #store}.
+   *
+   * @return a map
+   */
+  @Override
+  public Map<String, String> read() {
+    return Collections.unmodifiableMap(this.store);
+  }
+
+  /**
+   * Overridden for performance reasons, to avoid making the {@link #store} unmodifiable.
    *
    * @param key the key to retrieve
-   * @return a value, or <code>null</code> if they key was not found
+   * @return a value, or <code>null</code> if the key was not found
    */
   @Override
   @Nullable
   public String get(String key) {
-    return System.getProperty(key);
+    return this.store.get(key);
   }
 
-  @Override
-  public Map<String, String> read() {
-    return this.readPropertiesToMap(System.getProperties());
+  /** Stores the specified (key, value) pair in memory. */
+  public void put(String key, String value) {
+    this.store.put(key, value);
   }
 
   @Override

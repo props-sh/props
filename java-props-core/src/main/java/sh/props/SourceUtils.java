@@ -37,11 +37,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import sh.props.source.ClasspathPropertyFile;
-import sh.props.source.Environment;
-import sh.props.source.PropertyFile;
-import sh.props.source.Source;
-import sh.props.source.SystemProperties;
+import sh.props.interfaces.Source;
+import sh.props.source.impl.ClasspathPropertyFile;
+import sh.props.source.impl.Environment;
+import sh.props.source.impl.PropertyFile;
+import sh.props.source.impl.SystemProperties;
 
 // TODO: integrate with the Registry, support fully defining layers
 public class SourceUtils {

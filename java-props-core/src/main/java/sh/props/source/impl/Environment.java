@@ -23,45 +23,26 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
-import static java.lang.String.format;
-import static java.util.logging.Level.SEVERE;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import sh.props.interfaces.Source;
 
-public class PropertyFile implements Source {
+/** Loads values defined in the environment. */
+public class Environment implements Source {
 
-  private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
-  private final Path location;
+  private static final Logger log = Logger.getLogger(Environment.class.getName());
 
   @Override
   public String id() {
-    return "file://" + this.location.toString();
-  }
-
-  /** Constructs a file-based {@link Source}. */
-  public PropertyFile(Path location) {
-    this.location = location;
+    return "env";
   }
 
   @Override
   public Map<String, String> read() {
-    try (InputStream stream = Files.newInputStream(this.location)) {
-      return this.loadPropertiesFromStream(stream);
-
-    } catch (IOException | IllegalArgumentException e) {
-      log.log(SEVERE, e, () -> format("Could not read properties from: %s", this.location));
-    }
-
-    return Collections.emptyMap();
+    return System.getenv();
   }
 
   @Override

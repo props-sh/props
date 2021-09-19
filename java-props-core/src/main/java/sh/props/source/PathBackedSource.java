@@ -23,42 +23,6 @@
  *
  */
 
-package sh.props;
+package sh.props.source;
 
-import java.util.ArrayList;
-import java.util.List;
-import sh.props.annotations.Nullable;
-import sh.props.interfaces.Source;
-
-public class RegistryBuilder {
-
-  List<Source> sources = new ArrayList<>();
-
-  public RegistryBuilder source(Source source) {
-    this.sources.add(source);
-    return this;
-  }
-
-  /**
-   * Builds a registry object, given the sources that were already added.
-   *
-   * @return a configured {@link Registry} object
-   */
-  public Registry build() {
-    Registry registry = new Registry();
-    int counter = 0;
-    @Nullable Layer tail = null;
-
-    for (Source source : this.sources) {
-      Layer layer = new Layer(source, registry, counter++);
-      layer.prev = tail;
-      if (tail != null) {
-        tail.next = layer;
-      }
-      tail = layer;
-    }
-    registry.topLayer = tail;
-
-    return registry;
-  }
-}
+public class PathBackedSource {}
