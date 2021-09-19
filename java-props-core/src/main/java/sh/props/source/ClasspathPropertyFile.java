@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,5 +68,10 @@ public class ClasspathPropertyFile implements Source {
     }
 
     return Collections.emptyMap();
+  }
+
+  @Override
+  public void register(Consumer<Map<String, String>> downstream) {
+    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

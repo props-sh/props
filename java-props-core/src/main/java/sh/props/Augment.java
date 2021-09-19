@@ -54,6 +54,7 @@ public class Augment {
     return new FileWatchAdapter(source, path, refreshInterval);
   }
 
+  // TODO: refactor this class into an individual component that can serve any Sources
   public static class FileWatchAdapter implements Consumer<Consumer<Map<String, String>>> {
 
     private static final Logger log = Logger.getLogger(FileWatchAdapter.class.getName());
@@ -127,33 +128,6 @@ public class Augment {
                       this.key));
         }
       }
-    }
-  }
-
-  public static Consumer<Consumer<Map<String, String>>> refreshAtInterval(
-      Source source, Duration refreshInterval) {
-    return new Adapter(source, refreshInterval);
-  }
-
-  public static class Adapter implements Consumer<Consumer<Map<String, String>>> {
-
-    private final ScheduledExecutorService executor = BackgroundExecutorFactory.create(1);
-    private final Source source;
-    private final Duration refreshInterval;
-
-    public Adapter(Source source, Duration refreshInterval) {
-      this.source = source;
-      this.refreshInterval = refreshInterval;
-    }
-
-    @Override
-    @SuppressWarnings("FutureReturnValueIgnored")
-    public void accept(Consumer<Map<String, String>> consumer) {
-      this.executor.scheduleAtFixedRate(
-          () -> consumer.accept(this.source.read()),
-          0,
-          this.refreshInterval.toMillis(),
-          TimeUnit.MILLISECONDS);
     }
   }
 }

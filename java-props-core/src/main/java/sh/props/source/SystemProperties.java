@@ -26,10 +26,14 @@
 package sh.props.source;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /** Loads system properties. */
 public class SystemProperties implements Source {
+
+  private static final Logger log = Logger.getLogger(SystemProperties.class.getName());
 
   @Override
   public String id() {
@@ -52,5 +56,10 @@ public class SystemProperties implements Source {
   @Override
   public Map<String, String> read() {
     return this.readPropertiesToMap(System.getProperties());
+  }
+
+  @Override
+  public void register(Consumer<Map<String, String>> downstream) {
+    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

@@ -34,15 +34,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class PropertyFile implements Source {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
-
-  private final AtomicReference<Map<String, String>> store =
-      new AtomicReference<>(Collections.emptyMap());
   private final Path location;
 
   @Override
@@ -65,5 +62,10 @@ public class PropertyFile implements Source {
     }
 
     return Collections.emptyMap();
+  }
+
+  @Override
+  public void register(Consumer<Map<String, String>> downstream) {
+    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

@@ -25,48 +25,119 @@
 
 package sh.props;
 
+import static java.lang.String.format;
+
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 
 class Layer {
 
+  private static final Logger log = Logger.getLogger(Layer.class.getName());
+
   private final HashMap<String, String> store = new HashMap<>();
+  private final Source source;
   private final Registry registry;
   private final int priority;
-  private final Source source;
+
+  // tracks how many times the source's data was reloaded
+  // we sacrifice correctness for speed and avoid using an AtomicLong
+  // as we want to roughly understand the number of operations
+  // and if any operations took place
+  @SuppressWarnings("NonAtomicVolatileUpdate")
+  private volatile long counterDataReloaded = 0;
+
   @Nullable Layer prev;
   @Nullable Layer next;
 
   Layer(Source source, Registry registry, int priority) {
-    // reads from source
-    this.source = source;
-    // TODO: lazy or async load
-    this.onReload(source.read());
+    this(source, registry, priority, true, Duration.ZERO);
+  }
 
+  Layer(Source source, Registry registry, int priority, boolean lazy, Duration maxEagerWait) {
+    this.source = source;
     this.registry = registry;
     this.priority = priority;
+
+    // ensure that the layer will receive any updates from the specified source
+    this.source.register(this::onReload);
+
+    if (!lazy) {
+      // eagerly load values from the associated source
+      this.ensureSourceWasRead(maxEagerWait);
+    }
+  }
+
+  // TODO: move all of this into another class
+  private final AtomicBoolean isReadingSource = new AtomicBoolean(false);
+
+  private void ensureSourceWasRead(Duration maxWait) {
+    if (this.counterDataReloaded != 0) {
+      // if the counter is not zero, the source was already read
+      // nothing to do
+      return;
+    }
+
+    boolean firstToTriggerRead = this.isReadingSource.compareAndSet(false, true);
+    if (firstToTriggerRead) {
+      try {
+        // ensure the source is read, but avoid waiting indefinitely
+        CompletableFuture.runAsync(() -> this.onReload(this.source.read()))
+            .get(maxWait.toNanos(), TimeUnit.NANOSECONDS);
+      } catch (InterruptedException | ExecutionException e) {
+        log.log(
+            Level.SEVERE,
+            e,
+            () -> format("Something went wrong while reading from source: %s", this.source.id()));
+      } catch (TimeoutException e) {
+        log.log(
+            Level.SEVERE,
+            e,
+            () -> format("Timed out while waiting to read from source: %s", this.source.id()));
+      } finally {
+        // reset the flag
+        this.isReadingSource.compareAndSet(true, false);
+      }
+    }
   }
 
   /**
-   * Delegates to {@link Source#id()}
+   * Delegates to {@link Source#id()}.
    *
-   * @return
+   * @return an unique identifier
    */
   public String id() {
     return this.source.id();
   }
-
   // decides the priority of this layer, in the current registry
+
   public int priority() {
     return this.priority;
   }
-
   // retrieves the value for the specified key, from this layer alone
+
   @Nullable
   String get(String key) {
+    if (this.counterDataReloaded == 0) {
+      // notify the user that they have read values too soon
+      log.warning(
+          () ->
+              format(
+                  "Key %s read attempted before source %s was read.  Please ensure sources can be read"
+                      + "promptly, or initialize them with lazy=false",
+                  key, this.source.id()));
+    }
+
     return this.store.get(key);
   }
 
@@ -112,6 +183,9 @@ class Layer {
 
     // finally, add the new entries to the store
     this.store.putAll(freshValues);
+
+    // count the number of times that the data was reloaded from the source
+    this.counterDataReloaded++;
 
     // and notify the registry of any keys that this layer now defines
     freshValues.keySet().forEach(key -> this.registry.bindKey(key, this));

@@ -26,9 +26,13 @@
 package sh.props.source;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 /** Loads values defined in the environment. */
 public class Environment implements Source {
+
+  private static final Logger log = Logger.getLogger(Environment.class.getName());
 
   @Override
   public String id() {
@@ -38,5 +42,10 @@ public class Environment implements Source {
   @Override
   public Map<String, String> read() {
     return System.getenv();
+  }
+
+  @Override
+  public void register(Consumer<Map<String, String>> downstream) {
+    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

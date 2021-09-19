@@ -28,10 +28,14 @@ package sh.props.source;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /** Useful for tests, when the implementation requires overriding values. */
 public class InMemory implements Source {
+
+  private static final Logger log = Logger.getLogger(InMemory.class.getName());
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
@@ -65,5 +69,10 @@ public class InMemory implements Source {
   /** Stores the specified (key, value) pair in memory. */
   public void put(String key, String value) {
     this.store.put(key, value);
+  }
+
+  @Override
+  public void register(Consumer<Map<String, String>> downstream) {
+    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import sh.props.annotations.Nullable;
@@ -75,6 +76,13 @@ public interface Source {
   default String get(String key) {
     return this.read().get(key);
   }
+
+  /**
+   * Any implementing classes can decide how to implement this call.
+   *
+   * @param downstream a consumer that accepts any updates this source may be sending
+   */
+  void register(Consumer<Map<String, String>> downstream);
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
