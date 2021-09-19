@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import sh.props.annotations.Nullable;
+import sh.props.source.Source;
 
 class Layer {
 
@@ -41,7 +42,7 @@ class Layer {
   Layer(Source source, Registry registry, int priority) {
     // reads from source
     // TODO: lazy or async load
-    this.onReload(source.read());
+    this.onReload(source.values());
 
     this.registry = registry;
     this.priority = priority;

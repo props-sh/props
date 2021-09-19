@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source.old;
+package sh.props;
 
 import static java.util.logging.Level.SEVERE;
 
@@ -43,9 +43,10 @@ import sh.props.source.PropertyFile;
 import sh.props.source.Source;
 import sh.props.source.SystemProperties;
 
-public class ResolverUtils {
+// TODO: integrate with the Registry, support fullly defining layers
+public class SourceUtils {
 
-  private static final Logger log = Logger.getLogger(ResolverUtils.class.getName());
+  private static final Logger log = Logger.getLogger(SourceUtils.class.getName());
   private static final Pattern configLinePattern =
       Pattern.compile("^(?<type>[a-z]+)(?:://(?<path>[^,]+))?$", Pattern.CASE_INSENSITIVE);
 
@@ -57,7 +58,7 @@ public class ResolverUtils {
   public static List<Source> readResolverConfig(InputStream stream) {
     try (BufferedReader reader =
         new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()))) {
-      return reader.lines().map(ResolverUtils::readConfigLine).collect(Collectors.toList());
+      return reader.lines().map(SourceUtils::readConfigLine).collect(Collectors.toList());
 
     } catch (Exception e) {
       log.log(SEVERE, e, () -> "Could not read resolver configuration");

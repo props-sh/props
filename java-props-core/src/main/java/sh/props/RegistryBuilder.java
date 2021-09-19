@@ -28,6 +28,7 @@ package sh.props;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
+import sh.props.source.Source;
 
 public class RegistryBuilder {
 

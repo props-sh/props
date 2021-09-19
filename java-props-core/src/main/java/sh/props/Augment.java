@@ -44,6 +44,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import sh.props.source.Source;
 import sh.props.thread.BackgroundExecutorFactory;
 
 public class Augment {
@@ -110,7 +111,7 @@ public class Augment {
           }
 
           // update
-          consumer.accept(this.source.read());
+          consumer.accept(this.source.values());
           return;
         }
 
@@ -149,7 +150,7 @@ public class Augment {
     @SuppressWarnings("FutureReturnValueIgnored")
     public void accept(Consumer<Map<String, String>> consumer) {
       this.executor.scheduleAtFixedRate(
-          () -> consumer.accept(this.source.read()),
+          () -> consumer.accept(this.source.values()),
           0,
           this.refreshInterval.toMillis(),
           TimeUnit.MILLISECONDS);
