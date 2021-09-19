@@ -25,8 +25,6 @@
 
 package sh.props;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 
@@ -111,38 +109,5 @@ public class Registry {
     // TODO: this won't work in production due to effectiveValue always being a string
     //       and will require props v1's implementation
     return clz.cast(effectiveValue);
-  }
-
-  public static class Builder {
-
-    List<Source> sources = new ArrayList<>();
-
-    public Builder source(Source source) {
-      this.sources.add(source);
-      return this;
-    }
-
-    /**
-     * Builds a registry object, given the sources that were already added.
-     *
-     * @return a configured {@link Registry} object
-     */
-    public Registry build() {
-      Registry registry = new Registry();
-      int counter = 0;
-      @Nullable Layer tail = null;
-
-      for (Source source : this.sources) {
-        Layer layer = new Layer(source, registry, counter++);
-        layer.prev = tail;
-        if (tail != null) {
-          tail.next = layer;
-        }
-        tail = layer;
-      }
-      registry.topLayer = tail;
-
-      return registry;
-    }
   }
 }

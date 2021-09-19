@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Mihai Bojin
+ * Copyright (c) 2021 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,64 +30,59 @@ import static java.util.Objects.isNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
-public class ClasspathPropertyFile implements Resolver {
+public class ClasspathPropertyFile implements Source {
 
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
 
-  private final Map<String, String> store = new HashMap<>();
+  private final AtomicReference<Map<String, String>> store =
+      new AtomicReference<>(Collections.emptyMap());
   private final String location;
-  private final boolean isReloadable;
 
-  /** Constructs a {@link Resolver} which should only read properties from the classpath once. */
-  public ClasspathPropertyFile(String location) {
-    this(location, false);
+  @Override
+  public String id() {
+    return "classpath://" + this.location;
   }
 
-  public ClasspathPropertyFile(String location, boolean isReloadable) {
+  /** Constructs a {@link Source} which reads values from a property file in the classpath. */
+  public ClasspathPropertyFile(String location) {
     this.location = location;
-    this.isReloadable = isReloadable;
+    this.refresh();
   }
 
   @Override
   @Nullable
   public String get(String key) {
-    return this.store.get(key);
+    return this.values().get(key);
   }
 
   @Override
-  public Set<String> reload() {
+  // the store is guaranteed to be NonNull
+  @SuppressWarnings("NullAway")
+  public Map<String, String> values() {
+    return this.store.get();
+  }
+
+  private void refresh() {
     try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
       if (isNull(stream)) {
-        log.fine(() -> format("Skipping %s; resource not found in classpath", this.location));
-        return Set.of();
+        log.warning(() -> format("Skipping %s; resource not found in classpath", this.location));
+        return;
       }
 
-      return ResolverUtils.mergeMapsInPlace(
-          this.store, ResolverUtils.loadPropertiesFromStream(stream));
+      this.store.set(this.loadPropertiesFromStream(stream));
+
     } catch (IOException | IllegalArgumentException e) {
       log.log(
           Level.SEVERE,
           e,
           () -> format("Could not read properties from classpath: %s", this.location));
     }
-
-    return Set.of();
-  }
-
-  @Override
-  public boolean isReloadable() {
-    return this.isReloadable;
-  }
-
-  @Override
-  public String id() {
-    return this.location;
   }
 }

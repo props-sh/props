@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Mihai Bojin
+ * Copyright (c) 2021 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +25,25 @@
 
 package sh.props.source;
 
+import java.util.Map;
 import sh.props.annotations.Nullable;
 
 /** Loads values defined in the environment. */
-public class Environment extends ReadOnly {
+public class Environment implements Source {
+
+  @Override
+  public String id() {
+    return "env";
+  }
+
+  @Override
+  public Map<String, String> values() {
+    return System.getenv();
+  }
 
   @Override
   @Nullable
   public String get(String key) {
-    return System.getenv(key);
-  }
-
-  @Override
-  public String id() {
-    return "ENV";
+    return this.values().get(key);
   }
 }

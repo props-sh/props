@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Mihai Bojin
+ * Copyright (c) 2021 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,74 +26,57 @@
 package sh.props.source;
 
 import static java.lang.String.format;
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
-public class PropertyFile implements Resolver {
+public class PropertyFile implements Source {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
 
-  private final Map<String, String> store = new HashMap<>();
+  private final AtomicReference<Map<String, String>> store =
+      new AtomicReference<>(Collections.emptyMap());
   private final Path location;
-  private final boolean isReloadable;
-
-  /** Constructs a {@link Resolver} which should only read the properties file once. */
-  public PropertyFile(Path location) {
-    this(location, false);
-  }
-
-  public PropertyFile(Path location, boolean isReloadable) {
-    this.location = location;
-    this.isReloadable = isReloadable;
-  }
 
   @Override
-  public boolean isReloadable() {
-    return this.isReloadable;
+  public String id() {
+    return "file://" + this.location.toString();
+  }
+
+  /** Constructs a file-based {@link Source}. */
+  public PropertyFile(Path location) {
+    this.location = location;
+    // TODO: lazy load
+    this.refresh();
   }
 
   @Override
   @Nullable
   public String get(String key) {
-    return this.store.get(key);
+    return this.values().get(key);
   }
 
   @Override
-  public Set<String> reload() {
-    if (!Files.exists(this.location)) {
-      if (log.isLoggable(FINE)) {
-        log.fine(
-            () ->
-                format(
-                    "Skipping %s; file not found at %s",
-                    this.getClass().getSimpleName(), this.location));
-      }
-      return Set.of();
-    }
+  // the store is guaranteed to be NonNull
+  @SuppressWarnings("NullAway")
+  public Map<String, String> values() {
+    return this.store.get();
+  }
 
+  private void refresh() {
     try (InputStream stream = Files.newInputStream(this.location)) {
-      return ResolverUtils.mergeMapsInPlace(
-          this.store, ResolverUtils.loadPropertiesFromStream(stream));
+      this.store.set(this.loadPropertiesFromStream(stream));
 
     } catch (IOException | IllegalArgumentException e) {
-      log.log(SEVERE, e, () -> format("Could not read configuration from %s", this.location));
+      log.log(SEVERE, e, () -> format("Could not read refresh from %s", this.location));
     }
-
-    return Set.of();
-  }
-
-  @Override
-  public String id() {
-    return this.location.toString();
   }
 }

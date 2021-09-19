@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Mihai Bojin
+ * Copyright (c) 2021 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,41 @@
  *
  */
 
-package sh.props.source;
+package sh.props;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import sh.props.annotations.Nullable;
 
-public abstract class ReadOnly implements Resolver {
+public class RegistryBuilder {
 
-  @Override
-  public final boolean isReloadable() {
-    return false;
+  List<Source> sources = new ArrayList<>();
+
+  public RegistryBuilder source(Source source) {
+    this.sources.add(source);
+    return this;
   }
 
-  @Override
-  public final Set<String> reload() {
-    return Set.of();
+  /**
+   * Builds a registry object, given the sources that were already added.
+   *
+   * @return a configured {@link Registry} object
+   */
+  public Registry build() {
+    Registry registry = new Registry();
+    int counter = 0;
+    @Nullable Layer tail = null;
+
+    for (Source source : this.sources) {
+      Layer layer = new Layer(source, registry, counter++);
+      layer.prev = tail;
+      if (tail != null) {
+        tail.next = layer;
+      }
+      tail = layer;
+    }
+    registry.topLayer = tail;
+
+    return registry;
   }
 }
