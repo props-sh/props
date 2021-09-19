@@ -51,12 +51,30 @@ import sh.props.annotations.Nullable;
 
 public interface Source {
 
+  /**
+   * An unique identifier representing this source in the {@link sh.props.Registry}.
+   *
+   * @return an unique id
+   */
   String id();
 
-  Map<String, String> values();
+  /**
+   * Reads all known (key,value) pairs from the source.
+   *
+   * @return an updated {@link Map} containing all known properties
+   */
+  Map<String, String> read();
 
+  /**
+   * Retrieves a single value by key.
+   *
+   * @param key the key to retrieve
+   * @return a {@link String} value (serialized), or <code>null</code> if they key was not found
+   */
   @Nullable
-  String get(String key);
+  default String get(String key) {
+    return this.read().get(key);
+  }
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}

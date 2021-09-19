@@ -36,7 +36,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-import sh.props.annotations.Nullable;
 
 public class PropertyFile implements Source {
 
@@ -54,29 +53,17 @@ public class PropertyFile implements Source {
   /** Constructs a file-based {@link Source}. */
   public PropertyFile(Path location) {
     this.location = location;
-    // TODO: lazy load
-    this.refresh();
   }
 
   @Override
-  @Nullable
-  public String get(String key) {
-    return this.values().get(key);
-  }
-
-  @Override
-  // the store is guaranteed to be NonNull
-  @SuppressWarnings("NullAway")
-  public Map<String, String> values() {
-    return this.store.get();
-  }
-
-  private void refresh() {
+  public Map<String, String> read() {
     try (InputStream stream = Files.newInputStream(this.location)) {
-      this.store.set(this.loadPropertiesFromStream(stream));
+      return this.loadPropertiesFromStream(stream);
 
     } catch (IOException | IllegalArgumentException e) {
-      log.log(SEVERE, e, () -> format("Could not read refresh from %s", this.location));
+      log.log(SEVERE, e, () -> format("Could not read properties from: %s", this.location));
     }
+
+    return Collections.emptyMap();
   }
 }

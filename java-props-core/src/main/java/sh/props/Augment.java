@@ -111,7 +111,7 @@ public class Augment {
           }
 
           // update
-          consumer.accept(this.source.values());
+          consumer.accept(this.source.read());
           return;
         }
 
@@ -150,7 +150,7 @@ public class Augment {
     @SuppressWarnings("FutureReturnValueIgnored")
     public void accept(Consumer<Map<String, String>> consumer) {
       this.executor.scheduleAtFixedRate(
-          () -> consumer.accept(this.source.values()),
+          () -> consumer.accept(this.source.read()),
           0,
           this.refreshInterval.toMillis(),
           TimeUnit.MILLISECONDS);

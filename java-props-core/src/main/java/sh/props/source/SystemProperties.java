@@ -36,6 +36,13 @@ public class SystemProperties implements Source {
     return "system";
   }
 
+  /**
+   * Overridden for performance reasons, to avoid converting the system {@link java.util.Properties}
+   * object to a {@link Map} before looking for the key.
+   *
+   * @param key the key to retrieve
+   * @return a value, or <code>null</code> if they key was not found
+   */
   @Override
   @Nullable
   public String get(String key) {
@@ -43,7 +50,7 @@ public class SystemProperties implements Source {
   }
 
   @Override
-  public Map<String, String> values() {
+  public Map<String, String> read() {
     return this.readPropertiesToMap(System.getProperties());
   }
 }

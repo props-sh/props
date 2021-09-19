@@ -26,23 +26,17 @@
 package sh.props.source;
 
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.annotations.Nullable;
 
 public class ClasspathPropertyFile implements Source {
 
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
-
-  private final AtomicReference<Map<String, String>> store =
-      new AtomicReference<>(Collections.emptyMap());
   private final String location;
 
   @Override
@@ -53,30 +47,17 @@ public class ClasspathPropertyFile implements Source {
   /** Constructs a {@link Source} which reads values from a property file in the classpath. */
   public ClasspathPropertyFile(String location) {
     this.location = location;
-    this.refresh();
   }
 
   @Override
-  @Nullable
-  public String get(String key) {
-    return this.values().get(key);
-  }
-
-  @Override
-  // the store is guaranteed to be NonNull
-  @SuppressWarnings("NullAway")
-  public Map<String, String> values() {
-    return this.store.get();
-  }
-
-  private void refresh() {
+  public Map<String, String> read() {
     try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
-      if (isNull(stream)) {
-        log.warning(() -> format("Skipping %s; resource not found in classpath", this.location));
-        return;
+      if (stream != null) {
+        return this.loadPropertiesFromStream(stream);
       }
 
-      this.store.set(this.loadPropertiesFromStream(stream));
+      // the stream could not be opened
+      log.warning(() -> format("Could not find in classpath: %s", this.location));
 
     } catch (IOException | IllegalArgumentException e) {
       log.log(
@@ -84,5 +65,7 @@ public class ClasspathPropertyFile implements Source {
           e,
           () -> format("Could not read properties from classpath: %s", this.location));
     }
+
+    return Collections.emptyMap();
   }
 }

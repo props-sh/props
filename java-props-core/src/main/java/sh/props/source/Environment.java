@@ -26,7 +26,6 @@
 package sh.props.source;
 
 import java.util.Map;
-import sh.props.annotations.Nullable;
 
 /** Loads values defined in the environment. */
 public class Environment implements Source {
@@ -37,13 +36,7 @@ public class Environment implements Source {
   }
 
   @Override
-  public Map<String, String> values() {
+  public Map<String, String> read() {
     return System.getenv();
-  }
-
-  @Override
-  @Nullable
-  public String get(String key) {
-    return this.values().get(key);
   }
 }

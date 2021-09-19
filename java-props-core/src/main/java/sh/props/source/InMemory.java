@@ -40,19 +40,30 @@ public class InMemory implements Source {
     return "memory";
   }
 
+  /**
+   * Retrieves an unmodifiable map containing all (key,value) pairs defined in the {@link #store}.
+   *
+   * @return a map
+   */
+  @Override
+  public Map<String, String> read() {
+    return Collections.unmodifiableMap(this.store);
+  }
+
+  /**
+   * Overridden for performance reasons, to avoid making the {@link #store} unmodifiable.
+   *
+   * @param key the key to retrieve
+   * @return a value, or <code>null</code> if the key was not found
+   */
   @Override
   @Nullable
   public String get(String key) {
     return this.store.get(key);
   }
 
-  @Override
-  public Map<String, String> values() {
-    return Collections.unmodifiableMap(this.store);
-  }
-
   /** Stores the specified (key, value) pair in memory. */
-  public void set(String key, String value) {
+  public void put(String key, String value) {
     this.store.put(key, value);
   }
 }

@@ -43,7 +43,7 @@ import sh.props.source.PropertyFile;
 import sh.props.source.Source;
 import sh.props.source.SystemProperties;
 
-// TODO: integrate with the Registry, support fullly defining layers
+// TODO: integrate with the Registry, support fully defining layers
 public class SourceUtils {
 
   private static final Logger log = Logger.getLogger(SourceUtils.class.getName());

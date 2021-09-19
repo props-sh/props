@@ -36,16 +36,27 @@ class Layer {
   private final HashMap<String, String> store = new HashMap<>();
   private final Registry registry;
   private final int priority;
+  private final Source source;
   @Nullable Layer prev;
   @Nullable Layer next;
 
   Layer(Source source, Registry registry, int priority) {
     // reads from source
+    this.source = source;
     // TODO: lazy or async load
-    this.onReload(source.values());
+    this.onReload(source.read());
 
     this.registry = registry;
     this.priority = priority;
+  }
+
+  /**
+   * Delegates to {@link Source#id()}
+   *
+   * @return
+   */
+  public String id() {
+    return this.source.id();
   }
 
   // decides the priority of this layer, in the current registry
