@@ -25,64 +25,11 @@
 
 package sh.props;
 
-import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 
-public class Registry {
-
-  private final ConcurrentHashMap<String, Layer> owners = new ConcurrentHashMap<>();
+public class Registry extends LayerOwnership {
 
   @Nullable Layer topLayer = null;
-
-  // registers ownership of a layer over a key
-  void bindKey(String key, Layer layer) {
-    // finds the current owner
-    Layer owner = this.owners.get(key);
-
-    // determines if ownership change is required
-    if (owner == null || owner.priority() < layer.priority()) {
-      // change the current owner
-      this.owners.put(key, layer);
-      // TODO: notify subscribers of update
-    }
-  }
-
-  // unregisters ownership of a layer over a key
-  void unbindKey(String key, Layer layer) {
-    // finds the current owner
-    Layer owner = this.owners.get(key);
-
-    // determines if ownership change is required
-    if (owner != null && owner == layer) {
-      // change the current owner
-      while (layer.prev != null) {
-        layer = layer.prev;
-        if (layer.containsKey(key)) {
-          // update the owner
-          this.owners.put(key, layer);
-          // TODO: notify subscribers of update
-          return;
-        }
-      }
-
-      // we could not replace the owner
-      // it means this key is not defined in any layer
-      this.owners.remove(key);
-      // TODO: notify subscribers of update
-    }
-
-    // nothing to do, ownership did not change
-  }
-
-  void updateKey(String key, Layer layer) {
-    // finds the current owner
-    Layer owner = this.owners.get(key);
-
-    // determines if the specified layer owns the key
-    if (owner == layer) {
-      // TODO: notify subscribers of update
-    }
-  }
 
   /**
    * Retrieves the value for the specified key.

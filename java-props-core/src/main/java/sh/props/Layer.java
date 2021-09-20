@@ -47,7 +47,7 @@ class Layer {
 
   private final HashMap<String, String> store = new HashMap<>();
   private final Source source;
-  private final Registry registry;
+  private final LayerOwnership registry;
   private final int priority;
 
   // tracks how many times the source's data was reloaded
@@ -141,8 +141,26 @@ class Layer {
     return this.store.get(key);
   }
 
-  boolean containsKey(String key) {
-    return this.store.containsKey(key);
+  static class Pair {
+
+    final String key;
+    @Nullable final String value;
+
+    public Pair(String key, @Nullable String value) {
+      this.key = key;
+      this.value = value;
+    }
+  }
+
+  @Nullable
+  synchronized Pair keyIsMapped(String key) {
+    // ensure that
+    String value = this.store.get(key);
+    if (value == null && !this.store.containsKey(key)) {
+      // they key is not mapped
+      return null;
+    }
+    return new Pair(key, value);
   }
 
   // processes the reloaded data
@@ -152,6 +170,7 @@ class Layer {
     while (it.hasNext()) {
       var entry = it.next();
       var existingKey = entry.getKey();
+      var oldValue = entry.getValue();
 
       // check if the updated map still contains this key
       if (!freshValues.containsKey(existingKey)) {
@@ -160,7 +179,7 @@ class Layer {
         it.remove();
 
         // and notify the registry that this layer no longer defines this key
-        this.registry.unbindKey(existingKey, this);
+        this.registry.unbindKey(existingKey, oldValue, this);
         continue;
       }
 
@@ -184,11 +203,11 @@ class Layer {
     // finally, add the new entries to the store
     this.store.putAll(freshValues);
 
-    // count the number of times that the data was reloaded from the source
-    this.incrementDataReloadedCounter();
-
     // and notify the registry of any keys that this layer now defines
     freshValues.keySet().forEach(key -> this.registry.bindKey(key, this));
+
+    // count the number of times that the data was reloaded from the source
+    this.incrementDataReloadedCounter();
   }
 
   // we do not care to be exact; see the explanation linked to the incremented field
