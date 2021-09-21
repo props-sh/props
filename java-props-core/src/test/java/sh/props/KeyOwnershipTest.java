@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package sh.props;
@@ -39,13 +40,10 @@ import sh.props.interfaces.Source;
 class KeyOwnershipTest {
 
   @BeforeEach
-  void setUp() {
-
-  }
+  void setUp() {}
 
   @AfterEach
-  void tearDown() {
-  }
+  void tearDown() {}
 
   @Test
   void testOwners() {
