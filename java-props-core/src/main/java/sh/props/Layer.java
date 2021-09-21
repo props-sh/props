@@ -47,7 +47,7 @@ class Layer {
 
   private final HashMap<String, String> store = new HashMap<>();
   private final Source source;
-  private final LayerOwnership registry;
+  final LayerOwnership registry;
   private final int priority;
 
   // tracks how many times the source's data was reloaded
@@ -116,7 +116,7 @@ class Layer {
    *
    * @return an unique identifier
    */
-  public String id() {
+  public final String id() {
     return this.source.id();
   }
   // decides the priority of this layer, in the current registry
@@ -214,5 +214,22 @@ class Layer {
   @SuppressWarnings("NonAtomicVolatileUpdate")
   private void incrementDataReloadedCounter() {
     this.counterDataReloaded++;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Layer)) {
+      return false;
+    }
+    Layer layer = (Layer) o;
+    return this.registry.equals(layer.registry) && Objects.equals(this.id(), layer.id());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.registry, this.id());
   }
 }

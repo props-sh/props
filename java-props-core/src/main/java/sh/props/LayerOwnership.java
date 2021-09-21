@@ -52,7 +52,7 @@ public abstract class LayerOwnership {
     Layer owner = this.owners.get(key);
 
     // determines if ownership change is required
-    if (owner != null && owner == layer) {
+    if (owner != null && owner.equals(layer)) {
       // change the current owner
       while (layer.prev != null) {
         layer = layer.prev;
@@ -84,7 +84,7 @@ public abstract class LayerOwnership {
     Layer owner = this.owners.get(key);
 
     // determines if the specified layer owns the key
-    if (owner == layer) {
+    if (Objects.equals(owner, layer)) {
       // TODO: notify subscribers of update
     }
   }
