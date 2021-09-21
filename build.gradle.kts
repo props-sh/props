@@ -7,19 +7,22 @@ group = "sh.props"
 version = project.version
 
 // install git hooks
+tasks.register<Exec>("gitHooks") {
+    dependsOn("installGitHooks")
+
+    description = "Ensures the project's git hooks are installed and executable"
+    commandLine("chmod", "-R", "+x", "./.git/hooks/")
+}
 tasks.register<Copy>("installGitHooks") {
     description = "Installs the project's git hooks"
 
-    copy {
-        from("./githooks/") {
-            include("*")
+    doLast {
+        copy {
+            from("./githooks/") {
+                include("*")
+            }
+            into("./.git/hooks")
         }
-        into("./.git/hooks")
     }
 }
-tasks.register<Exec>("gitHooks") {
-    description = "Ensures the project's git hooks are installed and executable"
 
-    dependsOn("installGitHooks")
-    commandLine("chmod", "-R", "+x", "./.git/hooks/")
-}
