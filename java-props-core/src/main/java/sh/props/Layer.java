@@ -164,7 +164,11 @@ class Layer {
   }
 
   // processes the reloaded data
-  private void onReload(Map<String, String> freshValues) {
+  private void onReload(Map<String, String> data) {
+    // make a copy to avoid wrongly changing the input
+    // TODO: rethink this algorithm to avoid this copy op
+    Map<String, String> freshValues = new HashMap<>(data);
+
     // iterate over the current values
     var it = this.store.entrySet().iterator();
     while (it.hasNext()) {

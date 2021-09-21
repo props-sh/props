@@ -25,18 +25,17 @@
 
 package sh.props.source.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Source;
 
 /** Useful for tests, when the implementation requires overriding values. */
 public class InMemory implements Source {
-
-  private static final Logger log = Logger.getLogger(InMemory.class.getName());
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
@@ -69,11 +68,28 @@ public class InMemory implements Source {
 
   /** Stores the specified (key, value) pair in memory. */
   public void put(String key, String value) {
+    if (value == null) {
+      this.store.remove(key);
+      return;
+    }
+
     this.store.put(key, value);
   }
 
+  /** Removes the specified key from memory. */
+  public void remove(String key) {
+    this.store.remove(key);
+  }
+
+  List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
+
   @Override
   public void register(Consumer<Map<String, String>> downstream) {
-    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
+    this.downstream.add(downstream);
+  }
+
+  /** Publish the most recent data view to all connected layers. */
+  public void update() {
+    this.downstream.forEach(d -> d.accept(Collections.unmodifiableMap(this.store)));
   }
 }
