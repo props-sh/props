@@ -17,6 +17,9 @@ dependencies {
     errorprone(libs.nullaway)
 
     testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.org.hamcrest.core)
+    testImplementation(libs.org.mockito.core)
+
     testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
