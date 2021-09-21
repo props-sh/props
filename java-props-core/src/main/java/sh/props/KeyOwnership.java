@@ -27,7 +27,6 @@ package sh.props;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import sh.props.Layer.Pair;
 import sh.props.annotations.Nullable;
 
@@ -35,8 +34,7 @@ public abstract class KeyOwnership {
 
   protected final ConcurrentHashMap<String, ValueLayer> effectiveValues = new ConcurrentHashMap<>();
 
-  public abstract void sendUpdate(
-      String key, @Nullable String value, @Nullable Layer layer, long nanoTime);
+  public abstract void sendUpdate(String key, @Nullable String value, @Nullable Layer layer);
 
   /**
    * Retrieves a value for the specified key.
@@ -84,52 +82,75 @@ public abstract class KeyOwnership {
    *     layer defines the key
    */
   public ValueLayer put(String key, @Nullable String value, Layer layer) {
-    AtomicBoolean updated = new AtomicBoolean(false);
+    return this.effectiveValues.compute(
+        key,
+        (k, current) -> {
+          if (current == null) {
+            // if we had no previous value for this key
 
-    // update the effective value
-    ValueLayer effective =
-        this.effectiveValues.compute(
-            key,
-            (k, current) -> {
-              // check if the current value for the key was previously mapped
-              if (current != null) {
-                if (current.equalTo(value, layer)) {
-                  // no update required
-                  return current;
-                } else if (Objects.equals(current.value, value)) {
-                  // value not updated; we don't need to send any updates
-                } else if (value == null) {
-                  // the value was unset
-                  updated.set(true);
-                  return KeyOwnership.findPrevious(k, current);
-                } else {
-                  // the value was updated, we need to update subscribers
-                  updated.set(true);
-                }
-              }
+            // and if the new value is null
+            if (value == null) {
+              // do not map the key
+              return null;
+            }
 
-              // current is null and we're trying to set null
-              // keep no mapping
-              if (value == null) {
-                return null;
-              }
-
-              // in all other cases, map the result to a new value
+            // otherwise map the effective value and its owning layer
+            try {
               return new ValueLayer(value, layer);
-            });
+            } finally {
+              // and send an update to any objects following this key
+              this.sendUpdate(key, value, layer);
+            }
+          }
 
-    if (updated.get()) {
-      if (effective == null) {
-        // the value was deleted
-        this.sendUpdate(key, null, null, System.nanoTime());
+          // if nothing has changed
+          if (current.equalTo(value, layer)) {
+            // simply return the current value
+            return current;
+          }
 
-      } else {
-        // if the value was updated, send a notification
-        this.sendUpdate(key, effective.value, effective.layer, System.nanoTime());
-      }
-    }
+          // if the layer's priority is lower than the current owner
+          int oldPriority = current.layer.priority();
+          int priority = layer.priority();
+          if (priority < oldPriority) {
+            // do nothing as this layer does not hold ownership over the key
+            return current;
+          }
 
-    return effective;
+          // if the value has not changed
+          if (Objects.equals(current.value, value)) {
+            // we need to modify the layer/value mapping
+            // but not send an update to any objects following this key
+            return new ValueLayer(value, layer);
+          }
+
+          ValueLayer ret;
+
+          // but if the value has changed
+
+          if (value == null && priority == oldPriority) {
+            // it was either unset from the owning layer
+            // in which case we need to find a lower priority layer that defines this key
+            ret = findPrevious(key, current);
+
+          } else if (value == null) {
+            // it was unset in a higher priority layer
+            // in which case, this is a no-op
+            return current;
+
+          } else {
+            // or it was legitimately updated
+            // and we need to modify the layer/value mapping
+            ret = new ValueLayer(value, layer);
+          }
+
+          try {
+            return ret;
+          } finally {
+            // and send an update to any objects following this key
+            this.sendUpdate(key, ret != null ? ret.value : null, layer);
+          }
+        });
   }
 
   /**
