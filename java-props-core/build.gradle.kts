@@ -10,6 +10,7 @@ plugins {
     checkstyle
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
+    id("me.champeau.jmh")
 }
 
 dependencies {
@@ -111,4 +112,8 @@ tasks.jar {
 tasks.create<Zip>("docZip") {
     archiveFileName.set("doc.zip")
     from("doc")
+}
+
+jmh {
+    iterations.set(1)
 }

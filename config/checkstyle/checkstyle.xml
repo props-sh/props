@@ -328,5 +328,7 @@
             <property name="file" value="${config_loc}/xpath-suppressions.xml"/>
             <property name="optional" value="true"/>
         </module>
+        <module name="SuppressWarningsHolder" />
     </module>
+    <module name="SuppressWarningsFilter" />
 </module>
