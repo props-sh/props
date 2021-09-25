@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.old;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,10 +34,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.interfaces.Source;
+import sh.props.source.AbstractSource;
+import sh.props.source.Source;
 import sh.props.thread.BackgroundExecutorFactory;
 
-public class ReloadableSource implements Source {
+// TODO: remove this and refactor as a strategy pattern
+public class ReloadableSource extends AbstractSource {
 
   private static final Logger log = Logger.getLogger(ReloadableSource.class.getName());
 
@@ -86,7 +88,7 @@ public class ReloadableSource implements Source {
     @Override
     public void run() {
       try {
-        Map<String, String> values = ReloadableSource.this.read();
+        Map<String, String> values = ReloadableSource.this.get();
 
         // notify all downstream layers of new values received from this source
         // this a simple implementation for the moment, since we expect
@@ -100,11 +102,6 @@ public class ReloadableSource implements Source {
             Level.WARNING, e, () -> "Unexpected exception while refreshing the source");
       }
     }
-  }
-
-  @Override
-  public void register(Consumer<Map<String, String>> downstream) {
-    this.downstream.add(downstream);
   }
 
   /**
@@ -123,7 +120,7 @@ public class ReloadableSource implements Source {
    * @return all properties defined by the underlying source
    */
   @Override
-  public Map<String, String> read() {
-    return this.source.read();
+  public Map<String, String> get() {
+    return this.source.get();
   }
 }

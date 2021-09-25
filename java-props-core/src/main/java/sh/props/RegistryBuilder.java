@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
-import sh.props.interfaces.Source;
+import sh.props.source.Source;
 
 public class RegistryBuilder {
 

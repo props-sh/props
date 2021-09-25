@@ -25,4 +25,34 @@
 
 package sh.props.source;
 
-public class PathBackedSource {}
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+/**
+ * Abstract class that implements the downstream consumer functionality, which allows sources to
+ * notify subscribing layers that the data was refreshed.
+ */
+public abstract class AbstractSource implements Source {
+
+  private final List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
+
+  /**
+   * Registers a new downstream consumer.
+   *
+   * @param downstream a consumer that accepts any updates this source may be sending
+   */
+  @Override
+  public void register(Consumer<Map<String, String>> downstream) {
+    this.downstream.add(downstream);
+  }
+
+  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
+  @Override
+  public void refresh() {
+    Map<String, String> data = this.get();
+    this.downstream.forEach(d -> d.accept(Collections.unmodifiableMap(data)));
+  }
+}

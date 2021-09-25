@@ -34,7 +34,7 @@ import static org.mockito.Mockito.spy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 
 @SuppressWarnings("NullAway")
 class SyncStoreTest {
@@ -62,37 +62,37 @@ class SyncStoreTest {
 
     // Layer 1 defines v1
     source1.put("key", "v1");
-    source1.update();
+    source1.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), "v1");
 
     // Layer 2 defines v2
     source2.put("key", "v2");
-    source2.update();
+    source2.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
 
     // Layer 1 unsets v1
     source1.remove("key");
-    source1.update();
+    source1.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
 
     // Layer 1 defines v3
     source1.put("key", "v3");
-    source1.update();
+    source1.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
 
     // Layer 2 updates v4
     source2.put("key", "v4");
-    source2.update();
+    source2.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), "v4");
 
     // Layer 2 unsets v4
     source2.remove("key");
-    source2.update();
+    source2.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), "v3");
 
     // Layer 1 unsets v3
     source1.remove("key");
-    source1.update();
+    source1.refresh();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), null);
   }
 

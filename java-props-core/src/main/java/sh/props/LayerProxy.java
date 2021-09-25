@@ -40,7 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Layer;
-import sh.props.interfaces.Source;
+import sh.props.source.Source;
 
 /**
  * Implements the main logic that allows a {@link Registry} to retrieve effective values from
@@ -99,7 +99,7 @@ class LayerProxy implements Layer<String> {
     if (firstToTriggerRead) {
       try {
         // ensure the source is read, but avoid waiting indefinitely
-        CompletableFuture.runAsync(() -> this.onReload(this.source.read()))
+        CompletableFuture.runAsync(() -> this.onReload(this.source.get()))
             .get(maxWait.toNanos(), TimeUnit.NANOSECONDS);
       } catch (InterruptedException | ExecutionException e) {
         log.log(

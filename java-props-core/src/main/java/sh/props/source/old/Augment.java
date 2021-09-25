@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.old;
 
 import static java.lang.String.format;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -44,7 +44,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import sh.props.interfaces.Source;
+import sh.props.source.Source;
 import sh.props.thread.BackgroundExecutorFactory;
 
 public class Augment {
@@ -112,7 +112,7 @@ public class Augment {
           }
 
           // update
-          consumer.accept(this.source.read());
+          consumer.accept(this.source.get());
           return;
         }
 

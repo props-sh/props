@@ -23,24 +23,17 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Source;
 
 /** Useful for tests, when the implementation requires overriding values. */
-public class InMemory implements Source {
+public class InMemory extends AbstractSource {
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
-
-  // TODO: move this to a common mix-in
-  List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
 
   @Override
   public String id() {
@@ -53,17 +46,16 @@ public class InMemory implements Source {
    * @return a map
    */
   @Override
-  public Map<String, String> read() {
+  public Map<String, String> get() {
     return Collections.unmodifiableMap(this.store);
   }
 
   /**
-   * Overridden for performance reasons, to avoid making the {@link #store} unmodifiable.
+   * Overridden for performance reasons, to avoid creating the unmodifiable {@link #store} map.
    *
    * @param key the key to retrieve
    * @return a value, or <code>null</code> if the key was not found
    */
-  @Override
   @Nullable
   public String get(String key) {
     return this.store.get(key);
@@ -92,15 +84,5 @@ public class InMemory implements Source {
    */
   public void remove(String key) {
     this.put(key, null);
-  }
-
-  @Override
-  public void register(Consumer<Map<String, String>> downstream) {
-    this.downstream.add(downstream);
-  }
-
-  /** Publish the most recent data view to all connected layers. */
-  public void update() {
-    this.downstream.forEach(d -> d.accept(Collections.unmodifiableMap(this.store)));
   }
 }

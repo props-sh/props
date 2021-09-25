@@ -23,18 +23,13 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
-import sh.props.annotations.Nullable;
-import sh.props.interfaces.Source;
 
-/** Loads system properties. */
+/** Retrieves system properties. */
 public class SystemProperties implements Source {
-
-  private static final Logger log = Logger.getLogger(SystemProperties.class.getName());
 
   @Override
   public String id() {
@@ -42,25 +37,24 @@ public class SystemProperties implements Source {
   }
 
   /**
-   * Overridden for performance reasons, to avoid converting the system {@link java.util.Properties}
-   * object to a {@link Map} before looking for the key.
+   * Retrieves all system properties.
    *
-   * @param key the key to retrieve
-   * @return a value, or <code>null</code> if they key was not found
+   * @return a map containing all system properties
    */
   @Override
-  @Nullable
-  public String get(String key) {
-    return System.getProperty(key);
-  }
-
-  @Override
-  public Map<String, String> read() {
+  public Map<String, String> get() {
     return this.readPropertiesToMap(System.getProperties());
   }
 
   @Override
   public void register(Consumer<Map<String, String>> downstream) {
-    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
+    throw new IllegalStateException(
+        "The system properties are read-only; you should not make this superfluous call!");
+  }
+
+  @Override
+  public void refresh() {
+    throw new IllegalStateException(
+        "The system properties are read-only; you should not make this superfluous call!");
   }
 }

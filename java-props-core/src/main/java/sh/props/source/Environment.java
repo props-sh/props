@@ -23,30 +23,43 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
-import sh.props.interfaces.Source;
 
-/** Loads values defined in the environment. */
+/** Retrieves all environment variables. */
 public class Environment implements Source {
 
-  private static final Logger log = Logger.getLogger(Environment.class.getName());
-
+  /**
+   * An unique identifier representing this source in the {@link sh.props.Registry}.
+   *
+   * @return an unique id
+   */
   @Override
   public String id() {
     return "env";
   }
 
+  /**
+   * Retrieves all environment variables.
+   *
+   * @return a map containing all env. variables
+   */
   @Override
-  public Map<String, String> read() {
+  public Map<String, String> get() {
     return System.getenv();
   }
 
   @Override
   public void register(Consumer<Map<String, String>> downstream) {
-    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
+    throw new IllegalStateException(
+        "The environment is read-only; you should not make this superfluous call!");
+  }
+
+  @Override
+  public void refresh() {
+    throw new IllegalStateException(
+        "The environment is read-only; you should not make this superfluous call!");
   }
 }

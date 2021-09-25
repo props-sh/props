@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import static java.lang.String.format;
 
@@ -31,12 +31,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.interfaces.Source;
 
-public class ClasspathPropertyFile implements Source {
+/** Retrieves properties from a Java properties file, located on the classpath. */
+public class ClasspathPropertyFile extends AbstractSource {
 
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;
@@ -56,7 +55,7 @@ public class ClasspathPropertyFile implements Source {
   }
 
   @Override
-  public Map<String, String> read() {
+  public Map<String, String> get() {
     try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
       if (stream != null) {
         return this.loadPropertiesFromStream(stream);
@@ -73,10 +72,5 @@ public class ClasspathPropertyFile implements Source {
     }
 
     return Collections.emptyMap();
-  }
-
-  @Override
-  public void register(Consumer<Map<String, String>> downstream) {
-    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

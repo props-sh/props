@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props.source;
 
 import static java.util.Objects.isNull;
 
@@ -33,10 +33,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import sh.props.annotations.Nullable;
 
-public interface Source {
+public interface Source extends Supplier<Map<String, String>> {
 
   /**
    * An unique identifier representing this source in the {@link sh.props.Registry}.
@@ -48,27 +48,20 @@ public interface Source {
   /**
    * Reads all known (key,value) pairs from the source.
    *
-   * @return an updated {@link Map} containing all known properties
+   * @return an updated {@link Map} containing all known key,value pairs
    */
-  Map<String, String> read();
+  @Override
+  Map<String, String> get();
 
   /**
-   * Retrieves a single value by key.
-   *
-   * @param key the key to retrieve
-   * @return a {@link String} value (serialized), or <code>null</code> if they key was not found
-   */
-  @Nullable
-  default String get(String key) {
-    return this.read().get(key);
-  }
-
-  /**
-   * Any implementing classes can decide how to implement this call.
+   * Registers a consumer to be called when the source is updated.
    *
    * @param downstream a consumer that accepts any updates this source may be sending
    */
   void register(Consumer<Map<String, String>> downstream);
+
+  /** Triggers an update of this source's key,value pairs. */
+  void refresh();
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}

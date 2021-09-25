@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import static java.lang.String.format;
 import static java.util.logging.Level.SEVERE;
@@ -34,11 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
-import sh.props.interfaces.Source;
 
-public class PropertyFile implements Source {
+/** Retrieves properties from a Java properties file, located on disk. */
+public class PropertyFile extends AbstractSource {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -58,7 +57,7 @@ public class PropertyFile implements Source {
   }
 
   @Override
-  public Map<String, String> read() {
+  public Map<String, String> get() {
     try (InputStream stream = Files.newInputStream(this.location)) {
       return this.loadPropertiesFromStream(stream);
 
@@ -67,10 +66,5 @@ public class PropertyFile implements Source {
     }
 
     return Collections.emptyMap();
-  }
-
-  @Override
-  public void register(Consumer<Map<String, String>> downstream) {
-    log.warning("onUpdate(...) not implemented, updates will not be sent downstream");
   }
 }

@@ -41,7 +41,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 
 @SuppressWarnings({"NullAway", "checkstyle:MissingJavadocMethod"})
 @Fork(value = 1, warmups = 1)
@@ -68,7 +68,7 @@ public class OwnershipBenchmark {
 
       // set an initial value
       this.source1.put("key", "v1");
-      this.source1.update();
+      this.source1.refresh();
       this.tested.put("preset", "preset-value", this.l1);
 
       // control
@@ -87,11 +87,11 @@ public class OwnershipBenchmark {
     LayerProxy l1 = new LayerProxy(source1, registry, 1);
 
     source1.put("key", "v1");
-    source1.update();
+    source1.refresh();
     blackhole.consume(tested.put("key", "v1", l1));
 
     source1.remove("key");
-    source1.update();
+    source1.refresh();
     blackhole.consume(tested.put("key", null, l1));
   }
 
