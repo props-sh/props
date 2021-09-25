@@ -37,7 +37,7 @@ import java.util.function.Consumer;
  * Abstract class that implements the downstream consumer functionality, which allows sources to
  * notify subscribing layers that the data was refreshed.
  */
-public abstract class AbstractSource implements Source, Refreshable {
+public abstract class AbstractSource implements Source, RefreshableSource {
 
   private final List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
 

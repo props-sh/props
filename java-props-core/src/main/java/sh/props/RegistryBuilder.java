@@ -26,11 +26,14 @@
 package sh.props;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
+import sh.props.source.PathBackedSource;
+import sh.props.source.RefreshableSource;
 import sh.props.source.Source;
 import sh.props.source.refresh.FileWatchSvc;
 import sh.props.source.refresh.Scheduler;
@@ -42,23 +45,121 @@ public class RegistryBuilder {
   @Nullable Scheduler scheduler = null;
 
   /**
-   * Registers a source with the current registry.
+   * Call this method if the registry should watch for file changes.
+   *
+   * @return this builder object (fluent interface)
+   * @throws IOException if the {@link FileWatchSvc} could not be initialized
+   */
+  public RegistryBuilder withFileWatchService() throws IOException {
+    // the synchronized block is probably superfluous,
+    // but nevertheless we want to prevent users from accidentally creating
+    // more than one file watching service and its corresponding executor
+    synchronized (this) {
+      if (this.fileWatchSvc == null) {
+        // initialize if necessary
+        this.fileWatchSvc = new FileWatchSvc();
+      }
+    }
+
+    return this;
+  }
+
+  /** Call this method if the registry should be allowed to periodically refresh its sources. */
+  public RegistryBuilder withScheduler() {
+    // the synchronized block is probably superfluous,
+    // but nevertheless we want to prevent users from accidentally creating
+    // more than one scheduler since we want to keep the number of threads to a minimum
+    synchronized (this) {
+      if (this.scheduler == null) {
+        // initialize a scheduler if necessary
+        this.scheduler = new Scheduler();
+      }
+    }
+
+    return this;
+  }
+
+  /**
+   * Registers a source with the current registry. The source will only be read once (eagerly) and
+   * never refreshed.
+   *
+   * <p>Use one of {@link #withSource(PathBackedSource)} or {@link #withSource(RefreshableSource,
+   * Duration)} if you'd like to refresh the source's data.
    *
    * @param source the source to register
-   * @return the builder (fluent interface)
+   * @return this builder object (fluent interface)
    */
   public RegistryBuilder withSource(Source source) {
     this.sources.addFirst(source);
     return this;
   }
 
-  public RegistryBuilder withFileWatchService() throws IOException {
-    this.fileWatchSvc = new FileWatchSvc();
+  /**
+   * Registers a source which will be periodically refreshed.
+   *
+   * <p>If {@link #withScheduler()} was not already called, it will be automatically called.
+   *
+   * @param source the source to auto-refresh
+   * @param period the duration at which the refresh should be scheduled
+   * @return this builder object (fluent interface)
+   */
+  public RegistryBuilder withSource(RefreshableSource source, Duration period) {
+    return this.withSource(source, period, period);
+  }
+
+  /**
+   * Registers a source which will be periodically refreshed.
+   *
+   * <p>If {@link #withScheduler()} was not already called, it will be automatically called.
+   *
+   * @param source the source to auto-refresh
+   * @param initialDelay the initial delay before first loading data from the source
+   * @param period the duration at which the refresh should be scheduled
+   * @return this builder object (fluent interface)
+   */
+  public RegistryBuilder withSource(
+      RefreshableSource source, Duration initialDelay, Duration period) {
+    this.sources.addFirst(source);
+
+    // initialize a scheduler if necessary
+    if (this.scheduler == null) {
+      this.withScheduler();
+    }
+
+    if (this.scheduler == null) {
+      throw new IllegalStateException(
+          "Something went seriously wrong and the scheduler could not be initialized");
+    }
+
+    // schedule the source for periodic refreshing
+    this.scheduler.refreshSourceAfter(source, initialDelay, period);
+
     return this;
   }
 
-  public RegistryBuilder withScheduler() {
-    this.scheduler = new Scheduler();
+  /**
+   * Registers a source with the current registry. If a {@link FileWatchSvc} is initialized, the
+   * source will be refreshed on any disk events (file created, modified, or deleted).
+   *
+   * @param source the source to register
+   * @return this builder object (fluent interface)
+   */
+  public RegistryBuilder withSource(PathBackedSource source) throws IOException {
+    this.sources.addFirst(source);
+
+    // ensure a file watch service is initialized
+    if (this.fileWatchSvc == null) {
+      this.withFileWatchService();
+    }
+
+    if (this.fileWatchSvc == null) {
+      throw new IllegalStateException(
+          "Something went seriously wrong and the file watch service could not be initialized");
+    }
+
+    // schedule the source for on disk updates
+    this.fileWatchSvc.register(source);
+
     return this;
   }
 
@@ -92,7 +193,12 @@ public class RegistryBuilder {
     // add the layers to the registry
     registry.setLayers(layers);
 
-    // and return a constructed registry
+    // ensure the file watch service is running
+    if (this.fileWatchSvc != null) {
+      this.fileWatchSvc.schedule();
+    }
+
+    // and return a constructed registry object
     return registry;
   }
 }

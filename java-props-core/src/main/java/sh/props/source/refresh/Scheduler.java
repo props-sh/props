@@ -29,7 +29,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
-import sh.props.source.Refreshable;
+import sh.props.source.RefreshableSource;
 import sh.props.source.refresh.util.BackgroundExecutorFactory;
 
 public class Scheduler {
@@ -56,27 +56,27 @@ public class Scheduler {
   }
 
   /**
-   * Schedules a {@link Refreshable} for periodic data refreshes. The first execution will be
+   * Schedules a {@link RefreshableSource} for periodic data refreshes. The first execution will be
    * scheduled after the specified period. If you want to immediately execute a refresh use the
-   * {@link #refreshSourceAfter(Refreshable, Duration, Duration)} method, specifying <code>
+   * {@link #refreshSourceAfter(RefreshableSource, Duration, Duration)} method, specifying <code>
    * initialDelay=0</code> .
    *
    * @param source the source to reload
    * @param period minimum duration between subsequent refreshes
    */
-  public void refreshSourceAfter(Refreshable source, Duration period) {
+  public void refreshSourceAfter(RefreshableSource source, Duration period) {
     this.refreshSourceAfter(source, period, period);
   }
 
   /**
-   * Schedules a {@link Refreshable} for periodic data refreshes.
+   * Schedules a {@link RefreshableSource} for periodic data refreshes.
    *
    * @param source the source to reload
    * @param initialDelay how long to wait before the first refresh
    * @param period minimum duration between subsequent refreshes
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public void refreshSourceAfter(Refreshable source, Duration initialDelay, Duration period) {
+  public void refreshSourceAfter(RefreshableSource source, Duration initialDelay, Duration period) {
     this.executor.scheduleAtFixedRate(
         new Trigger(source), initialDelay.toNanos(), period.toNanos(), NANOSECONDS);
   }

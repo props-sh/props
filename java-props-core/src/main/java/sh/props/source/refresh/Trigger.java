@@ -31,17 +31,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.Refreshable;
+import sh.props.source.RefreshableSource;
 
 /**
- * Convenience implementation that triggers a {@link Refreshable#refresh()} and logs any runtime
- * exceptions.
+ * Convenience implementation that triggers a {@link RefreshableSource#refresh()} and logs any
+ * runtime exceptions.
  */
 public class Trigger implements Runnable {
 
   private static final Logger log = Logger.getLogger(Trigger.class.getName());
 
-  private final Refreshable source;
+  private final RefreshableSource source;
   private final ReentrantLock concurrencyLock = new ReentrantLock();
 
   /**
@@ -49,7 +49,7 @@ public class Trigger implements Runnable {
    *
    * @param source the source that will be refreshed when this trigger executes
    */
-  public Trigger(Refreshable source) {
+  public Trigger(RefreshableSource source) {
     this.source = source;
   }
 

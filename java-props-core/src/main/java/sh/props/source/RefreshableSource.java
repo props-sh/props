@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /** Interface denoting sources that can be refreshed. */
-public interface Refreshable {
+public interface RefreshableSource extends Source {
 
   /**
    * Registers a consumer to be called when the source is updated.

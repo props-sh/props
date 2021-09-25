@@ -40,7 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Layer;
-import sh.props.source.Refreshable;
+import sh.props.source.RefreshableSource;
 import sh.props.source.Source;
 
 /**
@@ -72,20 +72,22 @@ class LayerProxy implements Layer<String> {
     this(source, registry, priority, true, Duration.ZERO);
   }
 
+  // TODO: rethink the whole lazy implementation; move to CompletableFutures+AtomicReferences
   LayerProxy(Source source, Registry registry, int priority, boolean lazy, Duration maxEagerWait) {
     this.source = source;
     this.priority = priority;
     this.registry = registry;
 
     // ensure that the layer will receive any updates from the specified source
-    if (source instanceof Refreshable) {
-      Refreshable r = (Refreshable) source;
-      r.register(this::onReload);
-    }
-
-    if (!lazy) {
-      // eagerly load values from the associated source
-      this.ensureSourceWasRead(maxEagerWait);
+    if (source instanceof RefreshableSource) {
+      ((RefreshableSource) source).register(this::onReload);
+      if (!lazy) {
+        // eagerly load values from the associated source
+        this.ensureSourceWasRead(maxEagerWait);
+      }
+    } else {
+      // the source must be eagerly read
+      this.onReload(source.get());
     }
   }
 
