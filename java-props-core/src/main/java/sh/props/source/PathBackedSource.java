@@ -28,7 +28,7 @@ package sh.props.source;
 import java.nio.file.Path;
 
 /** A special type of source which is backed by a file, on disk. */
-public interface PathBackedSource extends Source {
+public interface PathBackedSource extends Refreshable {
 
   /**
    * Returns the location, on disk, of the file backing this source.

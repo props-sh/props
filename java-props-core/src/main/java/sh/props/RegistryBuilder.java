@@ -25,16 +25,21 @@
 
 package sh.props;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
 import sh.props.source.Source;
+import sh.props.source.refresh.FileWatchSvc;
+import sh.props.source.refresh.Scheduler;
 
 public class RegistryBuilder {
 
   ArrayDeque<Source> sources = new ArrayDeque<>();
+  @Nullable FileWatchSvc fileWatchSvc = null;
+  @Nullable Scheduler scheduler = null;
 
   /**
    * Registers a source with the current registry.
@@ -42,8 +47,18 @@ public class RegistryBuilder {
    * @param source the source to register
    * @return the builder (fluent interface)
    */
-  public RegistryBuilder source(Source source) {
+  public RegistryBuilder withSource(Source source) {
     this.sources.addFirst(source);
+    return this;
+  }
+
+  public RegistryBuilder withFileWatchService() throws IOException {
+    this.fileWatchSvc = new FileWatchSvc();
+    return this;
+  }
+
+  public RegistryBuilder withScheduler() {
+    this.scheduler = new Scheduler();
     return this;
   }
 

@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -52,16 +51,6 @@ public interface Source extends Supplier<Map<String, String>> {
    */
   @Override
   Map<String, String> get();
-
-  /**
-   * Registers a consumer to be called when the source is updated.
-   *
-   * @param downstream a consumer that accepts any updates this source may be sending
-   */
-  void register(Consumer<Map<String, String>> downstream);
-
-  /** Triggers an update of this source's key,value pairs. */
-  Map<String, String> refresh();
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}

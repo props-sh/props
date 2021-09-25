@@ -26,7 +26,6 @@
 package sh.props.source;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
 /** Retrieves system properties. */
 public class SystemProperties implements Source {
@@ -44,17 +43,5 @@ public class SystemProperties implements Source {
   @Override
   public Map<String, String> get() {
     return this.readPropertiesToMap(System.getProperties());
-  }
-
-  @Override
-  public void register(Consumer<Map<String, String>> downstream) {
-    throw new IllegalStateException(
-        "The system properties are read-only; you should not make this superfluous call!");
-  }
-
-  @Override
-  public Map<String, String> refresh() {
-    throw new IllegalStateException(
-        "The system properties are read-only; you should not make this superfluous call!");
   }
 }

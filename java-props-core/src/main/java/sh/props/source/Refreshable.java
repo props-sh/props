@@ -26,27 +26,18 @@
 package sh.props.source;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
-/** Retrieves all environment variables. */
-public class Environment implements Source {
-
-  /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
-   *
-   * @return an unique id
-   */
-  @Override
-  public String id() {
-    return "env";
-  }
+/** Interface denoting sources that can be refreshed. */
+public interface Refreshable {
 
   /**
-   * Retrieves all environment variables.
+   * Registers a consumer to be called when the source is updated.
    *
-   * @return a map containing all env. variables
+   * @param downstream a consumer that accepts any updates this source may be sending
    */
-  @Override
-  public Map<String, String> get() {
-    return System.getenv();
-  }
+  void register(Consumer<Map<String, String>> downstream);
+
+  /** Triggers an update of this source's key,value pairs. */
+  Map<String, String> refresh();
 }

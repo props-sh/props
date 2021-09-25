@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source.trigger;
+package sh.props.source.refresh;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -43,7 +43,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.source.PathBackedSource;
-import sh.props.source.trigger.util.BackgroundExecutorFactory;
+import sh.props.source.refresh.util.BackgroundExecutorFactory;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
@@ -60,8 +60,8 @@ public class FileWatchSvc implements Runnable {
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with
-   * a single thread.
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
+   * single thread.
    */
   public FileWatchSvc() throws IOException {
     this(BackgroundExecutorFactory.create(1));
@@ -99,9 +99,7 @@ public class FileWatchSvc implements Runnable {
     }
   }
 
-  /**
-   * Main file-watching logic.
-   */
+  /** Main file-watching logic. */
   @Override
   public void run() {
     WatchKey key = null;
@@ -116,7 +114,8 @@ public class FileWatchSvc implements Runnable {
             // retrieve the file
             .map(
                 event -> {
-                  @SuppressWarnings("unchecked") WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                  @SuppressWarnings("unchecked")
+                  WatchEvent<Path> ev = (WatchEvent<Path>) event;
                   return ev.context();
                 })
 
@@ -150,9 +149,7 @@ public class FileWatchSvc implements Runnable {
     }
   }
 
-  /**
-   * Schedules the file watching logic for execution.
-   */
+  /** Schedules the file watching logic for execution. */
   public void schedule() {
     this.executor.execute(this);
   }

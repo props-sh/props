@@ -53,7 +53,8 @@ class SyncStoreTest {
     InMemory source1 = new InMemory();
     InMemory source2 = new InMemory();
 
-    Registry registry = new RegistryBuilder().source(source1).source(source2).build(syncStore);
+    Registry registry =
+        new RegistryBuilder().withSource(source1).withSource(source2).build(syncStore);
 
     // ACT/ASSERT
 

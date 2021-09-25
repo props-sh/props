@@ -61,12 +61,12 @@ public class ClasspathPropertyFile extends AbstractSource {
         return this.loadPropertiesFromStream(stream);
       }
 
-      // the stream could not be opened
-      log.warning(() -> format("Could not find in classpath: %s", this.location));
+      // the stream could not be read
+      log.log(Level.WARNING, () -> format("Could not find in classpath: %s", this.location));
 
     } catch (IOException | IllegalArgumentException e) {
       log.log(
-          Level.SEVERE,
+          Level.WARNING,
           e,
           () -> format("Could not read properties from classpath: %s", this.location));
     }

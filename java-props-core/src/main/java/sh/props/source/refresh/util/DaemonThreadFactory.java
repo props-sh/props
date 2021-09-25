@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source.trigger.util;
+package sh.props.source.refresh.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;

@@ -26,7 +26,7 @@
 package sh.props.source;
 
 import static java.lang.String.format;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,11 +41,6 @@ public class PropertyFile extends AbstractSource implements PathBackedSource {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
-
-  @Override
-  public String id() {
-    return "file://" + this.location.toString();
-  }
 
   /**
    * Constructs a file-based {@link Source}.
@@ -62,10 +57,20 @@ public class PropertyFile extends AbstractSource implements PathBackedSource {
       return this.loadPropertiesFromStream(stream);
 
     } catch (IOException | IllegalArgumentException e) {
-      log.log(SEVERE, e, () -> format("Could not read properties from: %s", this.location));
+      log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));
     }
 
     return Collections.emptyMap();
+  }
+
+  /**
+   * Returns an unique identifier designating this property file.
+   *
+   * @return an unique id pointing to the property file on disk
+   */
+  @Override
+  public String id() {
+    return "file://" + this.location.toString();
   }
 
   /**
