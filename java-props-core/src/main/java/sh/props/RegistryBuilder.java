@@ -25,6 +25,7 @@
 
 package sh.props;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
@@ -32,10 +33,16 @@ import sh.props.interfaces.Source;
 
 public class RegistryBuilder {
 
-  List<Source> sources = new ArrayList<>();
+  ArrayDeque<Source> sources = new ArrayDeque<>();
 
+  /**
+   * Registers a source with the current registry.
+   *
+   * @param source the source to register
+   * @return the builder (fluent interface)
+   */
   public RegistryBuilder source(Source source) {
-    this.sources.add(source);
+    this.sources.addFirst(source);
     return this;
   }
 
@@ -46,19 +53,30 @@ public class RegistryBuilder {
    */
   public Registry build() {
     Registry registry = new Registry();
-    int counter = 0;
-    @Nullable Layer tail = null;
 
+    int priority = this.sources.size();
+    @Nullable Layer prev = null;
+
+    List<Layer> layers = new ArrayList<>(this.sources.size());
     for (Source source : this.sources) {
-      Layer layer = new Layer(source, registry, counter++);
-      layer.prev = tail;
-      if (tail != null) {
-        tail.next = layer;
-      }
-      tail = layer;
-    }
-    registry.topLayer = tail;
+      // wrap each source in a layer
+      Layer layer = new Layer(source, registry, priority--);
 
+      // link the previous and current layer
+      layer.prev = prev;
+      if (prev != null) {
+        prev.next = layer;
+      }
+      prev = layer;
+
+      // store the layer in an array list
+      layers.add(layer);
+    }
+
+    // add the layers to the registry
+    registry.setLayers(layers);
+
+    // and return a constructed registry
     return registry;
   }
 }

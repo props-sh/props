@@ -47,7 +47,7 @@ class Layer {
 
   private final HashMap<String, String> store = new HashMap<>();
   private final Source source;
-  final LayerOwnership registry;
+  final Registry registry;
   private final int priority;
 
   // tracks how many times the source's data was reloaded
@@ -66,8 +66,8 @@ class Layer {
 
   Layer(Source source, Registry registry, int priority, boolean lazy, Duration maxEagerWait) {
     this.source = source;
-    this.registry = registry;
     this.priority = priority;
+    this.registry = registry;
 
     // ensure that the layer will receive any updates from the specified source
     this.source.register(this::onReload);
@@ -174,7 +174,6 @@ class Layer {
     while (it.hasNext()) {
       var entry = it.next();
       var existingKey = entry.getKey();
-      var oldValue = entry.getValue();
 
       // check if the updated map still contains this key
       if (!freshValues.containsKey(existingKey)) {
@@ -183,7 +182,7 @@ class Layer {
         it.remove();
 
         // and notify the registry that this layer no longer defines this key
-        this.registry.unbindKey(existingKey, oldValue, this);
+        this.registry.put(existingKey, null, this);
         continue;
       }
 
@@ -196,7 +195,7 @@ class Layer {
         entry.setValue(maybeNewValue);
 
         // and notify that registry that we have a new value
-        this.registry.updateKey(existingKey, this);
+        this.registry.put(existingKey, maybeNewValue, this);
 
         // then remove it from the new map
         // so that we end up with a map containing only new entries
@@ -208,7 +207,7 @@ class Layer {
     this.store.putAll(freshValues);
 
     // and notify the registry of any keys that this layer now defines
-    freshValues.keySet().forEach(key -> this.registry.bindKey(key, this));
+    freshValues.forEach((key, value) -> this.registry.put(key, value, this));
 
     // count the number of times that the data was reloaded from the source
     this.incrementDataReloadedCounter();

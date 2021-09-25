@@ -131,7 +131,7 @@ public abstract class KeyOwnership {
           if (value == null && priority == oldPriority) {
             // it was either unset from the owning layer
             // in which case we need to find a lower priority layer that defines this key
-            ret = findPrevious(key, current);
+            ret = findNextPotentialOwner(key, current);
 
           } else if (value == null) {
             // it was unset in a higher priority layer
@@ -161,9 +161,9 @@ public abstract class KeyOwnership {
    * @return a {@link ValueLayer} pair if found, or <code>null</code> if no layer defines the key
    */
   @Nullable
-  private static ValueLayer findPrevious(String key, ValueLayer vl) {
+  private static ValueLayer findNextPotentialOwner(String key, ValueLayer vl) {
     Layer l = vl.layer;
-    // search all the previous layers for the key
+    // search all layers with lower priority for the key
     while (l.prev != null) {
       l = l.prev;
       Pair pair = l.keyIsMapped(key);

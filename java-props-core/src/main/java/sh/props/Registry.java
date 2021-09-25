@@ -25,11 +25,25 @@
 
 package sh.props;
 
+import java.util.Collections;
+import java.util.List;
 import sh.props.annotations.Nullable;
 
-public class Registry extends LayerOwnership {
+public class Registry extends KeyOwnership {
 
-  @Nullable Layer topLayer = null;
+  List<Layer> layers = Collections.emptyList();
+
+  /** Ensures a registry can only be constructed through a builder. */
+  Registry() {}
+
+  /**
+   * Used during initialization to add the layers used by this registry.
+   *
+   * @param layers layers to define
+   */
+  void setLayers(List<Layer> layers) {
+    this.layers = layers;
+  }
 
   /**
    * Retrieves the value for the specified key.
@@ -41,20 +55,22 @@ public class Registry extends LayerOwnership {
    */
   @Nullable
   public <T> T get(String key, Class<T> clz) {
-    // finds the owner
-    Layer owner = this.owners.get(key);
+    // finds the value and owning layer
+    ValueLayer valueLayer = this.get(key);
 
-    // no owner found, the key does not exist in the registry
-    if (owner == null) {
+    // no value found, the key does not exist in the registry
+    if (valueLayer == null) {
       return null;
     }
 
-    // retrieves the value
-    String effectiveValue = owner.get(key);
-
-    // casts it
+    // casts the effective value
     // TODO: this won't work in production due to effectiveValue always being a string
     //       and will require props v1's implementation
-    return clz.cast(effectiveValue);
+    return clz.cast(valueLayer.value);
+  }
+
+  @Override
+  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+    // TODO: implement
   }
 }
