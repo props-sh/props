@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.source.Source;
-import sh.props.thread.BackgroundExecutorFactory;
+import sh.props.source.trigger.util.BackgroundExecutorFactory;
 
 public class Augment {
 

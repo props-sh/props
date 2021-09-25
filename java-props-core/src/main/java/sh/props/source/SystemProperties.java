@@ -53,7 +53,7 @@ public class SystemProperties implements Source {
   }
 
   @Override
-  public void refresh() {
+  public Map<String, String> refresh() {
     throw new IllegalStateException(
         "The system properties are read-only; you should not make this superfluous call!");
   }

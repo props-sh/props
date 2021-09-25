@@ -25,6 +25,8 @@
 
 package sh.props.source;
 
+import static java.lang.String.format;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,8 +53,14 @@ public abstract class AbstractSource implements Source {
 
   /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
   @Override
-  public void refresh() {
+  public Map<String, String> refresh() {
     Map<String, String> data = this.get();
     this.downstream.forEach(d -> d.accept(Collections.unmodifiableMap(data)));
+    return data;
+  }
+
+  @Override
+  public String toString() {
+    return format("Source(%s)", this.id());
   }
 }

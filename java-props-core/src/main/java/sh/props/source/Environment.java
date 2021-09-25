@@ -58,7 +58,7 @@ public class Environment implements Source {
   }
 
   @Override
-  public void refresh() {
+  public Map<String, String> refresh() {
     throw new IllegalStateException(
         "The environment is read-only; you should not make this superfluous call!");
   }

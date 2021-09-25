@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.thread;
+package sh.props.source.trigger.util;
 
 import static java.lang.String.format;
 

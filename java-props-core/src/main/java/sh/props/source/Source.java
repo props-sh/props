@@ -61,7 +61,7 @@ public interface Source extends Supplier<Map<String, String>> {
   void register(Consumer<Map<String, String>> downstream);
 
   /** Triggers an update of this source's key,value pairs. */
-  void refresh();
+  Map<String, String> refresh();
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
