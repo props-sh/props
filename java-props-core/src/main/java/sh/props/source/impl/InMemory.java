@@ -39,6 +39,9 @@ public class InMemory implements Source {
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
+  // TODO: move this to a common mix-in
+  List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
+
   @Override
   public String id() {
     return "memory";
@@ -66,8 +69,14 @@ public class InMemory implements Source {
     return this.store.get(key);
   }
 
-  /** Stores the specified (key, value) pair in memory. */
-  public void put(String key, String value) {
+  /**
+   * Stores the specified (key, value) pair in memory.
+   *
+   * @param key the key to update
+   * @param value the value to set; pass <code>null</code> if you want to remove the key,value
+   *     mapping
+   */
+  public void put(String key, @Nullable String value) {
     if (value == null) {
       this.store.remove(key);
       return;
@@ -76,12 +85,14 @@ public class InMemory implements Source {
     this.store.put(key, value);
   }
 
-  /** Removes the specified key from memory. */
+  /**
+   * Removes the specified key from memory.
+   *
+   * @param key the key to remove from the store
+   */
   public void remove(String key) {
-    this.store.remove(key);
+    this.put(key, null);
   }
-
-  List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
 
   @Override
   public void register(Consumer<Map<String, String>> downstream) {

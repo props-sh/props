@@ -39,11 +39,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Layer;
 import sh.props.interfaces.Source;
 
-class Layer {
+/**
+ * Implements the main logic that allows a {@link Registry} to retrieve effective values from
+ * multiple {@link Source}s.
+ *
+ * <p>This class does not permit null values.
+ */
+class LayerProxy implements Layer<String> {
 
-  private static final Logger log = Logger.getLogger(Layer.class.getName());
+  private static final Logger log = Logger.getLogger(LayerProxy.class.getName());
 
   private final HashMap<String, String> store = new HashMap<>();
   private final Source source;
@@ -57,14 +64,14 @@ class Layer {
   @SuppressWarnings("NonAtomicVolatileUpdate")
   private volatile long counterDataReloaded = 0;
 
-  @Nullable Layer prev;
-  @Nullable Layer next;
+  @Nullable LayerProxy prev;
+  @Nullable LayerProxy next;
 
-  Layer(Source source, Registry registry, int priority) {
+  LayerProxy(Source source, Registry registry, int priority) {
     this(source, registry, priority, true, Duration.ZERO);
   }
 
-  Layer(Source source, Registry registry, int priority, boolean lazy, Duration maxEagerWait) {
+  LayerProxy(Source source, Registry registry, int priority, boolean lazy, Duration maxEagerWait) {
     this.source = source;
     this.priority = priority;
     this.registry = registry;
@@ -116,18 +123,47 @@ class Layer {
    *
    * @return an unique identifier
    */
+  @Override
   public final String id() {
     return this.source.id();
   }
-  // decides the priority of this layer, in the current registry
 
+  @Override
+  @Nullable
+  public Layer<String> next() {
+    return this.next;
+  }
+
+  @Override
+  @Nullable
+  public Layer<String> prev() {
+    return this.prev;
+  }
+
+  /**
+   * Determines the priority of this layer in the current registry.
+   *
+   * @return the priority, higher values being more important
+   */
+  @Override
   public int priority() {
     return this.priority;
   }
-  // retrieves the value for the specified key, from this layer alone
 
+  @Override
+  public Registry registry() {
+    return this.registry;
+  }
+
+  /**
+   * Retrieves the value associated with a key.
+   *
+   * @param key the key to retrieve
+   * @return a value, or <code>null</code> if not found
+   */
+  @Override
   @Nullable
-  String get(String key) {
+  public String get(String key) {
     if (this.counterDataReloaded == 0) {
       // notify the user that they have read values too soon
       log.warning(
@@ -139,28 +175,6 @@ class Layer {
     }
 
     return this.store.get(key);
-  }
-
-  static class Pair {
-
-    final String key;
-    @Nullable final String value;
-
-    public Pair(String key, @Nullable String value) {
-      this.key = key;
-      this.value = value;
-    }
-  }
-
-  @Nullable
-  synchronized Pair keyIsMapped(String key) {
-    // ensure that
-    String value = this.store.get(key);
-    if (value == null && !this.store.containsKey(key)) {
-      // they key is not mapped
-      return null;
-    }
-    return new Pair(key, value);
   }
 
   // processes the reloaded data
@@ -217,22 +231,5 @@ class Layer {
   @SuppressWarnings("NonAtomicVolatileUpdate")
   private void incrementDataReloadedCounter() {
     this.counterDataReloaded++;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof Layer)) {
-      return false;
-    }
-    Layer layer = (Layer) o;
-    return this.registry.equals(layer.registry) && Objects.equals(this.id(), layer.id());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.registry, this.id());
   }
 }

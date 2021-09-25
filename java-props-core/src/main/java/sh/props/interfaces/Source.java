@@ -72,8 +72,10 @@ public interface Source {
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
-   * containing all key->value mappings.
+   * containing all key,value mappings.
    *
+   * @param stream the stream to process
+   * @return a valid map of properties
    * @throws IllegalArgumentException if a null <code>InputStream</code> was passed
    * @throws IOException if the <code>InputStream</code> cannot be read
    */
@@ -90,10 +92,13 @@ public interface Source {
 
   /**
    * Iterates over all the input {@link Properties} and returns a {@link Map} containing all
-   * key->value mappings.
+   * key,value mappings.
+   *
+   * @param properties the properties object to read
+   * @return a map containing all the defined properties
    */
   default Map<String, String> readPropertiesToMap(Properties properties) {
     return properties.stringPropertyNames().stream()
-        .collect(Collectors.toUnmodifiableMap(Function.identity(), System::getProperty));
+        .collect(Collectors.toUnmodifiableMap(Function.identity(), properties::getProperty));
   }
 }

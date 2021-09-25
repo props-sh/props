@@ -35,11 +35,11 @@ import static org.mockito.Mockito.spy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sh.props.KeyOwnership.ValueLayer;
+import sh.props.interfaces.ValueLayerTuple;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
-class KeyOwnershipTest {
+class SyncStoreTest {
 
   @BeforeEach
   void setUp() {}
@@ -50,81 +50,81 @@ class KeyOwnershipTest {
   @Test
   void ensureMultiLayerOperations() {
     // ARRANGE
-    KeyOwnership tested = spy(KeyOwnership.class);
+    SyncStore tested = spy(SyncStore.class);
 
     Registry registry = mock(Registry.class);
 
     InMemory source1 = new InMemory();
-    Layer l1 = new Layer(source1, registry, 1);
+    LayerProxy l1 = new LayerProxy(source1, registry, 1);
 
     InMemory source2 = new InMemory();
-    Layer l2 = new Layer(source2, registry, 2);
+    LayerProxy l2 = new LayerProxy(source2, registry, 2);
     l1.next = l2;
     l2.prev = l1;
 
     // ACT/ASSERT
 
     // the value is not defined yet
-    KeyOwnershipTest.assertValueIs(tested.get("key"), null);
-    ValueLayer res;
+    SyncStoreTest.assertValueIs(tested.get("key"), null);
+    ValueLayerTuple<String> res;
 
     // Layer 1 defines v1
     source1.put("key", "v1");
     source1.update();
     res = tested.put("key", "v1", l1);
-    KeyOwnershipTest.assertValueIs(res, "v1");
-    KeyOwnershipTest.assertValueIs(tested.get("key"), "v1");
+    SyncStoreTest.assertValueIs(res, "v1");
+    SyncStoreTest.assertValueIs(tested.get("key"), "v1");
 
     // Layer 2 defines v2
     source2.put("key", "v2");
     source2.update();
     res = tested.put("key", "v2", l2);
-    KeyOwnershipTest.assertValueIs(res, "v2");
-    KeyOwnershipTest.assertValueIs(tested.get("key"), "v2");
+    SyncStoreTest.assertValueIs(res, "v2");
+    SyncStoreTest.assertValueIs(tested.get("key"), "v2");
 
     // Layer 1 unsets v1
     source1.remove("key");
     source1.update();
     res = tested.put("key", null, l1);
-    KeyOwnershipTest.assertValueIs(res, "v2");
-    KeyOwnershipTest.assertValueIs(tested.get("key"), "v2");
+    SyncStoreTest.assertValueIs(res, "v2");
+    SyncStoreTest.assertValueIs(tested.get("key"), "v2");
 
     // Layer 1 defines v3
     source1.put("key", "v3");
     source1.update();
     res = tested.put("key", "v3", l1);
-    KeyOwnershipTest.assertValueIs(res, "v2");
-    KeyOwnershipTest.assertValueIs(tested.get("key"), "v2");
+    SyncStoreTest.assertValueIs(res, "v2");
+    SyncStoreTest.assertValueIs(tested.get("key"), "v2");
 
     // Layer 2 updates v4
     source2.put("key", "v4");
     source2.update();
     res = tested.put("key", "v4", l2);
-    KeyOwnershipTest.assertValueIs(res, "v4");
-    KeyOwnershipTest.assertValueIs(tested.get("key"), "v4");
+    SyncStoreTest.assertValueIs(res, "v4");
+    SyncStoreTest.assertValueIs(tested.get("key"), "v4");
 
     // Layer 2 unsets v4
     source2.remove("key");
     source2.update();
     res = tested.put("key", null, l2);
-    KeyOwnershipTest.assertValueIs(res, "v3");
-    KeyOwnershipTest.assertValueIs(tested.get("key"), "v3");
+    SyncStoreTest.assertValueIs(res, "v3");
+    SyncStoreTest.assertValueIs(tested.get("key"), "v3");
 
     // Layer 1 unsets v3
     source1.remove("key");
     source1.update();
     res = tested.put("key", null, l1);
-    KeyOwnershipTest.assertValueIs(res, null);
-    KeyOwnershipTest.assertValueIs(tested.get("key"), null);
+    SyncStoreTest.assertValueIs(res, null);
+    SyncStoreTest.assertValueIs(tested.get("key"), null);
   }
 
-  private static void assertValueIs(ValueLayer result, String value) {
+  private static void assertValueIs(ValueLayerTuple<String> result, String value) {
     if (value == null) {
       assertThat(result, nullValue());
       return;
     }
 
     assertThat(result, notNullValue());
-    assertThat(result.value, equalTo(value));
+    assertThat(result.value(), equalTo(value));
   }
 }

@@ -48,7 +48,11 @@ public class PropertyFile implements Source {
     return "file://" + this.location.toString();
   }
 
-  /** Constructs a file-based {@link Source}. */
+  /**
+   * Constructs a file-based {@link Source}.
+   *
+   * @param location the path, on disk, of the property file
+   */
   public PropertyFile(Path location) {
     this.location = location;
   }

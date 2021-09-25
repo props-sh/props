@@ -23,35 +23,14 @@
  *
  */
 
-package sh.props.thread;
+package sh.props.interfaces;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import sh.props.annotations.Nullable;
 
-/** Creates daemon {@link Thread}s. */
-public class DaemonThreadFactory implements ThreadFactory {
+public interface Datastore<T> {
 
-  private final ThreadFactory factory;
+  @Nullable
+  ValueLayerTuple<T> get(String key);
 
-  /** Spawns threads using the default {@link ThreadFactory}. */
-  public DaemonThreadFactory() {
-    this(Executors.defaultThreadFactory());
-  }
-
-  /**
-   * Allows a custom {@link ThreadFactory} to be specified.
-   *
-   * @param factory a custom thread factory
-   */
-  public DaemonThreadFactory(ThreadFactory factory) {
-    this.factory = factory;
-  }
-
-  /** Creates a new daemon {@link Thread}. */
-  @Override
-  public Thread newThread(Runnable runnable) {
-    Thread thread = this.factory.newThread(runnable);
-    thread.setDaemon(true);
-    return thread;
-  }
+  void sendUpdate(String key, @Nullable T value, @Nullable Layer<T> layer);
 }

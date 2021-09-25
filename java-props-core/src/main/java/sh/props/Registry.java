@@ -28,10 +28,12 @@ package sh.props;
 import java.util.Collections;
 import java.util.List;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Layer;
+import sh.props.interfaces.ValueLayerTuple;
 
-public class Registry extends KeyOwnership {
+public class Registry extends SyncStore {
 
-  List<Layer> layers = Collections.emptyList();
+  List<LayerProxy> layers = Collections.emptyList();
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry() {}
@@ -41,7 +43,7 @@ public class Registry extends KeyOwnership {
    *
    * @param layers layers to define
    */
-  void setLayers(List<Layer> layers) {
+  void setLayers(List<LayerProxy> layers) {
     this.layers = layers;
   }
 
@@ -56,7 +58,7 @@ public class Registry extends KeyOwnership {
   @Nullable
   public <T> T get(String key, Class<T> clz) {
     // finds the value and owning layer
-    ValueLayer valueLayer = this.get(key);
+    ValueLayerTuple<String> valueLayer = this.get(key);
 
     // no value found, the key does not exist in the registry
     if (valueLayer == null) {
@@ -66,7 +68,7 @@ public class Registry extends KeyOwnership {
     // casts the effective value
     // TODO: this won't work in production due to effectiveValue always being a string
     //       and will require props v1's implementation
-    return clz.cast(valueLayer.value);
+    return clz.cast(valueLayer.value());
   }
 
   @Override

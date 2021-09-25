@@ -45,6 +45,9 @@ public class BackgroundExecutorFactory {
    *
    * <p>Any such executors will attempt graceful shutdown when instructed and will wait for any
    * current requests to complete, up to the default {@link #DEFAULT_GRACE_PERIOD}.
+   *
+   * @param threads the number of threads in the pool
+   * @return an initialized scheduled executor
    */
   public static ScheduledExecutorService create(int threads) {
     return create(threads, DEFAULT_GRACE_PERIOD);
@@ -55,6 +58,11 @@ public class BackgroundExecutorFactory {
    *
    * <p>Any such executors will attempt graceful shutdown when instructed and will wait for any
    * current requests to complete, up to the specified grace period (millisecond granularity).
+   *
+   * @param threads the number of threads in the pool
+   * @param shutdownGracePeriod the maximum grace period before forcefully shutting down the
+   *     executor
+   * @return an initialized scheduled executor
    */
   public static ScheduledExecutorService create(int threads, Duration shutdownGracePeriod) {
     var executor = Executors.newScheduledThreadPool(threads, new DaemonThreadFactory());
@@ -70,6 +78,9 @@ public class BackgroundExecutorFactory {
   /**
    * Gracefully terminate the specified {@link ScheduledExecutorService}, waiting for the specified
    * grace period (millisecond granularity).
+   *
+   * @param executor the executor to shutdown
+   * @param gracePeriod the maximum grace period before forcing a shutdown
    */
   public static void shutdown(ExecutorService executor, Duration gracePeriod) {
     boolean ok = true;

@@ -55,12 +55,12 @@ public class RegistryBuilder {
     Registry registry = new Registry();
 
     int priority = this.sources.size();
-    @Nullable Layer prev = null;
+    @Nullable LayerProxy prev = null;
 
-    List<Layer> layers = new ArrayList<>(this.sources.size());
+    List<LayerProxy> layers = new ArrayList<>(this.sources.size());
     for (Source source : this.sources) {
       // wrap each source in a layer
-      Layer layer = new Layer(source, registry, priority--);
+      LayerProxy layer = new LayerProxy(source, registry, priority--);
 
       // link the previous and current layer
       layer.prev = prev;

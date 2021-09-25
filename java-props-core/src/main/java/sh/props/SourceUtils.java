@@ -53,6 +53,7 @@ public class SourceUtils {
   /**
    * Reads all lines from an {@link InputStream} that specifies multiple sources.
    *
+   * @param stream the stream to read the resolver config from
    * @return a list of {@link Source}s
    */
   public static List<Source> readResolverConfig(InputStream stream) {

@@ -55,16 +55,16 @@ public class OwnershipBenchmark {
 
     public Map<String, String> control;
     public Registry registry;
-    public KeyOwnership tested;
+    public SyncStore tested;
     public InMemory source1;
-    public Layer l1;
+    public LayerProxy l1;
 
     @Setup(Level.Invocation)
     public void setUp() {
       this.registry = mock(Registry.class);
-      this.tested = spy(KeyOwnership.class);
+      this.tested = spy(SyncStore.class);
       this.source1 = new InMemory();
-      this.l1 = new Layer(this.source1, this.registry, 1);
+      this.l1 = new LayerProxy(this.source1, this.registry, 1);
 
       // set an initial value
       this.source1.put("key", "v1");
@@ -81,10 +81,10 @@ public class OwnershipBenchmark {
   @OutputTimeUnit(TimeUnit.SECONDS)
   public static void setUnset(Blackhole blackhole) {
     Registry registry = mock(Registry.class);
-    KeyOwnership tested = spy(KeyOwnership.class);
+    SyncStore tested = spy(SyncStore.class);
 
     InMemory source1 = new InMemory();
-    Layer l1 = new Layer(source1, registry, 1);
+    LayerProxy l1 = new LayerProxy(source1, registry, 1);
 
     source1.put("key", "v1");
     source1.update();

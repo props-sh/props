@@ -46,7 +46,11 @@ public class ClasspathPropertyFile implements Source {
     return "classpath://" + this.location;
   }
 
-  /** Constructs a {@link Source} which reads values from a property file in the classpath. */
+  /**
+   * Constructs a {@link Source} which reads values from a property file in the classpath.
+   *
+   * @param location the classpath location of the required properties resource
+   */
   public ClasspathPropertyFile(String location) {
     this.location = location;
   }
