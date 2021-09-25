@@ -23,6 +23,17 @@
  *
  */
 
-package sh.props.source.old;
+package sh.props.source;
 
-public class PathBackedSource {}
+import java.nio.file.Path;
+
+/** A special type of source which is backed by a file, on disk. */
+public interface PathBackedSource extends Source {
+
+  /**
+   * Returns the location, on disk, of the file backing this source.
+   *
+   * @return a non-null {@link Path} pointing to a file on disk
+   */
+  Path backingPath();
+}

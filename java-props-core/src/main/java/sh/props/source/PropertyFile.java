@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /** Retrieves properties from a Java properties file, located on disk. */
-public class PropertyFile extends AbstractSource {
+public class PropertyFile extends AbstractSource implements PathBackedSource {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -66,5 +66,15 @@ public class PropertyFile extends AbstractSource {
     }
 
     return Collections.emptyMap();
+  }
+
+  /**
+   * Returns the location, on disk, of the file backing this source.
+   *
+   * @return a non-null {@link Path} pointing to a file on disk
+   */
+  @Override
+  public Path backingPath() {
+    return this.location;
   }
 }
