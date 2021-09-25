@@ -196,7 +196,7 @@ class LayerProxy implements Layer<String> {
         it.remove();
 
         // and notify the registry that this layer no longer defines this key
-        this.registry.put(existingKey, null, this);
+        this.registry.store.put(existingKey, null, this);
         continue;
       }
 
@@ -209,7 +209,7 @@ class LayerProxy implements Layer<String> {
         entry.setValue(maybeNewValue);
 
         // and notify that registry that we have a new value
-        this.registry.put(existingKey, maybeNewValue, this);
+        this.registry.store.put(existingKey, maybeNewValue, this);
 
         // then remove it from the new map
         // so that we end up with a map containing only new entries
@@ -221,7 +221,7 @@ class LayerProxy implements Layer<String> {
     this.store.putAll(freshValues);
 
     // and notify the registry of any keys that this layer now defines
-    freshValues.forEach((key, value) -> this.registry.put(key, value, this));
+    freshValues.forEach((key, value) -> this.registry.store.put(key, value, this));
 
     // count the number of times that the data was reloaded from the source
     this.incrementDataReloadedCounter();
@@ -231,5 +231,10 @@ class LayerProxy implements Layer<String> {
   @SuppressWarnings("NonAtomicVolatileUpdate")
   private void incrementDataReloadedCounter() {
     this.counterDataReloaded++;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Layer(id=%s, priority=%d)", this.id(), this.priority);
   }
 }

@@ -29,6 +29,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Datastore;
 import sh.props.interfaces.Source;
 
 public class RegistryBuilder {
@@ -51,11 +52,11 @@ public class RegistryBuilder {
    *
    * @return a configured {@link Registry} object
    */
-  public Registry build() {
-    Registry registry = new Registry();
+  public Registry build(Datastore<String> store) {
+    Registry registry = new Registry(store);
 
     int priority = this.sources.size();
-    @Nullable LayerProxy prev = null;
+    @Nullable LayerProxy next = null;
 
     List<LayerProxy> layers = new ArrayList<>(this.sources.size());
     for (Source source : this.sources) {
@@ -63,11 +64,11 @@ public class RegistryBuilder {
       LayerProxy layer = new LayerProxy(source, registry, priority--);
 
       // link the previous and current layer
-      layer.prev = prev;
-      if (prev != null) {
-        prev.next = layer;
+      layer.next = next;
+      if (next != null) {
+        next.prev = layer;
       }
-      prev = layer;
+      next = layer;
 
       // store the layer in an array list
       layers.add(layer);

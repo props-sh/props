@@ -32,5 +32,8 @@ public interface Datastore<T> {
   @Nullable
   ValueLayerTuple<T> get(String key);
 
+  @Nullable
+  ValueLayerTuple<String> put(String key, @Nullable T value, Layer<T> layer);
+
   void sendUpdate(String key, @Nullable T value, @Nullable Layer<T> layer);
 }

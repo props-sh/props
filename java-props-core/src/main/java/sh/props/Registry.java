@@ -28,15 +28,18 @@ package sh.props;
 import java.util.Collections;
 import java.util.List;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Layer;
+import sh.props.interfaces.Datastore;
 import sh.props.interfaces.ValueLayerTuple;
 
-public class Registry extends SyncStore {
+public class Registry {
 
+  final Datastore<String> store;
   List<LayerProxy> layers = Collections.emptyList();
 
   /** Ensures a registry can only be constructed through a builder. */
-  Registry() {}
+  Registry(Datastore<String> store) {
+    this.store = store;
+  }
 
   /**
    * Used during initialization to add the layers used by this registry.
@@ -58,7 +61,7 @@ public class Registry extends SyncStore {
   @Nullable
   public <T> T get(String key, Class<T> clz) {
     // finds the value and owning layer
-    ValueLayerTuple<String> valueLayer = this.get(key);
+    ValueLayerTuple<String> valueLayer = this.store.get(key);
 
     // no value found, the key does not exist in the registry
     if (valueLayer == null) {
@@ -71,8 +74,8 @@ public class Registry extends SyncStore {
     return clz.cast(valueLayer.value());
   }
 
-  @Override
-  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-    // TODO: implement
-  }
+  //  @Override
+  //  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+  //    // TODO: implement
+  //  }
 }

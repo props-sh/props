@@ -83,6 +83,8 @@ public abstract class SyncStore implements Datastore<String> {
    * @return a {@link ValueLayerTuple} representing the new owner, or <code>null</code> if no other
    *     layer defines the key
    */
+  @Override
+  @Nullable
   public ValueLayerTuple<String> put(String key, @Nullable String value, Layer<String> layer) {
     return this.effectiveValues.compute(
         key,

@@ -29,13 +29,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sh.props.interfaces.ValueLayerTuple;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
@@ -50,81 +48,61 @@ class SyncStoreTest {
   @Test
   void ensureMultiLayerOperations() {
     // ARRANGE
-    SyncStore tested = spy(SyncStore.class);
-
-    Registry registry = mock(Registry.class);
+    SyncStore syncStore = spy(SyncStore.class);
 
     InMemory source1 = new InMemory();
-    LayerProxy l1 = new LayerProxy(source1, registry, 1);
-
     InMemory source2 = new InMemory();
-    LayerProxy l2 = new LayerProxy(source2, registry, 2);
-    l1.next = l2;
-    l2.prev = l1;
+
+    Registry registry = new RegistryBuilder().source(source1).source(source2).build(syncStore);
 
     // ACT/ASSERT
 
     // the value is not defined yet
-    SyncStoreTest.assertValueIs(tested.get("key"), null);
-    ValueLayerTuple<String> res;
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), null);
 
     // Layer 1 defines v1
     source1.put("key", "v1");
     source1.update();
-    res = tested.put("key", "v1", l1);
-    SyncStoreTest.assertValueIs(res, "v1");
-    SyncStoreTest.assertValueIs(tested.get("key"), "v1");
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v1");
 
     // Layer 2 defines v2
     source2.put("key", "v2");
     source2.update();
-    res = tested.put("key", "v2", l2);
-    SyncStoreTest.assertValueIs(res, "v2");
-    SyncStoreTest.assertValueIs(tested.get("key"), "v2");
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
 
     // Layer 1 unsets v1
     source1.remove("key");
     source1.update();
-    res = tested.put("key", null, l1);
-    SyncStoreTest.assertValueIs(res, "v2");
-    SyncStoreTest.assertValueIs(tested.get("key"), "v2");
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
 
     // Layer 1 defines v3
     source1.put("key", "v3");
     source1.update();
-    res = tested.put("key", "v3", l1);
-    SyncStoreTest.assertValueIs(res, "v2");
-    SyncStoreTest.assertValueIs(tested.get("key"), "v2");
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
 
     // Layer 2 updates v4
     source2.put("key", "v4");
     source2.update();
-    res = tested.put("key", "v4", l2);
-    SyncStoreTest.assertValueIs(res, "v4");
-    SyncStoreTest.assertValueIs(tested.get("key"), "v4");
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v4");
 
     // Layer 2 unsets v4
     source2.remove("key");
     source2.update();
-    res = tested.put("key", null, l2);
-    SyncStoreTest.assertValueIs(res, "v3");
-    SyncStoreTest.assertValueIs(tested.get("key"), "v3");
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v3");
 
     // Layer 1 unsets v3
     source1.remove("key");
     source1.update();
-    res = tested.put("key", null, l1);
-    SyncStoreTest.assertValueIs(res, null);
-    SyncStoreTest.assertValueIs(tested.get("key"), null);
+    SyncStoreTest.assertValueIs(registry.get("key", String.class), null);
   }
 
-  private static void assertValueIs(ValueLayerTuple<String> result, String value) {
+  private static void assertValueIs(String result, String value) {
     if (value == null) {
       assertThat(result, nullValue());
       return;
     }
 
     assertThat(result, notNullValue());
-    assertThat(result.value(), equalTo(value));
+    assertThat(result, equalTo(value));
   }
 }
