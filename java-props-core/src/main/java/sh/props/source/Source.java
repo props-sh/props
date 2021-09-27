@@ -53,6 +53,13 @@ public interface Source extends Supplier<Map<String, String>> {
   Map<String, String> get();
 
   /**
+   * Should return <code>true</code> after the source has been read at least once.
+   *
+   * @return true if initialized
+   */
+  boolean initialized();
+
+  /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
    * containing all key,value mappings.
    *

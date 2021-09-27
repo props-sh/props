@@ -49,4 +49,9 @@ public class Environment implements Source {
   public Map<String, String> get() {
     return System.getenv();
   }
+
+  @Override
+  public boolean initialized() {
+    return true;
+  }
 }

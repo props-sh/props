@@ -26,7 +26,6 @@
 package sh.props;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,8 +82,8 @@ public class RegistryBuilder {
    * Registers a source with the current registry. The source will only be read once (eagerly) and
    * never refreshed.
    *
-   * <p>Use one of {@link #withSource(PathBackedSource)} or {@link #withSource(RefreshableSource,
-   * Duration)} if you'd like to refresh the source's data.
+   * <p>Use one of {@link #withSource(PathBackedSource)} or {@link #withSource(RefreshableSource)}
+   * if you'd like to refresh the source's data.
    *
    * @param source the source to register
    * @return this builder object (fluent interface)
@@ -100,25 +99,9 @@ public class RegistryBuilder {
    * <p>If {@link #withScheduler()} was not already called, it will be automatically called.
    *
    * @param source the source to auto-refresh
-   * @param period the duration at which the refresh should be scheduled
    * @return this builder object (fluent interface)
    */
-  public RegistryBuilder withSource(RefreshableSource source, Duration period) {
-    return this.withSource(source, period, period);
-  }
-
-  /**
-   * Registers a source which will be periodically refreshed.
-   *
-   * <p>If {@link #withScheduler()} was not already called, it will be automatically called.
-   *
-   * @param source the source to auto-refresh
-   * @param initialDelay the initial delay before first loading data from the source
-   * @param period the duration at which the refresh should be scheduled
-   * @return this builder object (fluent interface)
-   */
-  public RegistryBuilder withSource(
-      RefreshableSource source, Duration initialDelay, Duration period) {
+  public RegistryBuilder withSource(RefreshableSource source) {
     this.sources.addFirst(source);
 
     // initialize a scheduler if necessary
@@ -132,7 +115,7 @@ public class RegistryBuilder {
     }
 
     // schedule the source for periodic refreshing
-    this.scheduler.refreshSourceAfter(source, initialDelay, period);
+    this.scheduler.schedule(source);
 
     return this;
   }

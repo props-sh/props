@@ -25,11 +25,14 @@
 
 package sh.props.source;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.function.Consumer;
 
 /** Interface denoting sources that can be refreshed. */
 public interface RefreshableSource extends Source {
+
+  Duration DEFAULT_REFRESH_PERIOD = Duration.ofSeconds(5);
 
   /**
    * Registers a consumer to be called when the source is updated.
@@ -40,4 +43,20 @@ public interface RefreshableSource extends Source {
 
   /** Triggers an update of this source's key,value pairs. */
   Map<String, String> refresh();
+
+  /**
+   * The duration between refreshes.
+   *
+   * @return a duration object specifying how often the source should be refreshed
+   */
+  Duration refreshPeriod();
+
+  /**
+   * The initial delay before refreshing the source for the first time.
+   *
+   * @return a duration object; defaults to the value of {@link #refreshPeriod()}
+   */
+  default Duration initialRefreshDelay() {
+    return this.refreshPeriod();
+  }
 }

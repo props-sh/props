@@ -44,4 +44,9 @@ public class SystemProperties implements Source {
   public Map<String, String> get() {
     return this.readPropertiesToMap(System.getProperties());
   }
+
+  @Override
+  public boolean initialized() {
+    return true;
+  }
 }

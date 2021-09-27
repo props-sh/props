@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -45,19 +46,41 @@ public class PropertyFile extends AbstractSource implements PathBackedSource {
   /**
    * Constructs a file-based {@link Source}.
    *
+   * <p>The refresh duration is set to {@link #DEFAULT_REFRESH_PERIOD}.
+   *
    * @param location the path, on disk, of the property file
    */
   public PropertyFile(Path location) {
+    this(location, RefreshableSource.DEFAULT_REFRESH_PERIOD);
+  }
+
+  /**
+   * Constructs a file-based {@link Source}.
+   *
+   * @param location the path, on disk, of the property file
+   * @param refreshPeriod the duration between refreshes
+   */
+  public PropertyFile(Path location, Duration refreshPeriod) {
+    super(refreshPeriod);
     this.location = location;
   }
 
+  /**
+   * Read properties from the backing file on disk.
+   *
+   * @return a map of properties, or an empty map in case an error was encountered while reading the
+   *     file
+   */
   @Override
   public Map<String, String> get() {
-    try (InputStream stream = Files.newInputStream(this.location)) {
-      return this.loadPropertiesFromStream(stream);
-
-    } catch (IOException | IllegalArgumentException e) {
-      log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));
+    synchronized (this) {
+      try (InputStream stream = Files.newInputStream(this.location)) {
+        Map<String, String> data = this.loadPropertiesFromStream(stream);
+        this.isInitialized = true;
+        return data;
+      } catch (IOException | IllegalArgumentException e) {
+        log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));
+      }
     }
 
     return Collections.emptyMap();

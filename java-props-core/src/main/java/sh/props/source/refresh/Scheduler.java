@@ -27,7 +27,6 @@ package sh.props.source.refresh;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
 import sh.props.source.RefreshableSource;
 import sh.props.source.refresh.util.BackgroundExecutorFactory;
@@ -56,28 +55,34 @@ public class Scheduler {
   }
 
   /**
-   * Schedules a {@link RefreshableSource} for periodic data refreshes. The first execution will be
-   * scheduled after the specified period. If you want to immediately execute a refresh use the
-   * {@link #refreshSourceAfter(RefreshableSource, Duration, Duration)} method, specifying <code>
-   * initialDelay=0</code> .
+   * Schedules a {@link RefreshableSource} for periodic data refreshes.
+   *
+   * <p>The initial delay is retrieved from {@link RefreshableSource#initialRefreshDelay()}. The
+   * refresh period is retrieved from {@link RefreshableSource#refreshPeriod()}.
    *
    * @param source the source to reload
-   * @param period minimum duration between subsequent refreshes
    */
-  public void refreshSourceAfter(RefreshableSource source, Duration period) {
-    this.refreshSourceAfter(source, period, period);
+  @SuppressWarnings("FutureReturnValueIgnored")
+  public void schedule(RefreshableSource source) {
+    this.executor.scheduleAtFixedRate(
+        new Trigger(source),
+        source.initialRefreshDelay().toNanos(),
+        source.refreshPeriod().toNanos(),
+        NANOSECONDS);
   }
 
   /**
-   * Schedules a {@link RefreshableSource} for periodic data refreshes.
+   * Returns the default scheduler, ensuring it is initialized on first-use.
    *
-   * @param source the source to reload
-   * @param initialDelay how long to wait before the first refresh
-   * @param period minimum duration between subsequent refreshes
+   * @return the default {@link Scheduler}
    */
-  @SuppressWarnings("FutureReturnValueIgnored")
-  public void refreshSourceAfter(RefreshableSource source, Duration initialDelay, Duration period) {
-    this.executor.scheduleAtFixedRate(
-        new Trigger(source), initialDelay.toNanos(), period.toNanos(), NANOSECONDS);
+  public static Scheduler instance() {
+    return Holder.DEFAULT;
+  }
+
+  /** Static holder for the default instance, ensuring lazy initialization. */
+  private static class Holder {
+
+    private static final Scheduler DEFAULT = new Scheduler();
   }
 }

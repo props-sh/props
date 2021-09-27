@@ -153,4 +153,28 @@ public class FileWatchSvc implements Runnable {
   public void schedule() {
     this.executor.execute(this);
   }
+
+  /**
+   * Returns the default file watch service, ensuring it is initialized on first-use.
+   *
+   * @return the default {@link FileWatchSvc}
+   */
+  public static FileWatchSvc instance() {
+    return Holder.DEFAULT;
+  }
+
+  /** Static holder for the default instance, ensuring lazy initialization. */
+  private static final class Holder {
+
+    private static final FileWatchSvc DEFAULT;
+
+    static {
+      try {
+        DEFAULT = new FileWatchSvc();
+      } catch (IOException e) {
+        throw new RuntimeException(
+            "Unexpected error while initializing the default file watcher", e);
+      }
+    }
+  }
 }

@@ -27,6 +27,7 @@ package sh.props.source;
 
 import static java.lang.String.format;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,18 @@ import java.util.function.Consumer;
 public abstract class AbstractSource implements Source, RefreshableSource {
 
   private final List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
+  protected volatile boolean isInitialized = false;
+  private final Duration refreshPeriod;
+
+  /**
+   * Constructs a file-based {@link Source}, refreshing it on the interval defined by {@link
+   * #DEFAULT_REFRESH_PERIOD}.
+   *
+   * @param refreshPeriod the duration between source refreshes
+   */
+  protected AbstractSource(Duration refreshPeriod) {
+    this.refreshPeriod = refreshPeriod;
+  }
 
   /**
    * Registers a new downstream consumer.
@@ -57,6 +70,21 @@ public abstract class AbstractSource implements Source, RefreshableSource {
     Map<String, String> data = this.get();
     this.downstream.forEach(d -> d.accept(Collections.unmodifiableMap(data)));
     return data;
+  }
+
+  /**
+   * Determines if the current source was correctly read at least once.
+   *
+   * @return true if initialized
+   */
+  @Override
+  public boolean initialized() {
+    return this.isInitialized;
+  }
+
+  @Override
+  public Duration refreshPeriod() {
+    return this.refreshPeriod;
   }
 
   @Override
