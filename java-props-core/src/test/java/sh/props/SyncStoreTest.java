@@ -34,7 +34,7 @@ import static org.mockito.Mockito.spy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sh.props.source.InMemory;
+import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
 class SyncStoreTest {

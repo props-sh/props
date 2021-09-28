@@ -23,17 +23,19 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
 import static java.lang.String.format;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sh.props.source.AbstractSource;
+import sh.props.source.Source;
+import sh.props.source.refresh.RefreshableSource;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends AbstractSource {
@@ -49,21 +51,11 @@ public class ClasspathPropertyFile extends AbstractSource {
   /**
    * Constructs a {@link Source} which reads values from a property file in the classpath.
    *
-   * <p>The refresh duration is set to {@link #DEFAULT_REFRESH_PERIOD}.
+   * <p>The refresh duration is set to {@link RefreshableSource#DEFAULT_REFRESH_PERIOD}.
    *
    * @param location the classpath location of the required properties resource
    */
   public ClasspathPropertyFile(String location) {
-    this(location, RefreshableSource.DEFAULT_REFRESH_PERIOD);
-  }
-
-  /**
-   * Constructs a {@link Source} which reads values from a property file in the classpath.
-   *
-   * @param location the classpath location of the required properties resource
-   */
-  public ClasspathPropertyFile(String location, Duration refreshPeriod) {
-    super(refreshPeriod);
     this.location = location;
   }
 

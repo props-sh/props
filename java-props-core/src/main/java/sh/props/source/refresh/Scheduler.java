@@ -28,7 +28,6 @@ package sh.props.source.refresh;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.ScheduledExecutorService;
-import sh.props.source.RefreshableSource;
 import sh.props.source.refresh.util.BackgroundExecutorFactory;
 
 public class Scheduler {
@@ -57,8 +56,8 @@ public class Scheduler {
   /**
    * Schedules a {@link RefreshableSource} for periodic data refreshes.
    *
-   * <p>The initial delay is retrieved from {@link RefreshableSource#initialRefreshDelay()}. The
-   * refresh period is retrieved from {@link RefreshableSource#refreshPeriod()}.
+   * <p>The initial delay is retrieved from {@link RefreshableSource#initialDelay()}. The refresh
+   * period is retrieved from {@link RefreshableSource#refreshPeriod()}.
    *
    * @param source the source to reload
    */
@@ -66,7 +65,7 @@ public class Scheduler {
   public void schedule(RefreshableSource source) {
     this.executor.scheduleAtFixedRate(
         new Trigger(source),
-        source.initialRefreshDelay().toNanos(),
+        source.initialDelay().toNanos(),
         source.refreshPeriod().toNanos(),
         NANOSECONDS);
   }

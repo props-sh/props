@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
 import static java.lang.String.format;
 import static java.util.logging.Level.WARNING;
@@ -32,13 +32,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
+import sh.props.source.PathBackedSource;
+import sh.props.source.Source;
 
 /** Retrieves properties from a Java properties file, located on disk. */
-public class PropertyFile extends AbstractSource implements PathBackedSource {
+public class PropertyFile extends PathBackedSource {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -46,22 +47,9 @@ public class PropertyFile extends AbstractSource implements PathBackedSource {
   /**
    * Constructs a file-based {@link Source}.
    *
-   * <p>The refresh duration is set to {@link #DEFAULT_REFRESH_PERIOD}.
-   *
    * @param location the path, on disk, of the property file
    */
   public PropertyFile(Path location) {
-    this(location, RefreshableSource.DEFAULT_REFRESH_PERIOD);
-  }
-
-  /**
-   * Constructs a file-based {@link Source}.
-   *
-   * @param location the path, on disk, of the property file
-   * @param refreshPeriod the duration between refreshes
-   */
-  public PropertyFile(Path location, Duration refreshPeriod) {
-    super(refreshPeriod);
     this.location = location;
   }
 
@@ -76,7 +64,7 @@ public class PropertyFile extends AbstractSource implements PathBackedSource {
     synchronized (this) {
       try (InputStream stream = Files.newInputStream(this.location)) {
         Map<String, String> data = this.loadPropertiesFromStream(stream);
-        this.isInitialized = true;
+        this.setInitialized();
         return data;
       } catch (IOException | IllegalArgumentException e) {
         log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));

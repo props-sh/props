@@ -23,25 +23,31 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props.source.impl;
 
-import sh.props.Registry;
-import sh.props.annotations.Nullable;
+import java.util.Map;
+import sh.props.source.AbstractSource;
 
-public interface Layer<T> {
+/** Retrieves system properties. */
+public class SystemProperties extends AbstractSource {
 
-  T id();
+  @Override
+  public String id() {
+    return "system";
+  }
 
-  @Nullable
-  Layer<T> next();
+  /**
+   * Retrieves all system properties.
+   *
+   * @return a map containing all system properties
+   */
+  @Override
+  public Map<String, String> get() {
+    return this.readPropertiesToMap(System.getProperties());
+  }
 
-  @Nullable
-  Layer<T> prev();
-
-  @Nullable
-  T get(String key);
-
-  int priority();
-
-  Registry registry();
+  @Override
+  public boolean initialized() {
+    return true;
+  }
 }

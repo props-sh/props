@@ -25,15 +25,16 @@
 
 package sh.props.interfaces;
 
+import sh.props.Layer;
 import sh.props.annotations.Nullable;
 
-public interface Datastore<T> {
+public interface Datastore {
 
   @Nullable
-  ValueLayerTuple<T> get(String key);
+  ValueLayerTuple get(String key);
 
   @Nullable
-  ValueLayerTuple<String> put(String key, @Nullable T value, Layer<T> layer);
+  ValueLayerTuple put(String key, @Nullable String value, Layer layer);
 
-  void sendUpdate(String key, @Nullable T value, @Nullable Layer<T> layer);
+  void sendUpdate(String key, @Nullable String value, @Nullable Layer layer);
 }

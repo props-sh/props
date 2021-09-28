@@ -41,7 +41,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
-import sh.props.source.InMemory;
+import sh.props.source.impl.InMemory;
 
 @SuppressWarnings({"NullAway", "checkstyle:MissingJavadocMethod"})
 @Fork(value = 1, warmups = 1)
@@ -57,14 +57,14 @@ public class OwnershipBenchmark {
     public Registry registry;
     public SyncStore tested;
     public InMemory source1;
-    public LayerProxy l1;
+    public Layer l1;
 
     @Setup(Level.Invocation)
     public void setUp() {
       this.registry = mock(Registry.class);
       this.tested = spy(SyncStore.class);
       this.source1 = new InMemory();
-      this.l1 = new LayerProxy(this.source1, this.registry, 1);
+      this.l1 = new Layer(this.source1, this.registry, 1);
 
       // set an initial value
       this.source1.put("key", "v1");
@@ -84,7 +84,7 @@ public class OwnershipBenchmark {
     SyncStore tested = spy(SyncStore.class);
 
     InMemory source1 = new InMemory();
-    LayerProxy l1 = new LayerProxy(source1, registry, 1);
+    Layer l1 = new Layer(source1, registry, 1);
 
     source1.put("key", "v1");
     source1.refresh();

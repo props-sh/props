@@ -29,12 +29,11 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
-import sh.props.interfaces.Layer;
 import sh.props.interfaces.ValueLayerTuple;
 
-public abstract class SyncStore implements Datastore<String> {
+public abstract class SyncStore implements Datastore {
 
-  protected final ConcurrentHashMap<String, ValueLayerTuple<String>> effectiveValues =
+  protected final ConcurrentHashMap<String, ValueLayerTuple> effectiveValues =
       new ConcurrentHashMap<>();
 
   /**
@@ -45,7 +44,7 @@ public abstract class SyncStore implements Datastore<String> {
    */
   @Override
   @Nullable
-  public ValueLayerTuple<String> get(String key) {
+  public ValueLayerTuple get(String key) {
     return this.effectiveValues.get(key);
   }
 
@@ -57,17 +56,17 @@ public abstract class SyncStore implements Datastore<String> {
    * @return a {@link ValueLayerTuple} if found, or <code>null</code>
    */
   @Nullable
-  public ValueLayerTuple<String> get(String key, Layer<String> layer) {
-    ValueLayerTuple<String> effective = this.effectiveValues.get(key);
+  public ValueLayerTuple get(String key, Layer layer) {
+    ValueLayerTuple effective = this.effectiveValues.get(key);
     if (effective == null) {
       // no mapping exists in any layer
       return null;
     }
 
-    return findLayer(key, effective, (LayerProxy) layer);
+    return findLayer(key, effective, layer);
   }
 
-  private static void assertLayerIsValid(Layer<String> search, ValueLayerTuple<String> vl) {
+  private static void assertLayerIsValid(Layer search, ValueLayerTuple vl) {
     if (!Objects.equals(search.registry(), vl.layer().registry())) {
       throw new IllegalArgumentException(
           "Invalid layer passed (does not belong to current registry)");
@@ -85,7 +84,7 @@ public abstract class SyncStore implements Datastore<String> {
    */
   @Override
   @Nullable
-  public ValueLayerTuple<String> put(String key, @Nullable String value, Layer<String> layer) {
+  public ValueLayerTuple put(String key, @Nullable String value, Layer layer) {
     return this.effectiveValues.compute(
         key,
         (k, current) -> {
@@ -99,7 +98,7 @@ public abstract class SyncStore implements Datastore<String> {
             }
 
             // otherwise map the effective value and its owning layer
-            return this.withUpdate(key, new ValueLayerTuple<>(value, layer));
+            return this.withUpdate(key, new ValueLayerTuple(value, layer));
           }
 
           // if we already defined a mapping for this key
@@ -134,7 +133,7 @@ public abstract class SyncStore implements Datastore<String> {
           if (value != null && current.equalInValueOnly(value, layer)) {
             // we need to modify the layer/value mapping
             // but avoid sending an update to any objects following this key
-            return new ValueLayerTuple<>(value, layer);
+            return new ValueLayerTuple(value, layer);
           }
 
           // if the owning layer unsets the value
@@ -143,7 +142,7 @@ public abstract class SyncStore implements Datastore<String> {
             return this.withUpdate(key, findNextPotentialOwner(key, current));
           } else {
             // otherwise update the layer/value mapping
-            return this.withUpdate(key, new ValueLayerTuple<>(value, layer));
+            return this.withUpdate(key, new ValueLayerTuple(value, layer));
           }
         });
   }
@@ -156,7 +155,7 @@ public abstract class SyncStore implements Datastore<String> {
    * @return the same value,layer pair
    */
   @Nullable
-  private ValueLayerTuple<String> withUpdate(String key, @Nullable ValueLayerTuple<String> vl) {
+  private ValueLayerTuple withUpdate(String key, @Nullable ValueLayerTuple vl) {
     if (vl == null) {
       this.sendUpdate(key, null, null);
       return null;
@@ -174,15 +173,14 @@ public abstract class SyncStore implements Datastore<String> {
    * @return a {@link ValueLayerTuple} if found, or <code>null</code> if no layer defines the key
    */
   @Nullable
-  private static ValueLayerTuple<String> findNextPotentialOwner(
-      String key, ValueLayerTuple<String> vl) {
-    Layer<String> l = vl.layer();
+  private static ValueLayerTuple findNextPotentialOwner(String key, ValueLayerTuple vl) {
+    Layer l = vl.layer();
     // search all layers with lower priority for the key
     while (l.prev() != null) {
       l = l.prev();
       String value = l.get(key);
       if (value != null) {
-        return new ValueLayerTuple<>(value, l);
+        return new ValueLayerTuple(value, l);
       }
     }
 
@@ -199,9 +197,8 @@ public abstract class SyncStore implements Datastore<String> {
    * @return a {@link ValueLayerTuple} if a layer defines the key, or <code>null</code> otherwise
    */
   @Nullable
-  private static ValueLayerTuple<String> findLayer(
-      String key, ValueLayerTuple<String> vl, LayerProxy search) {
-    Layer<String> l = vl.layer();
+  private static ValueLayerTuple findLayer(String key, ValueLayerTuple vl, Layer search) {
+    Layer l = vl.layer();
 
     SyncStore.assertLayerIsValid(search, vl);
 
@@ -216,7 +213,7 @@ public abstract class SyncStore implements Datastore<String> {
       String value = l.get(key);
       if (value != null) {
         // return it
-        return new ValueLayerTuple<>(value, l);
+        return new ValueLayerTuple(value, l);
       }
 
       if (l.priority() < search.priority()) {

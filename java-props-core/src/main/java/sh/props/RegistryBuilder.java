@@ -32,9 +32,9 @@ import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
 import sh.props.source.PathBackedSource;
-import sh.props.source.RefreshableSource;
 import sh.props.source.Source;
 import sh.props.source.refresh.FileWatchSvc;
+import sh.props.source.refresh.RefreshableSource;
 import sh.props.source.refresh.Scheduler;
 
 public class RegistryBuilder {
@@ -151,16 +151,16 @@ public class RegistryBuilder {
    *
    * @return a configured {@link Registry} object
    */
-  public Registry build(Datastore<String> store) {
+  public Registry build(Datastore store) {
     Registry registry = new Registry(store);
 
     int priority = this.sources.size();
-    @Nullable LayerProxy next = null;
+    @Nullable Layer next = null;
 
-    List<LayerProxy> layers = new ArrayList<>(this.sources.size());
+    List<Layer> layers = new ArrayList<>(this.sources.size());
     for (Source source : this.sources) {
       // wrap each source in a layer
-      LayerProxy layer = new LayerProxy(source, registry, priority--);
+      Layer layer = new Layer(source, registry, priority--);
 
       // link the previous and current layer
       layer.next = next;

@@ -26,11 +26,12 @@
 package sh.props.interfaces;
 
 import java.util.Objects;
+import sh.props.Layer;
 
-public class ValueLayerTuple<T> {
+public class ValueLayerTuple {
 
-  final T value;
-  final Layer<T> layer;
+  final String value;
+  final Layer layer;
 
   /**
    * Class constructor.
@@ -38,7 +39,7 @@ public class ValueLayerTuple<T> {
    * @param value a value to store
    * @param layer and the layer it originates from
    */
-  public ValueLayerTuple(T value, Layer<T> layer) {
+  public ValueLayerTuple(String value, Layer layer) {
     this.value = value;
     this.layer = layer;
   }
@@ -48,7 +49,7 @@ public class ValueLayerTuple<T> {
    *
    * @return this object's mapped value
    */
-  public T value() {
+  public String value() {
     return this.value;
   }
 
@@ -57,7 +58,7 @@ public class ValueLayerTuple<T> {
    *
    * @return this object's mapped layer
    */
-  public Layer<T> layer() {
+  public Layer layer() {
     return this.layer;
   }
 
@@ -68,7 +69,7 @@ public class ValueLayerTuple<T> {
    * @param layer the owning layer
    * @return true if equal
    */
-  public boolean equalTo(String value, Layer<T> layer) {
+  public boolean equalTo(String value, Layer layer) {
     return Objects.equals(value, this.value) && layer == this.layer;
   }
 
@@ -79,7 +80,7 @@ public class ValueLayerTuple<T> {
    * @param layer the owning layer to compare
    * @return true if only the value is equal
    */
-  public boolean equalInValueOnly(String value, Layer<T> layer) {
+  public boolean equalInValueOnly(String value, Layer layer) {
     return Objects.equals(value, this.value) && layer != this.layer;
   }
 }

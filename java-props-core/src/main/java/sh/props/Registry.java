@@ -33,11 +33,11 @@ import sh.props.interfaces.ValueLayerTuple;
 
 public class Registry {
 
-  final Datastore<String> store;
-  List<LayerProxy> layers = Collections.emptyList();
+  final Datastore store;
+  List<Layer> layers = Collections.emptyList();
 
   /** Ensures a registry can only be constructed through a builder. */
-  Registry(Datastore<String> store) {
+  Registry(Datastore store) {
     this.store = store;
   }
 
@@ -46,7 +46,7 @@ public class Registry {
    *
    * @param layers layers to define
    */
-  void setLayers(List<LayerProxy> layers) {
+  void setLayers(List<Layer> layers) {
     this.layers = layers;
   }
 
@@ -61,7 +61,7 @@ public class Registry {
   @Nullable
   public <T> T get(String key, Class<T> clz) {
     // finds the value and owning layer
-    ValueLayerTuple<String> valueLayer = this.store.get(key);
+    ValueLayerTuple valueLayer = this.store.get(key);
 
     // no value found, the key does not exist in the registry
     if (valueLayer == null) {

@@ -28,23 +28,23 @@ package sh.props;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Layer;
 import sh.props.source.PathBackedSource;
-import sh.props.source.RefreshableSource;
 import sh.props.source.Source;
 import sh.props.source.refresh.FileWatchSvc;
+import sh.props.source.refresh.RefreshableSource;
 import sh.props.source.refresh.Scheduler;
 
-public class LayerTwo implements Layer<String>, Consumer<Map<String, String>> {
+public class Layer implements Consumer<Map<String, String>> {
 
   private final Source source;
   private final Registry registry;
   private final HashMap<String, String> store = new HashMap<>();
 
-  @Nullable LayerTwo prev;
-  @Nullable LayerTwo next;
+  @Nullable Layer prev;
+  @Nullable Layer next;
 
   private final int priority;
 
@@ -54,15 +54,13 @@ public class LayerTwo implements Layer<String>, Consumer<Map<String, String>> {
    * @param source the source that provides data for this layer
    * @param registry a reference to the associated registry
    */
-  protected LayerTwo(Source source, Registry registry, int priority) {
+  protected Layer(Source source, Registry registry, int priority) {
     this.source = source;
     this.registry = registry;
     this.priority = priority;
 
-    // if the passed source is refreshable, register it for receiving updates
-    if (this.source instanceof RefreshableSource) {
-      ((RefreshableSource) source).register(this);
-    }
+    // register the passed source for receiving updates
+    source.register(this);
   }
 
   /**
@@ -93,8 +91,12 @@ public class LayerTwo implements Layer<String>, Consumer<Map<String, String>> {
   }
 
   @Nullable
-  @Override
-  public Layer<String> next() {
+  public Layer prev() {
+    return this.prev;
+  }
+
+  @Nullable
+  public Layer next() {
     return this.next;
   }
 
@@ -103,29 +105,19 @@ public class LayerTwo implements Layer<String>, Consumer<Map<String, String>> {
    *
    * @return the id of the underlying source
    */
-  @Override
   public String id() {
     return this.source.id();
   }
 
   @Nullable
-  @Override
-  public Layer<String> prev() {
-    return this.prev;
-  }
-
-  @Nullable
-  @Override
   public String get(String key) {
     return this.store.get(key);
   }
 
-  @Override
   public int priority() {
     return this.priority;
   }
 
-  @Override
   public Registry registry() {
     return this.registry;
   }
@@ -135,5 +127,57 @@ public class LayerTwo implements Layer<String>, Consumer<Map<String, String>> {
     // TODO: interim implementation, refactor!
     this.store.clear();
     this.store.putAll(data);
+  }
+
+  // processes the reloaded data
+  private void onReload(Map<String, String> data) {
+    // make a copy to avoid wrongly changing the input
+    // TODO: rethink this algorithm to avoid this copy op
+    Map<String, String> freshValues = new HashMap<>(data);
+
+    // iterate over the current values
+    var it = this.store.entrySet().iterator();
+    while (it.hasNext()) {
+      var entry = it.next();
+      var existingKey = entry.getKey();
+
+      // check if the updated map still contains this key
+      if (!freshValues.containsKey(existingKey)) {
+        // the key was deleted
+        // remove the entry from the underlying store
+        it.remove();
+
+        // and notify the registry that this layer no longer defines this key
+        this.registry.store.put(existingKey, null, this);
+        continue;
+      }
+
+      // retrieve the (potentially) new value
+      String maybeNewValue = freshValues.get(existingKey);
+
+      // check if the value has changed
+      if (!Objects.equals(this.store.get(existingKey), maybeNewValue)) {
+        // if it has changed, update it
+        entry.setValue(maybeNewValue);
+
+        // and notify that registry that we have a new value
+        this.registry.store.put(existingKey, maybeNewValue, this);
+
+        // then remove it from the new map
+        // so that we end up with a map containing only new entries
+        freshValues.remove(existingKey);
+      }
+    }
+
+    // finally, add the new entries to the store
+    this.store.putAll(freshValues);
+
+    // and notify the registry of any keys that this layer now defines
+    freshValues.forEach((key, value) -> this.registry.store.put(key, value, this));
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Layer(id=%s, priority=%d)", this.id(), this.priority);
   }
 }

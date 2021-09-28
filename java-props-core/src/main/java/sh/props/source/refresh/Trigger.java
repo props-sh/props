@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.RefreshableSource;
+import sh.props.source.AbstractSource;
 
 /**
  * Convenience implementation that triggers a {@link RefreshableSource#refresh()} and logs any
@@ -41,7 +41,7 @@ public class Trigger implements Runnable {
 
   private static final Logger log = Logger.getLogger(Trigger.class.getName());
 
-  private final RefreshableSource source;
+  private final AbstractSource source;
   private final ReentrantLock concurrencyLock = new ReentrantLock();
 
   /**
@@ -49,7 +49,7 @@ public class Trigger implements Runnable {
    *
    * @param source the source that will be refreshed when this trigger executes
    */
-  public Trigger(RefreshableSource source) {
+  public Trigger(AbstractSource source) {
     this.source = source;
   }
 

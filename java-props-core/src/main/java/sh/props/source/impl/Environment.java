@@ -23,40 +23,36 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
-import java.time.Duration;
 import java.util.Map;
-import java.util.function.Consumer;
+import sh.props.source.AbstractSource;
 
-/** Interface denoting sources that can be refreshed. */
-public interface RefreshableSource extends Source {
-
-  Duration DEFAULT_REFRESH_PERIOD = Duration.ofSeconds(5);
+/** Retrieves all environment variables. */
+public class Environment extends AbstractSource {
 
   /**
-   * Registers a consumer to be called when the source is updated.
+   * An unique identifier representing this source in the {@link sh.props.Registry}.
    *
-   * @param downstream a consumer that accepts any updates this source may be sending
+   * @return an unique id
    */
-  void register(Consumer<Map<String, String>> downstream);
-
-  /** Triggers an update of this source's key,value pairs. */
-  Map<String, String> refresh();
-
-  /**
-   * The duration between refreshes.
-   *
-   * @return a duration object specifying how often the source should be refreshed
-   */
-  Duration refreshPeriod();
+  @Override
+  public String id() {
+    return "env";
+  }
 
   /**
-   * The initial delay before refreshing the source for the first time.
+   * Retrieves all environment variables.
    *
-   * @return a duration object; defaults to the value of {@link #refreshPeriod()}
+   * @return a map containing all env. variables
    */
-  default Duration initialRefreshDelay() {
-    return this.refreshPeriod();
+  @Override
+  public Map<String, String> get() {
+    return System.getenv();
+  }
+
+  @Override
+  public boolean initialized() {
+    return true;
   }
 }

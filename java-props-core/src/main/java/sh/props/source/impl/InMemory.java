@@ -23,21 +23,18 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.impl;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
+import sh.props.source.AbstractSource;
 
 /** Useful for tests, when the implementation requires overriding values. */
 public class InMemory extends AbstractSource {
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
-
-  public InMemory() {
-    super(RefreshableSource.DEFAULT_REFRESH_PERIOD);
-  }
 
   @Override
   public String id() {

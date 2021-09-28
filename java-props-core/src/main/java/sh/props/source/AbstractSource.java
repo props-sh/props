@@ -27,9 +27,7 @@ package sh.props.source;
 
 import static java.lang.String.format;
 
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -38,38 +36,29 @@ import java.util.function.Consumer;
  * Abstract class that implements the downstream consumer functionality, which allows sources to
  * notify subscribing layers that the data was refreshed.
  */
-public abstract class AbstractSource implements Source, RefreshableSource {
+public abstract class AbstractSource implements Source {
 
-  private final List<Consumer<Map<String, String>>> downstream = new ArrayList<>();
-  protected volatile boolean isInitialized = false;
-  private final Duration refreshPeriod;
-
-  /**
-   * Constructs a file-based {@link Source}, refreshing it on the interval defined by {@link
-   * #DEFAULT_REFRESH_PERIOD}.
-   *
-   * @param refreshPeriod the duration between source refreshes
-   */
-  protected AbstractSource(Duration refreshPeriod) {
-    this.refreshPeriod = refreshPeriod;
-  }
+  private final List<Consumer<Map<String, String>>> consumers = new ArrayList<>();
+  private volatile boolean isInitialized = false;
 
   /**
    * Registers a new downstream consumer.
    *
-   * @param downstream a consumer that accepts any updates this source may be sending
+   * @param consumer a consumer that accepts any updates this source may be sending
    */
   @Override
-  public void register(Consumer<Map<String, String>> downstream) {
-    this.downstream.add(downstream);
+  public void register(Consumer<Map<String, String>> consumer) {
+    this.consumers.add(consumer);
   }
 
-  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
+  /**
+   * Retrieves a list of consumers that should be notified when the data is refreshed.
+   *
+   * @return the consumers to be notified
+   */
   @Override
-  public Map<String, String> refresh() {
-    Map<String, String> data = this.get();
-    this.downstream.forEach(d -> d.accept(Collections.unmodifiableMap(data)));
-    return data;
+  public List<Consumer<Map<String, String>>> consumers() {
+    return this.consumers;
   }
 
   /**
@@ -82,9 +71,9 @@ public abstract class AbstractSource implements Source, RefreshableSource {
     return this.isInitialized;
   }
 
-  @Override
-  public Duration refreshPeriod() {
-    return this.refreshPeriod;
+  /** Marks the current source as initialized. */
+  public void setInitialized() {
+    this.isInitialized = true;
   }
 
   @Override
