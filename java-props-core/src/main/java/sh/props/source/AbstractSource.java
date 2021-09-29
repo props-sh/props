@@ -28,52 +28,47 @@ package sh.props.source;
 import static java.lang.String.format;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
- * Abstract class that implements the downstream consumer functionality, which allows sources to
- * notify subscribing layers that the data was refreshed.
+ * Abstract class that permits subscribers to register for updates.
+ *
+ * <p>This functionality is useful for triggering a single {@link Source#get()}, which can be an
+ * expensive operation, and notifying multiple layers.
  */
-public abstract class AbstractSource implements Source {
+public abstract class AbstractSource implements Source, Subscribable {
 
-  private final List<Consumer<Map<String, String>>> consumers = new ArrayList<>();
-  private volatile boolean isInitialized = false;
+  private final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
 
   /**
-   * Registers a new downstream consumer.
+   * Registers a new downstream subscriber.
    *
-   * @param consumer a consumer that accepts any updates this source may be sending
+   * @param subscriber a subscriber that accepts any updates this source may be sending
    */
   @Override
-  public void register(Consumer<Map<String, String>> consumer) {
-    this.consumers.add(consumer);
+  public void register(Consumer<Map<String, String>> subscriber) {
+    this.subscribers.add(subscriber);
   }
 
   /**
-   * Retrieves a list of consumers that should be notified when the data is refreshed.
+   * Retrieves a stream of subscribers to this source's updates.
    *
-   * @return the consumers to be notified
+   * @return the subscribers to be notified
    */
   @Override
-  public List<Consumer<Map<String, String>>> consumers() {
-    return this.consumers;
+  public Stream<Consumer<Map<String, String>>> subscribers() {
+    return this.subscribers.stream();
   }
 
-  /**
-   * Determines if the current source was correctly read at least once.
-   *
-   * @return true if initialized
-   */
+  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
   @Override
-  public boolean initialized() {
-    return this.isInitialized;
-  }
-
-  /** Marks the current source as initialized. */
-  public void setInitialized() {
-    this.isInitialized = true;
+  public void updateSubscribers() {
+    Map<String, String> data = Collections.unmodifiableMap(this.get());
+    this.subscribers().forEach(d -> d.accept(data));
   }
 
   @Override

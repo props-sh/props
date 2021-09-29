@@ -29,11 +29,8 @@ import static java.util.Objects.isNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -54,33 +51,6 @@ public interface Source extends Supplier<Map<String, String>> {
    */
   @Override
   Map<String, String> get();
-
-  /**
-   * Registers a consumer that is to be notified when the data is refreshed.
-   *
-   * @param consumer the consumer to register
-   */
-  void register(Consumer<Map<String, String>> consumer);
-
-  /**
-   * Retrieves a list of consumers that should be notified when the data is refreshed.
-   *
-   * @return the consumers to be notified
-   */
-  List<Consumer<Map<String, String>>> consumers();
-
-  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
-  default void refresh() {
-    Map<String, String> data = Collections.unmodifiableMap(this.get());
-    this.consumers().forEach(d -> d.accept(data));
-  }
-
-  /**
-   * Should return <code>true</code> after the source has been read at least once.
-   *
-   * @return true if initialized
-   */
-  boolean initialized();
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}

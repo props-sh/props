@@ -23,30 +23,35 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source.refresh;
 
-import java.util.Map;
-import sh.props.source.AbstractSource;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
-/** Retrieves system properties. */
-public class SystemProperties extends AbstractSource {
+/** Creates daemon {@link Thread}s. */
+class DaemonThreadFactory implements ThreadFactory {
 
-  @Override
-  public String id() {
-    return "system";
+  private final ThreadFactory factory;
+
+  /** Spawns threads using the default {@link ThreadFactory}. */
+  public DaemonThreadFactory() {
+    this(Executors.defaultThreadFactory());
   }
 
   /**
-   * Retrieves all system properties.
+   * Allows a custom {@link ThreadFactory} to be specified.
    *
-   * @return a map containing all system properties
+   * @param factory a custom thread factory
    */
-  @Override
-  public Map<String, String> get() {
-    return this.readPropertiesToMap(System.getProperties());
+  public DaemonThreadFactory(ThreadFactory factory) {
+    this.factory = factory;
   }
 
-  public static boolean initialized() {
-    return true;
+  /** Creates a new daemon {@link Thread}. */
+  @Override
+  public Thread newThread(Runnable runnable) {
+    Thread thread = this.factory.newThread(runnable);
+    thread.setDaemon(true);
+    return thread;
   }
 }

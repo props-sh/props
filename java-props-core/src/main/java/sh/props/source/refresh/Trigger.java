@@ -34,10 +34,10 @@ import java.util.logging.Logger;
 import sh.props.source.AbstractSource;
 
 /**
- * Convenience implementation that triggers a {@link RefreshableSource#refresh()} and logs any
- * runtime exceptions.
+ * Convenience implementation that triggers a {@link RefreshableSource#updateSubscribers()} and logs
+ * any runtime exceptions.
  */
-public class Trigger implements Runnable {
+class Trigger implements Runnable {
 
   private static final Logger log = Logger.getLogger(Trigger.class.getName());
 
@@ -66,7 +66,7 @@ public class Trigger implements Runnable {
     }
 
     try {
-      CompletableFuture.runAsync(this.source::refresh)
+      CompletableFuture.runAsync(this.source::updateSubscribers)
           .whenComplete((unused, throwable) -> this.markDone(t0, throwable));
     } catch (RuntimeException e) {
       log.log(Level.WARNING, e, () -> "Unexpected exception while refreshing the source");

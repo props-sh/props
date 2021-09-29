@@ -23,30 +23,21 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source.refresh;
 
-import java.util.Map;
-import sh.props.source.AbstractSource;
+import java.nio.file.Path;
 
-/** Retrieves system properties. */
-public class SystemProperties extends AbstractSource {
-
-  @Override
-  public String id() {
-    return "system";
-  }
+/**
+ * Denotes an object that sends events based on changes on the file system (e.g., the file was
+ * updated on disk)
+ */
+@FunctionalInterface
+public interface FileWatchable {
 
   /**
-   * Retrieves all system properties.
+   * The file to monitor using JDK's {@link java.nio.file.WatchService}.
    *
-   * @return a map containing all system properties
+   * @return a path to a file on disk
    */
-  @Override
-  public Map<String, String> get() {
-    return this.readPropertiesToMap(System.getProperties());
-  }
-
-  public static boolean initialized() {
-    return true;
-  }
+  Path file();
 }

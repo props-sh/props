@@ -35,11 +35,11 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
-import sh.props.source.PathBackedSource;
+import sh.props.source.AbstractSource;
 import sh.props.source.Source;
 
 /** Retrieves properties from a Java properties file, located on disk. */
-public class PropertyFile extends PathBackedSource {
+public class PropertyFile extends AbstractSource {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -61,14 +61,10 @@ public class PropertyFile extends PathBackedSource {
    */
   @Override
   public Map<String, String> get() {
-    synchronized (this) {
-      try (InputStream stream = Files.newInputStream(this.location)) {
-        Map<String, String> data = this.loadPropertiesFromStream(stream);
-        this.setInitialized();
-        return data;
-      } catch (IOException | IllegalArgumentException e) {
-        log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));
-      }
+    try (InputStream stream = Files.newInputStream(this.location)) {
+      return this.loadPropertiesFromStream(stream);
+    } catch (IOException | IllegalArgumentException e) {
+      log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));
     }
 
     return Collections.emptyMap();
@@ -82,15 +78,5 @@ public class PropertyFile extends PathBackedSource {
   @Override
   public String id() {
     return "file://" + this.location.toString();
-  }
-
-  /**
-   * Returns the location, on disk, of the file backing this source.
-   *
-   * @return a non-null {@link Path} pointing to a file on disk
-   */
-  @Override
-  public Path backingPath() {
-    return this.location;
   }
 }

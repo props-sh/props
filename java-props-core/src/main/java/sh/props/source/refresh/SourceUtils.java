@@ -25,41 +25,54 @@
 
 package sh.props.source.refresh;
 
+import java.nio.file.Path;
 import java.time.Duration;
-import sh.props.source.AbstractSource;
+import java.util.Map;
+import sh.props.source.Source;
 
-public abstract class RefreshableSource extends AbstractSource implements Refreshable, Schedulable {
-
-  protected final Duration refreshPeriod;
-  private boolean wasScheduled = false;
+public class SourceUtils {
 
   /**
-   * Initializes a source that will be refreshed on the specified period.
+   * Static factory method that triggers a source update on the specified refreshPeriod.
    *
+   * @param delegate source to wrap as refreshable
    * @param refreshPeriod the duration between source refreshes
+   * @return a constructed source
    */
-  RefreshableSource(Duration refreshPeriod) {
-    this.refreshPeriod = refreshPeriod;
-  }
+  public static <T extends Refreshable & Source> RefreshableSource refreshPeriodically(
+      T delegate, Duration refreshPeriod) {
+    return new RefreshableSource(refreshPeriod) {
+      @Override
+      public String id() {
+        return delegate.id();
+      }
 
-  @Override
-  public Duration refreshPeriod() {
-    return this.refreshPeriod;
+      @Override
+      public Map<String, String> get() {
+        return delegate.get();
+      }
+    };
   }
 
   /**
-   * Determines if the object was scheduled for refreshes.
+   * Static factory method that triggers a source update on the specified refreshPeriod.
    *
-   * @return <code>true</code> if already scheduled
+   * @param delegate source to wrap as refreshable
+   * @param file the file that should be watched for updates
+   * @return a constructed source
    */
-  @Override
-  public boolean scheduled() {
-    return this.wasScheduled;
-  }
+  public static <T extends FileWatchable & Source> FileWatchableSource watchForFileUpdate(
+      T delegate, Path file) {
+    return new FileWatchableSource(file) {
+      @Override
+      public String id() {
+        return delegate.id();
+      }
 
-  /** Mark this source as having been scheduled for periodic execution. */
-  @Override
-  public void setScheduled() {
-    this.wasScheduled = true;
+      @Override
+      public Map<String, String> get() {
+        return delegate.get();
+      }
+    };
   }
 }

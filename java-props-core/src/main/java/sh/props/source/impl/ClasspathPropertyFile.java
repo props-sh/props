@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.source.AbstractSource;
 import sh.props.source.Source;
-import sh.props.source.refresh.RefreshableSource;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends AbstractSource {
@@ -50,8 +49,6 @@ public class ClasspathPropertyFile extends AbstractSource {
 
   /**
    * Constructs a {@link Source} which reads values from a property file in the classpath.
-   *
-   * <p>The refresh duration is set to {@link RefreshableSource#DEFAULT_REFRESH_PERIOD}.
    *
    * @param location the classpath location of the required properties resource
    */

@@ -25,12 +25,15 @@
 
 package sh.props.source.refresh;
 
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.ScheduledExecutorService;
-import sh.props.source.refresh.util.BackgroundExecutorFactory;
+import java.util.logging.Logger;
 
 public class Scheduler {
+
+  private static final Logger log = Logger.getLogger(Scheduler.class.getName());
 
   protected final ScheduledExecutorService executor;
 
@@ -56,18 +59,32 @@ public class Scheduler {
   /**
    * Schedules a {@link RefreshableSource} for periodic data refreshes.
    *
-   * <p>The initial delay is retrieved from {@link RefreshableSource#initialDelay()}. The refresh
-   * period is retrieved from {@link RefreshableSource#refreshPeriod()}.
+   * <p>The refresh period can be configured by overriding {@link
+   * RefreshableSource#refreshPeriod()}.
    *
-   * @param source the source to reload
+   * @param source the source to refresh
    */
   @SuppressWarnings("FutureReturnValueIgnored")
   public void schedule(RefreshableSource source) {
+    if (source.scheduled()) {
+      log.fine(
+          () ->
+              format(
+                  "Will not schedule %s, as it was already scheduled in another executor", source));
+      return;
+    }
+
+    // determines if the source should be eagerly or lazily initialized
+    long initialDelay = 0L;
+    if (!source.eagerInitialization()) {
+      // lazy initialization
+      initialDelay = source.refreshPeriod().toNanos();
+    }
+
+    // schedule the source for periodic data refreshes
     this.executor.scheduleAtFixedRate(
-        new Trigger(source),
-        source.initialDelay().toNanos(),
-        source.refreshPeriod().toNanos(),
-        NANOSECONDS);
+        new Trigger(source), initialDelay, source.refreshPeriod().toNanos(), NANOSECONDS);
+    source.setScheduled();
   }
 
   /**

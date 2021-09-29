@@ -23,35 +23,45 @@
  *
  */
 
-package sh.props.source.refresh.util;
+package sh.props.source.refresh;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.nio.file.Path;
+import sh.props.source.AbstractSource;
 
-/** Creates daemon {@link Thread}s. */
-public class DaemonThreadFactory implements ThreadFactory {
+/** A special type of source which is backed by a file, on disk. */
+public abstract class FileWatchableSource extends AbstractSource
+    implements FileWatchable, Schedulable {
 
-  private final ThreadFactory factory;
+  private final Path file;
+  private boolean wasScheduled = false;
 
-  /** Spawns threads using the default {@link ThreadFactory}. */
-  public DaemonThreadFactory() {
-    this(Executors.defaultThreadFactory());
+  protected FileWatchableSource(Path file) {
+    this.file = file;
   }
 
   /**
-   * Allows a custom {@link ThreadFactory} to be specified.
+   * Returns the location, on disk, of the file backing this source.
    *
-   * @param factory a custom thread factory
+   * @return a non-null {@link Path} pointing to a file on disk
    */
-  public DaemonThreadFactory(ThreadFactory factory) {
-    this.factory = factory;
+  @Override
+  public Path file() {
+    return this.file;
   }
 
-  /** Creates a new daemon {@link Thread}. */
+  /**
+   * Determines if the object was scheduled for refreshes.
+   *
+   * @return <code>true</code> if already scheduled
+   */
   @Override
-  public Thread newThread(Runnable runnable) {
-    Thread thread = this.factory.newThread(runnable);
-    thread.setDaemon(true);
-    return thread;
+  public boolean scheduled() {
+    return this.wasScheduled;
+  }
+
+  /** Mark this source as having been scheduled for periodic execution. */
+  @Override
+  public void setScheduled() {
+    this.wasScheduled = true;
   }
 }

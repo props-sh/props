@@ -51,8 +51,7 @@ public class Environment extends AbstractSource {
     return System.getenv();
   }
 
-  @Override
-  public boolean initialized() {
+  public static boolean initialized() {
     return true;
   }
 }

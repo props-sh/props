@@ -68,7 +68,7 @@ public class OwnershipBenchmark {
 
       // set an initial value
       this.source1.put("key", "v1");
-      this.source1.refresh();
+      this.source1.updateSubscribers();
       this.tested.put("preset", "preset-value", this.l1);
 
       // control
@@ -87,11 +87,11 @@ public class OwnershipBenchmark {
     Layer l1 = new Layer(source1, registry, 1);
 
     source1.put("key", "v1");
-    source1.refresh();
+    source1.updateSubscribers();
     blackhole.consume(tested.put("key", "v1", l1));
 
     source1.remove("key");
-    source1.refresh();
+    source1.updateSubscribers();
     blackhole.consume(tested.put("key", null, l1));
   }
 

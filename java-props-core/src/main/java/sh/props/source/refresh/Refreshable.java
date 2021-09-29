@@ -23,30 +23,34 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source.refresh;
 
-import java.util.Map;
-import sh.props.source.AbstractSource;
+import java.time.Duration;
 
-/** Retrieves system properties. */
-public class SystemProperties extends AbstractSource {
+public interface Refreshable {
 
-  @Override
-  public String id() {
-    return "system";
+  /**
+   * How often should the source be refreshed.
+   *
+   * @return the duration between source refreshes
+   */
+  Duration refreshPeriod();
+
+  /**
+   * Determines if the underlying source should be eagerly or lazily initialized. The behaviour is
+   * set to eager by default.
+   *
+   * @return true if the source should be eagerly initialized (e.g., the initial delay will be set
+   *     to 0)
+   */
+  default boolean eagerInitialization() {
+    return true;
   }
 
   /**
-   * Retrieves all system properties.
+   * Determines if the object was scheduled for refreshes.
    *
-   * @return a map containing all system properties
+   * @return <code>true</code> if already scheduled
    */
-  @Override
-  public Map<String, String> get() {
-    return this.readPropertiesToMap(System.getProperties());
-  }
-
-  public static boolean initialized() {
-    return true;
-  }
+  boolean scheduled();
 }

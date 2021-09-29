@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source.refresh.util;
+package sh.props.source.refresh;
 
 import static java.lang.String.format;
 
@@ -34,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-public class BackgroundExecutorFactory {
+class BackgroundExecutorFactory {
 
   public static final Duration DEFAULT_GRACE_PERIOD = Duration.ofSeconds(5);
 

@@ -23,30 +23,28 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import java.util.Map;
-import sh.props.source.AbstractSource;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-/** Retrieves system properties. */
-public class SystemProperties extends AbstractSource {
-
-  @Override
-  public String id() {
-    return "system";
-  }
+public interface Subscribable {
 
   /**
-   * Retrieves all system properties.
+   * Registers a new downstream subscriber.
    *
-   * @return a map containing all system properties
+   * @param subscriber a subscriber that accepts any updates this source may be sending
    */
-  @Override
-  public Map<String, String> get() {
-    return this.readPropertiesToMap(System.getProperties());
-  }
+  void register(Consumer<Map<String, String>> subscriber);
 
-  public static boolean initialized() {
-    return true;
-  }
+  /**
+   * Retrieves a stream of subscribers, which have registered to receive this source's updates.
+   *
+   * @return the subscribers to be notified
+   */
+  Stream<Consumer<Map<String, String>>> subscribers();
+
+  /** Sends an update to all registered subscribers. */
+  void updateSubscribers();
 }

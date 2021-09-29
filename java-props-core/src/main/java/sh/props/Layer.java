@@ -25,28 +25,39 @@
 
 package sh.props;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.source.PathBackedSource;
+import sh.props.source.AbstractSource;
 import sh.props.source.Source;
 import sh.props.source.refresh.FileWatchSvc;
+import sh.props.source.refresh.FileWatchableSource;
 import sh.props.source.refresh.RefreshableSource;
+import sh.props.source.refresh.Schedulable;
 import sh.props.source.refresh.Scheduler;
 
 public class Layer implements Consumer<Map<String, String>> {
 
-  private final Source source;
+  private static final Logger log = Logger.getLogger(Layer.class.getName());
+
+  private final AbstractSource source;
   private final Registry registry;
   private final HashMap<String, String> store = new HashMap<>();
+
+  private final ReentrantLock lock = new ReentrantLock();
 
   @Nullable Layer prev;
   @Nullable Layer next;
 
   private final int priority;
+  private volatile boolean initialized = false;
 
   /**
    * Class constructor.
@@ -54,7 +65,7 @@ public class Layer implements Consumer<Map<String, String>> {
    * @param source the source that provides data for this layer
    * @param registry a reference to the associated registry
    */
-  protected Layer(Source source, Registry registry, int priority) {
+  protected Layer(AbstractSource source, Registry registry, int priority) {
     this.source = source;
     this.registry = registry;
     this.priority = priority;
@@ -68,26 +79,50 @@ public class Layer implements Consumer<Map<String, String>> {
    * operations or watch services are tracking the source.
    */
   public void initialize() throws IOException {
-    if (this.source.initialized()) {
-      // the source is already initialized, nothing to do
+    if (this.initialized) {
+      // the layer is already initialized, nothing to do
       return;
     }
 
-    // path-backed sources
-    if (this.source instanceof PathBackedSource) {
-      FileWatchSvc.instance().register((PathBackedSource) this.source);
+    if (this.source instanceof Schedulable && ((Schedulable) this.source).scheduled()) {
+      // nothing to do as the source was scheduled elsewhere
+      // this layer will receive the next update
+      this.initialized = true;
       return;
     }
 
-    // periodically refreshable sources
-    if (this.source instanceof RefreshableSource) {
-      // schedule it to be refreshed
-      Scheduler.instance().schedule((RefreshableSource) this.source);
-      return;
-    }
+    // if this source is schedulable, but was not already scheduled
+    if (this.source instanceof Schedulable) {
+      if (this.source instanceof FileWatchableSource) {
+        // for path-backed sources
+        // ensure we process the file-on-disk at least once, in case it never changes
+        this.accept(this.source.get());
 
-    // for any other source types, ensure the data is read at least once
-    this.accept(this.source.get());
+        // and register for future updates
+        FileWatchSvc.instance().register((FileWatchableSource) this.source);
+        this.initialized = true;
+
+      } else if (this.source instanceof RefreshableSource) {
+        // for periodically refreshable sources
+        // schedule it to be refreshed
+        Scheduler.instance().schedule((RefreshableSource) this.source);
+        this.initialized = true;
+
+      } else {
+        // otherwise log a warning since this may be a user error
+        log.warning(
+            () ->
+                format(
+                    "The '%s' custom source is schedulable but was not already scheduled. "
+                        + "If this is an error, override #scheduled() and return true",
+                    this.source));
+      }
+
+    } else {
+      // for any other source types, ensure the data is read at least once
+      this.accept(this.source.get());
+      this.initialized = true;
+    }
   }
 
   @Nullable
@@ -124,60 +159,60 @@ public class Layer implements Consumer<Map<String, String>> {
 
   @Override
   public void accept(Map<String, String> data) {
-    // TODO: interim implementation, refactor!
-    this.store.clear();
-    this.store.putAll(data);
-  }
-
-  // processes the reloaded data
-  private void onReload(Map<String, String> data) {
-    // make a copy to avoid wrongly changing the input
-    // TODO: rethink this algorithm to avoid this copy op
-    Map<String, String> freshValues = new HashMap<>(data);
-
-    // iterate over the current values
-    var it = this.store.entrySet().iterator();
-    while (it.hasNext()) {
-      var entry = it.next();
-      var existingKey = entry.getKey();
-
-      // check if the updated map still contains this key
-      if (!freshValues.containsKey(existingKey)) {
-        // the key was deleted
-        // remove the entry from the underlying store
-        it.remove();
-
-        // and notify the registry that this layer no longer defines this key
-        this.registry.store.put(existingKey, null, this);
-        continue;
-      }
-
-      // retrieve the (potentially) new value
-      String maybeNewValue = freshValues.get(existingKey);
-
-      // check if the value has changed
-      if (!Objects.equals(this.store.get(existingKey), maybeNewValue)) {
-        // if it has changed, update it
-        entry.setValue(maybeNewValue);
-
-        // and notify that registry that we have a new value
-        this.registry.store.put(existingKey, maybeNewValue, this);
-
-        // then remove it from the new map
-        // so that we end up with a map containing only new entries
-        freshValues.remove(existingKey);
-      }
+    // disallow more than one concurrent update from taking place
+    if (!this.lock.tryLock()) {
+      log.warning(() -> "Could not update layer while another update is taking place");
     }
 
-    // finally, add the new entries to the store
-    this.store.putAll(freshValues);
+    try {
+      // iterate over the current values
+      var it = this.store.entrySet().iterator(); // 2 4
+      while (it.hasNext()) {
+        var entry = it.next();
+        var existingKey = entry.getKey();
 
-    // and notify the registry of any keys that this layer now defines
-    freshValues.forEach((key, value) -> this.registry.store.put(key, value, this));
+        // check if the updated map still contains this key
+        if (!data.containsKey(existingKey)) {
+          // the key was deleted
+          // remove the entry from the underlying store
+          it.remove();
+
+          // and notify the registry that this layer no longer defines this key
+          this.registry.store.put(existingKey, null, this);
+          continue;
+        }
+
+        // retrieve the (potentially) new value
+        String maybeNewValue = data.get(existingKey);
+
+        // check if the value has changed
+        if (!Objects.equals(this.store.get(existingKey), maybeNewValue)) {
+          // if it has changed, update it
+          entry.setValue(maybeNewValue);
+
+          // and notify that registry that we have a new value
+          this.registry.store.put(existingKey, maybeNewValue, this);
+        }
+      }
+
+      // process incoming data
+      for (var e : data.entrySet()) {
+        // if the specific key was not already processed (i.e., existed in the store, before
+        // this method call
+        if (!this.store.containsKey(e.getKey())) {
+          // add the new key,value to the store
+          this.store.put(e.getKey(), e.getValue());
+          // and notify the registry
+          this.registry.store.put(e.getKey(), e.getValue(), this);
+        }
+      }
+    } finally {
+      this.lock.unlock();
+    }
   }
 
   @Override
   public String toString() {
-    return String.format("Layer(id=%s, priority=%d)", this.id(), this.priority);
+    return format("Layer(id=%s, priority=%d)", this.id(), this.priority);
   }
 }

@@ -25,6 +25,7 @@
 
 package sh.props.source.refresh;
 
+import static java.lang.String.format;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -42,8 +43,6 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.PathBackedSource;
-import sh.props.source.refresh.util.BackgroundExecutorFactory;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
@@ -80,23 +79,31 @@ public class FileWatchSvc implements Runnable {
   /**
    * Registers the specified path for notification on updates.
    *
-   * @param source a {@link PathBackedSource}
+   * @param source a {@link FileWatchableSource}
    */
-  public void register(PathBackedSource source) throws IOException {
-    Path path = source.backingPath();
+  public void register(FileWatchableSource source) throws IOException {
+    if (source.scheduled()) {
+      log.fine(
+          () ->
+              format(
+                  "Will not schedule %s, as it was already scheduled in another executor", source));
+      return;
+    }
+
+    Path path = source.file();
     if (path == null) {
       throw new NullPointerException("The passed argument must not be null");
     }
     if (path.getParent() == null) {
       throw new NullPointerException("The passed argument must be a valid path to a file");
     }
-    try {
-      // listen for updates on all event types
-      path.getParent().register(this.watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-    } finally {
-      // and map the file to a trigger object which will be later used for refreshing the data
-      this.triggers.put(path, new Trigger(source));
-    }
+
+    // listen for updates on all event types
+    path.getParent().register(this.watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+    // and map the file to a trigger object which will be later used for refreshing the data
+    this.triggers.put(path, new Trigger(source));
+    // mark this source as scheduled
+    source.setScheduled();
   }
 
   /** Main file-watching logic. */
@@ -149,8 +156,8 @@ public class FileWatchSvc implements Runnable {
     }
   }
 
-  /** Schedules the file watching logic for execution. */
-  public void schedule() {
+  /** Starts the file watching logic in a dedicated executor. */
+  public void start() {
     this.executor.execute(this);
   }
 

@@ -23,17 +23,17 @@
  *
  */
 
-package sh.props.source;
+package sh.props.source.refresh;
 
-import java.nio.file.Path;
-
-/** A special type of source which is backed by a file, on disk. */
-public abstract class PathBackedSource extends AbstractSource {
+public interface Schedulable {
 
   /**
-   * Returns the location, on disk, of the file backing this source.
+   * Determines if the object was scheduled for execution.
    *
-   * @return a non-null {@link Path} pointing to a file on disk
+   * @return <code>true</code> if already scheduled
    */
-  public abstract Path backingPath();
+  boolean scheduled();
+
+  /** Mark this object as having been scheduled for execution. */
+  void setScheduled();
 }

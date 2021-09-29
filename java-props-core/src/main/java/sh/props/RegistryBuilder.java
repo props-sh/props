@@ -31,15 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
-import sh.props.source.PathBackedSource;
-import sh.props.source.Source;
+import sh.props.source.AbstractSource;
 import sh.props.source.refresh.FileWatchSvc;
+import sh.props.source.refresh.FileWatchableSource;
 import sh.props.source.refresh.RefreshableSource;
 import sh.props.source.refresh.Scheduler;
 
 public class RegistryBuilder {
 
-  ArrayDeque<Source> sources = new ArrayDeque<>();
+  ArrayDeque<AbstractSource> sources = new ArrayDeque<>();
   @Nullable FileWatchSvc fileWatchSvc = null;
   @Nullable Scheduler scheduler = null;
 
@@ -82,13 +82,13 @@ public class RegistryBuilder {
    * Registers a source with the current registry. The source will only be read once (eagerly) and
    * never refreshed.
    *
-   * <p>Use one of {@link #withSource(PathBackedSource)} or {@link #withSource(RefreshableSource)}
-   * if you'd like to refresh the source's data.
+   * <p>Use one of {@link #withSource(FileWatchableSource)} or {@link
+   * #withSource(RefreshableSource)} if you'd like to refresh the source's data.
    *
    * @param source the source to register
    * @return this builder object (fluent interface)
    */
-  public RegistryBuilder withSource(Source source) {
+  public RegistryBuilder withSource(AbstractSource source) {
     this.sources.addFirst(source);
     return this;
   }
@@ -127,7 +127,7 @@ public class RegistryBuilder {
    * @param source the source to register
    * @return this builder object (fluent interface)
    */
-  public RegistryBuilder withSource(PathBackedSource source) throws IOException {
+  public RegistryBuilder withSource(FileWatchableSource source) throws IOException {
     this.sources.addFirst(source);
 
     // ensure a file watch service is initialized
@@ -158,7 +158,7 @@ public class RegistryBuilder {
     @Nullable Layer next = null;
 
     List<Layer> layers = new ArrayList<>(this.sources.size());
-    for (Source source : this.sources) {
+    for (AbstractSource source : this.sources) {
       // wrap each source in a layer
       Layer layer = new Layer(source, registry, priority--);
 
@@ -178,7 +178,7 @@ public class RegistryBuilder {
 
     // ensure the file watch service is running
     if (this.fileWatchSvc != null) {
-      this.fileWatchSvc.schedule();
+      this.fileWatchSvc.start();
     }
 
     // and return a constructed registry object
