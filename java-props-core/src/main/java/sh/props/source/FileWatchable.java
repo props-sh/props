@@ -20,20 +20,23 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package sh.props.source.refresh;
+package sh.props.source;
 
-public interface Schedulable {
+import java.nio.file.Path;
+
+/**
+ * Denotes an object that sends events based on changes on the file system (e.g., the file was
+ * updated on disk)
+ */
+@FunctionalInterface
+public interface FileWatchable {
 
   /**
-   * Determines if the object was scheduled for execution.
+   * The file to monitor using JDK's {@link java.nio.file.WatchService}.
    *
-   * @return <code>true</code> if already scheduled
+   * @return a path to a file on disk
    */
-  boolean scheduled();
-
-  /** Mark this object as having been scheduled for execution. */
-  void setScheduled();
+  Path file();
 }

@@ -25,16 +25,13 @@
 
 package sh.props.source.refresh;
 
-import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
+import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Logger;
 import sh.props.source.AbstractSource;
 
 public class Scheduler {
-
-  private static final Logger log = Logger.getLogger(Scheduler.class.getName());
 
   protected final ScheduledExecutorService executor;
 
@@ -58,34 +55,35 @@ public class Scheduler {
   }
 
   /**
-   * Schedules a {@link RefreshableSource} for periodic data refreshes.
-   *
-   * <p>The refresh period can be configured by overriding {@link
-   * RefreshableSource#refreshPeriod()}.
+   * Schedules an {@link AbstractSource} for periodic data refreshes.
    *
    * @param source the source to refresh
+   * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public <T extends AbstractSource & Refreshable & Schedulable> void schedule(T source) {
-    if (source.scheduled()) {
-      log.fine(
-          () ->
-              format(
-                  "Will not schedule %s, as it was already scheduled in another executor", source));
-      return;
-    }
-
-    // determines if the source should be eagerly or lazily initialized
-    long initialDelay = 0L;
-    if (!source.eagerInitialization()) {
-      // lazy initialization
-      initialDelay = source.refreshPeriod().toNanos();
-    }
+  public ScheduledSource schedule(AbstractSource source, Duration initialDelay,
+      Duration refreshPeriod) {
 
     // schedule the source for periodic data refreshes
     this.executor.scheduleAtFixedRate(
-        new Trigger(source), initialDelay, source.refreshPeriod().toNanos(), NANOSECONDS);
-    source.setScheduled();
+        new Trigger(source), initialDelay.toNanos(),
+        refreshPeriod.toNanos(),
+        NANOSECONDS);
+
+    return new ScheduledSource(source, true);
+  }
+
+  /**
+   * Schedules an {@link AbstractSource} for periodic data refreshes.  It eagerly scheduled the
+   * first data load by setting the initial interval to zero.
+   *
+   * @param source the source to refresh
+   * @return a {@link ScheduledSource} object
+   */
+  @SuppressWarnings("FutureReturnValueIgnored")
+  public ScheduledSource scheduleEagerly(AbstractSource source,
+      Duration refreshPeriod) {
+    return this.schedule(source, Duration.ZERO, refreshPeriod);
   }
 
   /**

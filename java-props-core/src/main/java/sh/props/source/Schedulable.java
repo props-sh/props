@@ -20,37 +20,21 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package sh.props.source.refresh;
+package sh.props.source;
 
-import java.time.Duration;
-
-public interface Refreshable {
+public interface Schedulable {
 
   /**
-   * How often should the source be refreshed.
-   *
-   * @return the duration between source refreshes
-   */
-  Duration refreshPeriod();
-
-  /**
-   * Determines if the underlying source should be eagerly or lazily initialized. The behaviour is
-   * set to eager by default.
-   *
-   * @return true if the source should be eagerly initialized (e.g., the initial delay will be set
-   *     to 0)
-   */
-  default boolean eagerInitialization() {
-    return true;
-  }
-
-  /**
-   * Determines if the object was scheduled for refreshes.
+   * Determines if the object was scheduled for execution.
    *
    * @return <code>true</code> if already scheduled
    */
   boolean scheduled();
+
+  /**
+   * Mark this object as having been scheduled for execution.
+   */
+  void setScheduled();
 }

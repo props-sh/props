@@ -25,75 +25,25 @@
 
 package sh.props;
 
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
 import sh.props.source.AbstractSource;
-import sh.props.source.refresh.FileWatchSvc;
-import sh.props.source.refresh.FileWatchableSource;
-import sh.props.source.refresh.Refreshable;
-import sh.props.source.refresh.RefreshableSource;
-import sh.props.source.refresh.Scheduler;
 
 public class RegistryBuilder {
 
   ArrayDeque<AbstractSource> sources = new ArrayDeque<>();
 
   /**
-   * Registers a source with the current registry. The source will only be read once (eagerly) and
-   * never refreshed.
-   *
-   * <p>Use one of {@link #withSource(FileWatchableSource)} or {@link
-   * #withSource(RefreshableSource)} if you'd like to refresh the source's data.
+   * Registers a source with the current registry.
    *
    * @param source the source to register
    * @return this builder object (fluent interface)
    */
   public RegistryBuilder withSource(AbstractSource source) {
     this.sources.addFirst(source);
-    return this;
-  }
-
-  /**
-   * Registers a source which will be periodically refreshed.
-   *
-   * <p>If the source was not already {@link Refreshable#scheduled()}, it will be
-   * on the default {@link Scheduler#instance()}.
-   *
-   * @param source the source to auto-refresh
-   * @return this builder object (fluent interface)
-   */
-  public RegistryBuilder withSource(RefreshableSource source) {
-    this.sources.addFirst(source);
-
-    if (!source.scheduled()) {
-      // schedule the source for periodic refreshing
-      Scheduler.instance().schedule(source);
-    }
-
-    return this;
-  }
-
-  /**
-   * Registers a source with the current registry.
-   *
-   * <p>If the source was not already {@link Refreshable#scheduled()}, it will be
-   * registered to the default {@link FileWatchSvc#instance()}.
-   *
-   * @param source the source to register
-   * @return this builder object (fluent interface)
-   */
-  public RegistryBuilder withSource(FileWatchableSource source) throws IOException {
-    this.sources.addFirst(source);
-
-    if (!source.scheduled()) {
-      // schedule the source for on disk updates
-      FileWatchSvc.instance().register(source);
-    }
-
     return this;
   }
 
@@ -125,8 +75,8 @@ public class RegistryBuilder {
     }
 
     // add the layers to the registry
-    registry.setLayers(layers);
-    
+    registry.layers.addAll(layers);
+
     // and return a constructed registry object
     return registry;
   }

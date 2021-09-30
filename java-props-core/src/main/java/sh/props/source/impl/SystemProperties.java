@@ -28,7 +28,9 @@ package sh.props.source.impl;
 import java.util.Map;
 import sh.props.source.AbstractSource;
 
-/** Retrieves system properties. */
+/**
+ * Retrieves system properties.
+ */
 public class SystemProperties extends AbstractSource {
 
   @Override
@@ -44,9 +46,5 @@ public class SystemProperties extends AbstractSource {
   @Override
   public Map<String, String> get() {
     return this.readPropertiesToMap(System.getProperties());
-  }
-
-  public static boolean initialized() {
-    return true;
   }
 }

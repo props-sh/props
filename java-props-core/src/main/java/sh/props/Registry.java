@@ -25,7 +25,7 @@
 
 package sh.props;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Datastore;
@@ -34,20 +34,13 @@ import sh.props.interfaces.ValueLayerTuple;
 public class Registry {
 
   final Datastore store;
-  List<Layer> layers = Collections.emptyList();
-
-  /** Ensures a registry can only be constructed through a builder. */
-  Registry(Datastore store) {
-    this.store = store;
-  }
+  final List<Layer> layers = new ArrayList<>();
 
   /**
-   * Used during initialization to add the layers used by this registry.
-   *
-   * @param layers layers to define
+   * Ensures a registry can only be constructed through a builder.
    */
-  void setLayers(List<Layer> layers) {
-    this.layers = layers;
+  Registry(Datastore store) {
+    this.store = store;
   }
 
   /**

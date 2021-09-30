@@ -36,12 +36,8 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.source.AbstractSource;
+import sh.props.source.Schedulable;
 import sh.props.source.Source;
-import sh.props.source.refresh.FileWatchSvc;
-import sh.props.source.refresh.FileWatchableSource;
-import sh.props.source.refresh.RefreshableSource;
-import sh.props.source.refresh.Schedulable;
-import sh.props.source.refresh.Scheduler;
 
 public class Layer implements Consumer<Map<String, String>> {
 
@@ -53,8 +49,10 @@ public class Layer implements Consumer<Map<String, String>> {
 
   private final ReentrantLock lock = new ReentrantLock();
 
-  @Nullable Layer prev;
-  @Nullable Layer next;
+  @Nullable
+  Layer prev;
+  @Nullable
+  Layer next;
 
   private final int priority;
   private volatile boolean initialized = false;
@@ -62,7 +60,7 @@ public class Layer implements Consumer<Map<String, String>> {
   /**
    * Class constructor.
    *
-   * @param source the source that provides data for this layer
+   * @param source   the source that provides data for this layer
    * @param registry a reference to the associated registry
    */
   protected Layer(AbstractSource source, Registry registry, int priority) {
@@ -93,30 +91,13 @@ public class Layer implements Consumer<Map<String, String>> {
 
     // if this source is schedulable, but was not already scheduled
     if (this.source instanceof Schedulable) {
-      if (this.source instanceof FileWatchableSource) {
-        // for path-backed sources
-        // ensure we process the file-on-disk at least once, in case it never changes
-        this.accept(this.source.get());
-
-        // and register for future updates
-        FileWatchSvc.instance().register((FileWatchableSource) this.source);
-        this.initialized = true;
-
-      } else if (this.source instanceof RefreshableSource) {
-        // for periodically refreshable sources
-        // schedule it to be refreshed
-        Scheduler.instance().schedule((RefreshableSource) this.source);
-        this.initialized = true;
-
-      } else {
-        // otherwise log a warning since this may be a user error
-        log.warning(
-            () ->
-                format(
-                    "The '%s' custom source is schedulable but was not already scheduled. "
-                        + "If this is an error, override #scheduled() and return true",
-                    this.source));
-      }
+      // log a warning since this may be a user error
+      log.warning(
+          () ->
+              format(
+                  "The '%s' custom source is schedulable but was not already scheduled. "
+                      + "If this is an error, override #scheduled() and return true",
+                  this.source));
 
     } else {
       // for any other source types, ensure the data is read at least once

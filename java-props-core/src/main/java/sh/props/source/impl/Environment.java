@@ -28,7 +28,9 @@ package sh.props.source.impl;
 import java.util.Map;
 import sh.props.source.AbstractSource;
 
-/** Retrieves all environment variables. */
+/**
+ * Retrieves all environment variables.
+ */
 public class Environment extends AbstractSource {
 
   /**
@@ -49,9 +51,5 @@ public class Environment extends AbstractSource {
   @Override
   public Map<String, String> get() {
     return System.getenv();
-  }
-
-  public static boolean initialized() {
-    return true;
   }
 }

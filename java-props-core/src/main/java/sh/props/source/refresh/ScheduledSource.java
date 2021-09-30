@@ -20,48 +20,45 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package sh.props.source.refresh;
 
-import java.nio.file.Path;
+import java.util.Map;
 import sh.props.source.AbstractSource;
+import sh.props.source.Schedulable;
 
-/** A special type of source which is backed by a file, on disk. */
-public abstract class FileWatchableSource extends AbstractSource
-    implements FileWatchable, Schedulable {
+public class ScheduledSource extends AbstractSource implements Schedulable {
 
-  private final Path file;
-  private boolean wasScheduled = false;
+  private final AbstractSource delegate;
+  private volatile boolean scheduled = false;
 
-  protected FileWatchableSource(Path file) {
-    this.file = file;
+  public ScheduledSource(AbstractSource delegate) {
+    this.delegate = delegate;
   }
 
-  /**
-   * Returns the location, on disk, of the file backing this source.
-   *
-   * @return a non-null {@link Path} pointing to a file on disk
-   */
+  public ScheduledSource(AbstractSource delegate, boolean scheduled) {
+    this.delegate = delegate;
+    this.scheduled = scheduled;
+  }
+
   @Override
-  public Path file() {
-    return this.file;
+  public String id() {
+    return this.delegate.id();
   }
 
-  /**
-   * Determines if the object was scheduled for refreshes.
-   *
-   * @return <code>true</code> if already scheduled
-   */
+  @Override
+  public Map<String, String> get() {
+    return this.delegate.get();
+  }
+
   @Override
   public boolean scheduled() {
-    return this.wasScheduled;
+    return this.scheduled;
   }
 
-  /** Mark this source as having been scheduled for periodic execution. */
   @Override
   public void setScheduled() {
-    this.wasScheduled = true;
+    this.scheduled = true;
   }
 }

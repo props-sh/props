@@ -25,7 +25,6 @@
 
 package sh.props.source.refresh;
 
-import static java.lang.String.format;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -44,6 +43,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.source.AbstractSource;
+import sh.props.source.FileWatchable;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
@@ -80,18 +80,10 @@ public class FileWatchSvc implements Runnable {
   /**
    * Registers the specified path for notification on updates.
    *
-   * @param source a {@link FileWatchableSource}
+   * @param source an {@link AbstractSource} that is also {@link FileWatchable}
    */
-  public <T extends AbstractSource & FileWatchable & Schedulable> void register(T source)
+  public <T extends AbstractSource & FileWatchable> ScheduledSource register(T source)
       throws IOException {
-    if (source.scheduled()) {
-      log.fine(
-          () ->
-              format(
-                  "Will not schedule %s, as it was already scheduled in another executor", source));
-      return;
-    }
-
     Path path = source.file();
     if (path == null) {
       throw new NullPointerException("The passed argument must not be null");
@@ -105,7 +97,7 @@ public class FileWatchSvc implements Runnable {
     // and map the file to a trigger object which will be later used for refreshing the data
     this.triggers.put(path, new Trigger(source));
     // mark this source as scheduled
-    source.setScheduled();
+    return new ScheduledSource(source, true);
   }
 
   /**

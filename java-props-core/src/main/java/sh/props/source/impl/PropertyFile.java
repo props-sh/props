@@ -36,10 +36,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
 import sh.props.source.AbstractSource;
+import sh.props.source.FileWatchable;
 import sh.props.source.Source;
 
-/** Retrieves properties from a Java properties file, located on disk. */
-public class PropertyFile extends AbstractSource {
+/**
+ * Retrieves properties from a Java properties file, located on disk.
+ */
+public class PropertyFile extends AbstractSource implements FileWatchable {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -57,7 +60,7 @@ public class PropertyFile extends AbstractSource {
    * Read properties from the backing file on disk.
    *
    * @return a map of properties, or an empty map in case an error was encountered while reading the
-   *     file
+   * file
    */
   @Override
   public Map<String, String> get() {
@@ -78,5 +81,15 @@ public class PropertyFile extends AbstractSource {
   @Override
   public String id() {
     return "file://" + this.location.toString();
+  }
+
+  /**
+   * The location of the property file backing this source.
+   *
+   * @return a valid path to the backing file, on disk
+   */
+  @Override
+  public Path file() {
+    return this.location;
   }
 }
