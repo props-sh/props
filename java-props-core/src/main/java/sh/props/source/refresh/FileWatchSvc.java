@@ -43,6 +43,7 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sh.props.source.AbstractSource;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
@@ -59,8 +60,8 @@ public class FileWatchSvc implements Runnable {
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
-   * single thread.
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with
+   * a single thread.
    */
   public FileWatchSvc() throws IOException {
     this(BackgroundExecutorFactory.create(1));
@@ -81,7 +82,8 @@ public class FileWatchSvc implements Runnable {
    *
    * @param source a {@link FileWatchableSource}
    */
-  public void register(FileWatchableSource source) throws IOException {
+  public <T extends AbstractSource & FileWatchable & Schedulable> void register(T source)
+      throws IOException {
     if (source.scheduled()) {
       log.fine(
           () ->
@@ -106,7 +108,9 @@ public class FileWatchSvc implements Runnable {
     source.setScheduled();
   }
 
-  /** Main file-watching logic. */
+  /**
+   * Main file-watching logic.
+   */
   @Override
   public void run() {
     WatchKey key = null;
@@ -121,8 +125,7 @@ public class FileWatchSvc implements Runnable {
             // retrieve the file
             .map(
                 event -> {
-                  @SuppressWarnings("unchecked")
-                  WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                  @SuppressWarnings("unchecked") WatchEvent<Path> ev = (WatchEvent<Path>) event;
                   return ev.context();
                 })
 
@@ -156,9 +159,12 @@ public class FileWatchSvc implements Runnable {
     }
   }
 
-  /** Starts the file watching logic in a dedicated executor. */
-  public void start() {
+  /**
+   * Starts the file watching logic in a dedicated executor.
+   */
+  public FileWatchSvc start() {
     this.executor.execute(this);
+    return this;
   }
 
   /**
@@ -170,14 +176,16 @@ public class FileWatchSvc implements Runnable {
     return Holder.DEFAULT;
   }
 
-  /** Static holder for the default instance, ensuring lazy initialization. */
+  /**
+   * Static holder for the default instance, ensuring lazy initialization.
+   */
   private static final class Holder {
 
     private static final FileWatchSvc DEFAULT;
 
     static {
       try {
-        DEFAULT = new FileWatchSvc();
+        DEFAULT = new FileWatchSvc().start();
       } catch (IOException e) {
         throw new RuntimeException(
             "Unexpected error while initializing the default file watcher", e);

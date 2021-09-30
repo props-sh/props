@@ -35,7 +35,7 @@ public class SourceUtils {
   /**
    * Static factory method that triggers a source update on the specified refreshPeriod.
    *
-   * @param delegate source to wrap as refreshable
+   * @param delegate      source to wrap as refreshable
    * @param refreshPeriod the duration between source refreshes
    * @return a constructed source
    */
@@ -58,7 +58,7 @@ public class SourceUtils {
    * Static factory method that triggers a source update on the specified refreshPeriod.
    *
    * @param delegate source to wrap as refreshable
-   * @param file the file that should be watched for updates
+   * @param file     the file that should be watched for updates
    * @return a constructed source
    */
   public static <T extends FileWatchable & Source> FileWatchableSource watchForFileUpdate(

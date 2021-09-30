@@ -30,6 +30,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
+import sh.props.source.AbstractSource;
 
 public class Scheduler {
 
@@ -40,8 +41,8 @@ public class Scheduler {
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
-   * single thread.
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with
+   * a single thread.
    */
   public Scheduler() {
     this(BackgroundExecutorFactory.create(1));
@@ -65,7 +66,7 @@ public class Scheduler {
    * @param source the source to refresh
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public void schedule(RefreshableSource source) {
+  public <T extends AbstractSource & Refreshable & Schedulable> void schedule(T source) {
     if (source.scheduled()) {
       log.fine(
           () ->
@@ -96,7 +97,9 @@ public class Scheduler {
     return Holder.DEFAULT;
   }
 
-  /** Static holder for the default instance, ensuring lazy initialization. */
+  /**
+   * Static holder for the default instance, ensuring lazy initialization.
+   */
   private static class Holder {
 
     private static final Scheduler DEFAULT = new Scheduler();

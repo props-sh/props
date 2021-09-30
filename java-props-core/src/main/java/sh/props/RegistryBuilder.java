@@ -34,49 +34,13 @@ import sh.props.interfaces.Datastore;
 import sh.props.source.AbstractSource;
 import sh.props.source.refresh.FileWatchSvc;
 import sh.props.source.refresh.FileWatchableSource;
+import sh.props.source.refresh.Refreshable;
 import sh.props.source.refresh.RefreshableSource;
 import sh.props.source.refresh.Scheduler;
 
 public class RegistryBuilder {
 
   ArrayDeque<AbstractSource> sources = new ArrayDeque<>();
-  @Nullable FileWatchSvc fileWatchSvc = null;
-  @Nullable Scheduler scheduler = null;
-
-  /**
-   * Call this method if the registry should watch for file changes.
-   *
-   * @return this builder object (fluent interface)
-   * @throws IOException if the {@link FileWatchSvc} could not be initialized
-   */
-  public RegistryBuilder withFileWatchService() throws IOException {
-    // the synchronized block is probably superfluous,
-    // but nevertheless we want to prevent users from accidentally creating
-    // more than one file watching service and its corresponding executor
-    synchronized (this) {
-      if (this.fileWatchSvc == null) {
-        // initialize if necessary
-        this.fileWatchSvc = new FileWatchSvc();
-      }
-    }
-
-    return this;
-  }
-
-  /** Call this method if the registry should be allowed to periodically refresh its sources. */
-  public RegistryBuilder withScheduler() {
-    // the synchronized block is probably superfluous,
-    // but nevertheless we want to prevent users from accidentally creating
-    // more than one scheduler since we want to keep the number of threads to a minimum
-    synchronized (this) {
-      if (this.scheduler == null) {
-        // initialize a scheduler if necessary
-        this.scheduler = new Scheduler();
-      }
-    }
-
-    return this;
-  }
 
   /**
    * Registers a source with the current registry. The source will only be read once (eagerly) and
@@ -96,7 +60,8 @@ public class RegistryBuilder {
   /**
    * Registers a source which will be periodically refreshed.
    *
-   * <p>If {@link #withScheduler()} was not already called, it will be automatically called.
+   * <p>If the source was not already {@link Refreshable#scheduled()}, it will be
+   * on the default {@link Scheduler#instance()}.
    *
    * @param source the source to auto-refresh
    * @return this builder object (fluent interface)
@@ -104,25 +69,19 @@ public class RegistryBuilder {
   public RegistryBuilder withSource(RefreshableSource source) {
     this.sources.addFirst(source);
 
-    // initialize a scheduler if necessary
-    if (this.scheduler == null) {
-      this.withScheduler();
+    if (!source.scheduled()) {
+      // schedule the source for periodic refreshing
+      Scheduler.instance().schedule(source);
     }
-
-    if (this.scheduler == null) {
-      throw new IllegalStateException(
-          "Something went seriously wrong and the scheduler could not be initialized");
-    }
-
-    // schedule the source for periodic refreshing
-    this.scheduler.schedule(source);
 
     return this;
   }
 
   /**
-   * Registers a source with the current registry. If a {@link FileWatchSvc} is initialized, the
-   * source will be refreshed on any disk events (file created, modified, or deleted).
+   * Registers a source with the current registry.
+   *
+   * <p>If the source was not already {@link Refreshable#scheduled()}, it will be
+   * registered to the default {@link FileWatchSvc#instance()}.
    *
    * @param source the source to register
    * @return this builder object (fluent interface)
@@ -130,18 +89,10 @@ public class RegistryBuilder {
   public RegistryBuilder withSource(FileWatchableSource source) throws IOException {
     this.sources.addFirst(source);
 
-    // ensure a file watch service is initialized
-    if (this.fileWatchSvc == null) {
-      this.withFileWatchService();
+    if (!source.scheduled()) {
+      // schedule the source for on disk updates
+      FileWatchSvc.instance().register(source);
     }
-
-    if (this.fileWatchSvc == null) {
-      throw new IllegalStateException(
-          "Something went seriously wrong and the file watch service could not be initialized");
-    }
-
-    // schedule the source for on disk updates
-    this.fileWatchSvc.register(source);
 
     return this;
   }
@@ -175,12 +126,7 @@ public class RegistryBuilder {
 
     // add the layers to the registry
     registry.setLayers(layers);
-
-    // ensure the file watch service is running
-    if (this.fileWatchSvc != null) {
-      this.fileWatchSvc.start();
-    }
-
+    
     // and return a constructed registry object
     return registry;
   }
