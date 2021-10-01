@@ -25,9 +25,6 @@
 
 package sh.props;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -55,21 +52,17 @@ public class OwnershipBenchmark {
 
     public Map<String, String> control;
     public Registry registry;
-    public SyncStore tested;
     public InMemory source1;
-    public Layer l1;
 
     @Setup(Level.Invocation)
     public void setUp() {
-      this.registry = mock(Registry.class);
-      this.tested = spy(SyncStore.class);
       this.source1 = new InMemory();
-      this.l1 = new Layer(this.source1, this.registry, 1);
+      this.registry = new RegistryBuilder().withSource(this.source1).build();
 
-      // set an initial value
+      // set initial values
       this.source1.put("key", "v1");
+      this.source1.put("preset", "preset-value");
       this.source1.updateSubscribers();
-      this.tested.put("preset", "preset-value", this.l1);
 
       // control
       this.control = new HashMap<>();
@@ -78,40 +71,47 @@ public class OwnershipBenchmark {
   }
 
   @Benchmark
-  @OutputTimeUnit(TimeUnit.SECONDS)
-  public static void setUnset(Blackhole blackhole) {
-    Registry registry = mock(Registry.class);
-    SyncStore tested = spy(SyncStore.class);
+  public static void setUnset(ExecutionPlan plan) {
+    // set
+    plan.source1.put("key", "v1");
+    plan.source1.updateSubscribers();
 
-    InMemory source1 = new InMemory();
-    Layer l1 = new Layer(source1, registry, 1);
-
-    source1.put("key", "v1");
-    source1.updateSubscribers();
-    blackhole.consume(tested.put("key", "v1", l1));
-
-    source1.remove("key");
-    source1.updateSubscribers();
-    blackhole.consume(tested.put("key", null, l1));
+    // unset
+    plan.source1.remove("key");
+    plan.source1.updateSubscribers();
   }
 
   @Benchmark
-  public static void getUnused(ExecutionPlan plan) {
-    plan.tested.get("preset");
+  public static void setUnsetSameUpdate(ExecutionPlan plan) {
+    // set
+    plan.source1.put("key", "v1");
+
+    // unset
+    plan.source1.remove("key");
+
+    // update
+    plan.source1.updateSubscribers();
+  }
+
+  @Benchmark
+  public static void set(ExecutionPlan plan) {
+    // set
+    plan.source1.put("key", "v1");
+    plan.source1.updateSubscribers();
+  }
+
+  @Benchmark
+  public static void noopUpdate(ExecutionPlan plan) {
+    plan.source1.updateSubscribers();
   }
 
   @Benchmark
   public static void get(ExecutionPlan plan, Blackhole blackhole) {
-    blackhole.consume(plan.tested.get("preset"));
+    blackhole.consume(plan.registry.get("preset", String.class));
   }
 
   @Benchmark
   public static void getFromHashMap(ExecutionPlan plan, Blackhole blackhole) {
     blackhole.consume(plan.control.get("preset"));
-  }
-
-  @Benchmark
-  public static void getFromHashMapUnused(ExecutionPlan plan) {
-    plan.control.get("preset");
   }
 }
