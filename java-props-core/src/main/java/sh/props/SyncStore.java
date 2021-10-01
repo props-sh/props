@@ -28,13 +28,21 @@ package sh.props;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Datastore;
-import sh.props.interfaces.ValueLayerTuple;
 
-public abstract class SyncStore implements Datastore {
+class SyncStore implements Datastore {
 
   protected final ConcurrentHashMap<String, ValueLayerTuple> effectiveValues =
       new ConcurrentHashMap<>();
+  protected final Notifier notifier;
+
+  public SyncStore(Notifier notifier) {
+    this.notifier = notifier;
+  }
+
+  @Override
+  public Notifier notifier() {
+    return this.notifier;
+  }
 
   /**
    * Retrieves a value for the specified key.
@@ -157,11 +165,11 @@ public abstract class SyncStore implements Datastore {
   @Nullable
   private ValueLayerTuple withUpdate(String key, @Nullable ValueLayerTuple vl) {
     if (vl == null) {
-      this.sendUpdate(key, null, null);
+      this.notifier().sendUpdate(key, null, null);
       return null;
     }
 
-    this.sendUpdate(key, vl.value(), vl.layer());
+    this.notifier().sendUpdate(key, vl.value(), vl.layer());
     return vl;
   }
 

@@ -29,7 +29,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Datastore;
 import sh.props.source.AbstractSource;
 
 public class RegistryBuilder {
@@ -52,8 +51,8 @@ public class RegistryBuilder {
    *
    * @return a configured {@link Registry} object
    */
-  public Registry build(Datastore store) {
-    Registry registry = new Registry(store);
+  public Registry build() {
+    Registry registry = new Registry();
 
     int priority = this.sources.size();
     @Nullable Layer next = null;
@@ -71,7 +70,7 @@ public class RegistryBuilder {
       next = layer;
 
       // store the layer in an array list
-      layers.add(layer);
+      layers.add(layer.initialize());
     }
 
     // add the layers to the registry

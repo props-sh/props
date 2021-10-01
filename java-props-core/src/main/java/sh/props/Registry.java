@@ -28,19 +28,20 @@ package sh.props;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Datastore;
-import sh.props.interfaces.ValueLayerTuple;
 
-public class Registry {
+public class Registry implements Notifier {
 
   final Datastore store;
   final List<Layer> layers = new ArrayList<>();
 
-  /**
-   * Ensures a registry can only be constructed through a builder.
-   */
-  Registry(Datastore store) {
-    this.store = store;
+  /** Ensures a registry can only be constructed through a builder. */
+  Registry() {
+    this.store = new SyncStore(this::sendUpdate);
+  }
+
+  @Override
+  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+    // TODO: implement handling of events
   }
 
   /**

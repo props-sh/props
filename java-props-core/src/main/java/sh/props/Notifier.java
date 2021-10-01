@@ -23,18 +23,12 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
-import sh.props.Layer;
 import sh.props.annotations.Nullable;
 
-public interface Datastore {
-
-  @Nullable
-  ValueLayerTuple get(String key);
-
-  @Nullable
-  ValueLayerTuple put(String key, @Nullable String value, Layer layer);
+@FunctionalInterface
+interface Notifier {
 
   void sendUpdate(String key, @Nullable String value, @Nullable Layer layer);
 }

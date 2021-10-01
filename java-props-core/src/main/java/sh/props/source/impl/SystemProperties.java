@@ -28,9 +28,7 @@ package sh.props.source.impl;
 import java.util.Map;
 import sh.props.source.AbstractSource;
 
-/**
- * Retrieves system properties.
- */
+/** Retrieves system properties. */
 public class SystemProperties extends AbstractSource {
 
   @Override

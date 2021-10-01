@@ -29,7 +29,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.mockito.Mockito.spy;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,13 +47,10 @@ class SyncStoreTest {
   @Test
   void ensureMultiLayerOperations() {
     // ARRANGE
-    SyncStore syncStore = spy(SyncStore.class);
-
     InMemory source1 = new InMemory();
     InMemory source2 = new InMemory();
 
-    Registry registry =
-        new RegistryBuilder().withSource(source1).withSource(source2).build(syncStore);
+    Registry registry = new RegistryBuilder().withSource(source1).withSource(source2).build();
 
     // ACT/ASSERT
 

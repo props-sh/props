@@ -27,10 +27,10 @@ package sh.props;
 
 import static java.lang.String.format;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -49,18 +49,16 @@ public class Layer implements Consumer<Map<String, String>> {
 
   private final ReentrantLock lock = new ReentrantLock();
 
-  @Nullable
-  Layer prev;
-  @Nullable
-  Layer next;
+  @Nullable Layer prev;
+  @Nullable Layer next;
 
   private final int priority;
-  private volatile boolean initialized = false;
+  private final AtomicBoolean initialized = new AtomicBoolean(false);
 
   /**
    * Class constructor.
    *
-   * @param source   the source that provides data for this layer
+   * @param source the source that provides data for this layer
    * @param registry a reference to the associated registry
    */
   protected Layer(AbstractSource source, Registry registry, int priority) {
@@ -75,35 +73,28 @@ public class Layer implements Consumer<Map<String, String>> {
   /**
    * Initializes the source, ensuring that it is read at least once, and that any scheduled
    * operations or watch services are tracking the source.
+   *
+   * @return the current layer (fluent interface)
    */
-  public void initialize() throws IOException {
-    if (this.initialized) {
+  Layer initialize() {
+    if (this.initialized.get()) {
       // the layer is already initialized, nothing to do
-      return;
+      return this;
     }
 
-    if (this.source instanceof Schedulable && ((Schedulable) this.source).scheduled()) {
-      // nothing to do as the source was scheduled elsewhere
-      // this layer will receive the next update
-      this.initialized = true;
-      return;
-    }
-
-    // if this source is schedulable, but was not already scheduled
-    if (this.source instanceof Schedulable) {
-      // log a warning since this may be a user error
+    // if a source is not schedulable or is schedulable but was not scheduled
+    if (!(this.source instanceof Schedulable) || !((Schedulable) this.source).scheduled()) {
+      // eagerly initialize the associated layers by triggering an update
       log.warning(
           () ->
               format(
-                  "The '%s' custom source is schedulable but was not already scheduled. "
-                      + "If this is an error, override #scheduled() and return true",
+                  "The '%s' source is schedulable but was not already scheduled."
+                      + "Executing a manual update.",
                   this.source));
-
-    } else {
-      // for any other source types, ensure the data is read at least once
-      this.accept(this.source.get());
-      this.initialized = true;
+      this.source.updateSubscribers();
     }
+
+    return this;
   }
 
   @Nullable
@@ -147,7 +138,7 @@ public class Layer implements Consumer<Map<String, String>> {
 
     try {
       // iterate over the current values
-      var it = this.store.entrySet().iterator(); // 2 4
+      var it = this.store.entrySet().iterator();
       while (it.hasNext()) {
         var entry = it.next();
         var existingKey = entry.getKey();
@@ -188,7 +179,10 @@ public class Layer implements Consumer<Map<String, String>> {
         }
       }
     } finally {
+      // unlock to allow further updates from proceeding
       this.lock.unlock();
+      // and mark this layer as initialized, if not already so
+      this.initialized.compareAndSet(false, true);
     }
   }
 

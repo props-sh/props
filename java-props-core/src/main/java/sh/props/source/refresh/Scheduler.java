@@ -38,8 +38,8 @@ public class Scheduler {
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with
-   * a single thread.
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
+   * single thread.
    */
   public Scheduler() {
     this(BackgroundExecutorFactory.create(1));
@@ -61,28 +61,25 @@ public class Scheduler {
    * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public ScheduledSource schedule(AbstractSource source, Duration initialDelay,
-      Duration refreshPeriod) {
+  public ScheduledSource schedule(
+      AbstractSource source, Duration initialDelay, Duration refreshPeriod) {
 
     // schedule the source for periodic data refreshes
     this.executor.scheduleAtFixedRate(
-        new Trigger(source), initialDelay.toNanos(),
-        refreshPeriod.toNanos(),
-        NANOSECONDS);
+        new Trigger(source), initialDelay.toNanos(), refreshPeriod.toNanos(), NANOSECONDS);
 
     return new ScheduledSource(source, true);
   }
 
   /**
-   * Schedules an {@link AbstractSource} for periodic data refreshes.  It eagerly scheduled the
-   * first data load by setting the initial interval to zero.
+   * Schedules an {@link AbstractSource} for periodic data refreshes. It eagerly scheduled the first
+   * data load by setting the initial interval to zero.
    *
    * @param source the source to refresh
    * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public ScheduledSource scheduleEagerly(AbstractSource source,
-      Duration refreshPeriod) {
+  public ScheduledSource scheduleEagerly(AbstractSource source, Duration refreshPeriod) {
     return this.schedule(source, Duration.ZERO, refreshPeriod);
   }
 
@@ -95,9 +92,7 @@ public class Scheduler {
     return Holder.DEFAULT;
   }
 
-  /**
-   * Static holder for the default instance, ensuring lazy initialization.
-   */
+  /** Static holder for the default instance, ensuring lazy initialization. */
   private static class Holder {
 
     private static final Scheduler DEFAULT = new Scheduler();

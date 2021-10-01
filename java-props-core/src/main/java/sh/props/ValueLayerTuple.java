@@ -23,10 +23,9 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
 import java.util.Objects;
-import sh.props.Layer;
 
 public class ValueLayerTuple {
 

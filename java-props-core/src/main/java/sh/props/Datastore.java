@@ -23,43 +23,17 @@
  *
  */
 
-package sh.props.source.refresh;
+package sh.props;
 
-import java.util.Map;
-import sh.props.source.AbstractSource;
-import sh.props.source.Schedulable;
+import sh.props.annotations.Nullable;
 
-public class ScheduledSource extends AbstractSource implements Schedulable {
+interface Datastore {
 
-  private final AbstractSource delegate;
-  private volatile boolean scheduled = false;
+  @Nullable
+  ValueLayerTuple get(String key);
 
-  public ScheduledSource(AbstractSource delegate) {
-    this.delegate = delegate;
-  }
+  @Nullable
+  ValueLayerTuple put(String key, @Nullable String value, Layer layer);
 
-  public ScheduledSource(AbstractSource delegate, boolean scheduled) {
-    this.delegate = delegate;
-    this.scheduled = scheduled;
-  }
-
-  @Override
-  public String id() {
-    return this.delegate.id();
-  }
-
-  @Override
-  public Map<String, String> get() {
-    return this.delegate.get();
-  }
-
-  @Override
-  public boolean scheduled() {
-    return this.scheduled;
-  }
-
-  @Override
-  public void setScheduled() {
-    this.scheduled = true;
-  }
+  Notifier notifier();
 }
