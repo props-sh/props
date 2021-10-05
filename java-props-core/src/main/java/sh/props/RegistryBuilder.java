@@ -54,6 +54,11 @@ public class RegistryBuilder {
   public Registry build() {
     Registry registry = new Registry();
 
+    // validate sources
+    if (this.sources.isEmpty()) {
+      throw new IllegalStateException("Cannot construct registry without any sources");
+    }
+
     int priority = this.sources.size();
     @Nullable Layer next = null;
 

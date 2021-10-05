@@ -29,14 +29,14 @@ import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 
-public class Registry implements Notifier {
+public class Registry implements Notifiable {
 
   final Datastore store;
   final List<Layer> layers = new ArrayList<>();
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry() {
-    this.store = new SyncStore(this::sendUpdate);
+    this.store = new SyncStore(this);
   }
 
   @Override
@@ -67,9 +67,4 @@ public class Registry implements Notifier {
     //       and will require props v1's implementation
     return clz.cast(valueLayer.value());
   }
-
-  //  @Override
-  //  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-  //    // TODO: implement
-  //  }
 }
