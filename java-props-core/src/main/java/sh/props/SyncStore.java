@@ -33,15 +33,15 @@ class SyncStore implements Datastore {
 
   protected final ConcurrentHashMap<String, ValueLayerTuple> effectiveValues =
       new ConcurrentHashMap<>();
-  protected final Notifier notifier;
+  protected final Notifiable notifiable;
 
-  public SyncStore(Notifier notifier) {
-    this.notifier = notifier;
+  public SyncStore(Notifiable notifiable) {
+    this.notifiable = notifiable;
   }
 
   @Override
-  public Notifier notifier() {
-    return this.notifier;
+  public Notifiable notifier() {
+    return this.notifiable;
   }
 
   /**

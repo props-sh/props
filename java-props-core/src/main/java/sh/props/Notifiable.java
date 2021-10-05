@@ -27,8 +27,16 @@ package sh.props;
 
 import sh.props.annotations.Nullable;
 
+/** Denotes classes that can be notified of key,value updates from a designated layer. */
 @FunctionalInterface
-interface Notifier {
+interface Notifiable {
 
+  /**
+   * Called when the value of a specified key is updated by a {@link Layer}.
+   *
+   * @param key the key that is updated
+   * @param value the updated value
+   * @param layer the layer that sent the update
+   */
   void sendUpdate(String key, @Nullable String value, @Nullable Layer layer);
 }

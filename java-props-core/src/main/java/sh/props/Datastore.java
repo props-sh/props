@@ -35,5 +35,5 @@ interface Datastore {
   @Nullable
   ValueLayerTuple put(String key, @Nullable String value, Layer layer);
 
-  Notifier notifier();
+  Notifiable notifier();
 }
