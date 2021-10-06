@@ -60,6 +60,7 @@ public class Layer implements Consumer<Map<String, String>> {
    *
    * @param source the source that provides data for this layer
    * @param registry a reference to the associated registry
+   * @param priority the priority of this layer
    */
   protected Layer(AbstractSource source, Registry registry, int priority) {
     this.source = source;

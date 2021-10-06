@@ -62,6 +62,8 @@ public class FileWatchSvc implements Runnable {
    *
    * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
    * single thread.
+   *
+   * @throws IOException if a {@link WatchService} cannot be initialized for whatever reason
    */
   public FileWatchSvc() throws IOException {
     this(BackgroundExecutorFactory.create(1));
@@ -71,6 +73,7 @@ public class FileWatchSvc implements Runnable {
    * Class constructor.
    *
    * @param executor The executor used to check for {@link java.nio.file.WatchKey} updates.
+   * @throws IOException if a {@link WatchService} cannot be initialized for whatever reason
    */
   public FileWatchSvc(ScheduledExecutorService executor) throws IOException {
     this.executor = executor;
@@ -81,6 +84,10 @@ public class FileWatchSvc implements Runnable {
    * Registers the specified path for notification on updates.
    *
    * @param source an {@link AbstractSource} that is also {@link FileWatchable}
+   * @param <T> the type of the source to register; it must be both {@link AbstractSource} and
+   *     {@link FileWatchable}
+   * @return a {@link ScheduledSource} wrapping the input parameter
+   * @throws IOException if the source's path could not be registered with the {@link WatchService}
    */
   public <T extends AbstractSource & FileWatchable> ScheduledSource register(T source)
       throws IOException {
@@ -150,7 +157,11 @@ public class FileWatchSvc implements Runnable {
     }
   }
 
-  /** Starts the file watching logic in a dedicated executor. */
+  /**
+   * Starts the file watching logic in a dedicated executor.
+   *
+   * @return this object (fluent interface)
+   */
   public FileWatchSvc start() {
     this.executor.execute(this);
     return this;

@@ -58,6 +58,8 @@ public class Scheduler {
    * Schedules an {@link AbstractSource} for periodic data refreshes.
    *
    * @param source the source to refresh
+   * @param initialDelay the initial delay before the first refresh is executed
+   * @param refreshPeriod the refresh period
    * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -76,6 +78,7 @@ public class Scheduler {
    * data load by setting the initial interval to zero.
    *
    * @param source the source to refresh
+   * @param refreshPeriod the refresh period
    * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
