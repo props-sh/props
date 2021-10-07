@@ -29,11 +29,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
-import sh.props.source.AbstractSource;
+import sh.props.source.Source;
 
 public class RegistryBuilder {
 
-  ArrayDeque<AbstractSource> sources = new ArrayDeque<>();
+  ArrayDeque<Source> sources = new ArrayDeque<>();
 
   /**
    * Registers a source with the current registry.
@@ -41,7 +41,7 @@ public class RegistryBuilder {
    * @param source the source to register
    * @return this builder object (fluent interface)
    */
-  public RegistryBuilder withSource(AbstractSource source) {
+  public RegistryBuilder withSource(Source source) {
     this.sources.addFirst(source);
     return this;
   }
@@ -63,7 +63,7 @@ public class RegistryBuilder {
     @Nullable Layer next = null;
 
     List<Layer> layers = new ArrayList<>(this.sources.size());
-    for (AbstractSource source : this.sources) {
+    for (Source source : this.sources) {
       // wrap each source in a layer
       Layer layer = new Layer(source, registry, priority--);
 

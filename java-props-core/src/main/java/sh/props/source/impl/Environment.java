@@ -26,10 +26,10 @@
 package sh.props.source.impl;
 
 import java.util.Map;
-import sh.props.source.AbstractSource;
+import sh.props.source.Source;
 
 /** Retrieves all environment variables. */
-public class Environment extends AbstractSource {
+public class Environment extends Source {
 
   /**
    * An unique identifier representing this source in the {@link sh.props.Registry}.

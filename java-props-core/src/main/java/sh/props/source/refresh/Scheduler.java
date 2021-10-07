@@ -29,7 +29,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
-import sh.props.source.AbstractSource;
+import sh.props.source.Source;
 
 public class Scheduler {
 
@@ -55,7 +55,7 @@ public class Scheduler {
   }
 
   /**
-   * Schedules an {@link AbstractSource} for periodic data refreshes.
+   * Schedules an {@link Source} for periodic data refreshes.
    *
    * @param source the source to refresh
    * @param initialDelay the initial delay before the first refresh is executed
@@ -63,8 +63,7 @@ public class Scheduler {
    * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public ScheduledSource schedule(
-      AbstractSource source, Duration initialDelay, Duration refreshPeriod) {
+  public ScheduledSource schedule(Source source, Duration initialDelay, Duration refreshPeriod) {
 
     // schedule the source for periodic data refreshes
     this.executor.scheduleAtFixedRate(
@@ -74,15 +73,15 @@ public class Scheduler {
   }
 
   /**
-   * Schedules an {@link AbstractSource} for periodic data refreshes. It eagerly scheduled the first
-   * data load by setting the initial interval to zero.
+   * Schedules an {@link Source} for periodic data refreshes. It eagerly scheduled the first data
+   * load by setting the initial interval to zero.
    *
    * @param source the source to refresh
    * @param refreshPeriod the refresh period
    * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public ScheduledSource scheduleEagerly(AbstractSource source, Duration refreshPeriod) {
+  public ScheduledSource scheduleEagerly(Source source, Duration refreshPeriod) {
     return this.schedule(source, Duration.ZERO, refreshPeriod);
   }
 

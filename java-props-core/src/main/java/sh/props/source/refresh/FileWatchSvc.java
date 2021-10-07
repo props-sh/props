@@ -42,8 +42,8 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.AbstractSource;
 import sh.props.source.FileWatchable;
+import sh.props.source.Source;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
@@ -83,14 +83,13 @@ public class FileWatchSvc implements Runnable {
   /**
    * Registers the specified path for notification on updates.
    *
-   * @param source an {@link AbstractSource} that is also {@link FileWatchable}
-   * @param <T> the type of the source to register; it must be both {@link AbstractSource} and
-   *     {@link FileWatchable}
+   * @param source an {@link Source} that is also {@link FileWatchable}
+   * @param <T> the type of the source to register; it must be both {@link Source} and {@link
+   *     FileWatchable}
    * @return a {@link ScheduledSource} wrapping the input parameter
    * @throws IOException if the source's path could not be registered with the {@link WatchService}
    */
-  public <T extends AbstractSource & FileWatchable> ScheduledSource register(T source)
-      throws IOException {
+  public <T extends Source & FileWatchable> ScheduledSource register(T source) throws IOException {
     Path path = source.file();
     if (path == null) {
       throw new NullPointerException("The passed argument must not be null");

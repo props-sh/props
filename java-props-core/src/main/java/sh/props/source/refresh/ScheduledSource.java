@@ -26,19 +26,19 @@
 package sh.props.source.refresh;
 
 import java.util.Map;
-import sh.props.source.AbstractSource;
 import sh.props.source.Schedulable;
+import sh.props.source.Source;
 
-public class ScheduledSource extends AbstractSource implements Schedulable {
+public class ScheduledSource extends Source implements Schedulable {
 
-  private final AbstractSource delegate;
+  private final Source delegate;
   private volatile boolean scheduled = false;
 
-  public ScheduledSource(AbstractSource delegate) {
+  public ScheduledSource(Source delegate) {
     this.delegate = delegate;
   }
 
-  public ScheduledSource(AbstractSource delegate, boolean scheduled) {
+  public ScheduledSource(Source delegate, boolean scheduled) {
     this.delegate = delegate;
     this.scheduled = scheduled;
   }

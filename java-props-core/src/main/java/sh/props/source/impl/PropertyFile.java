@@ -35,12 +35,11 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
-import sh.props.source.AbstractSource;
 import sh.props.source.FileWatchable;
 import sh.props.source.Source;
 
 /** Retrieves properties from a Java properties file, located on disk. */
-public class PropertyFile extends AbstractSource implements FileWatchable {
+public class PropertyFile extends Source implements FileWatchable {
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -63,7 +62,7 @@ public class PropertyFile extends AbstractSource implements FileWatchable {
   @Override
   public Map<String, String> get() {
     try (InputStream stream = Files.newInputStream(this.location)) {
-      return this.loadPropertiesFromStream(stream);
+      return Source.loadPropertiesFromStream(stream);
     } catch (IOException | IllegalArgumentException e) {
       log.log(WARNING, e, () -> format("Could not read properties from: %s", this.location));
     }

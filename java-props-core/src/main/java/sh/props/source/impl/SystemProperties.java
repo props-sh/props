@@ -26,10 +26,10 @@
 package sh.props.source.impl;
 
 import java.util.Map;
-import sh.props.source.AbstractSource;
+import sh.props.source.Source;
 
 /** Retrieves system properties. */
-public class SystemProperties extends AbstractSource {
+public class SystemProperties extends Source {
 
   @Override
   public String id() {
@@ -43,6 +43,6 @@ public class SystemProperties extends AbstractSource {
    */
   @Override
   public Map<String, String> get() {
-    return this.readPropertiesToMap(System.getProperties());
+    return Source.readPropertiesToMap(System.getProperties());
   }
 }

@@ -33,11 +33,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.AbstractSource;
 import sh.props.source.Source;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
-public class ClasspathPropertyFile extends AbstractSource {
+public class ClasspathPropertyFile extends Source {
 
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;
@@ -60,7 +59,7 @@ public class ClasspathPropertyFile extends AbstractSource {
   public Map<String, String> get() {
     try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
       if (stream != null) {
-        return this.loadPropertiesFromStream(stream);
+        return Source.loadPropertiesFromStream(stream);
       }
 
       // the stream could not be read

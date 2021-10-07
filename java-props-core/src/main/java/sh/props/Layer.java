@@ -35,7 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.source.AbstractSource;
 import sh.props.source.Schedulable;
 import sh.props.source.Source;
 
@@ -43,7 +42,7 @@ public class Layer implements Consumer<Map<String, String>> {
 
   private static final Logger log = Logger.getLogger(Layer.class.getName());
 
-  private final AbstractSource source;
+  private final Source source;
   private final Registry registry;
   private final HashMap<String, String> store = new HashMap<>();
 
@@ -62,7 +61,7 @@ public class Layer implements Consumer<Map<String, String>> {
    * @param registry a reference to the associated registry
    * @param priority the priority of this layer
    */
-  protected Layer(AbstractSource source, Registry registry, int priority) {
+  protected Layer(Source source, Registry registry, int priority) {
     this.source = source;
     this.registry = registry;
     this.priority = priority;

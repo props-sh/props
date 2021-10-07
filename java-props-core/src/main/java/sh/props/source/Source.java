@@ -25,24 +25,38 @@
 
 package sh.props.source;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public interface Source extends Supplier<Map<String, String>> {
+/**
+ * Abstract class that permits subscribers to register for updates.
+ *
+ * <p>This functionality is useful for triggering a single {@link Source#get()}, which can be an
+ * expensive operation, and notifying multiple layers.
+ */
+public abstract class Source implements Supplier<Map<String, String>>, Subscribable {
+
+  private final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
 
   /**
    * An unique identifier representing this source in the {@link sh.props.Registry}.
    *
    * @return an unique id
    */
-  String id();
+  public abstract String id();
 
   /**
    * Reads all known (key,value) pairs from the source.
@@ -50,7 +64,39 @@ public interface Source extends Supplier<Map<String, String>> {
    * @return an updated {@link Map} containing all known key,value pairs
    */
   @Override
-  Map<String, String> get();
+  public abstract Map<String, String> get();
+
+  /**
+   * Registers a new downstream subscriber.
+   *
+   * @param subscriber a subscriber that accepts any updates this source may be sending
+   */
+  @Override
+  public void register(Consumer<Map<String, String>> subscriber) {
+    this.subscribers.add(subscriber);
+  }
+
+  /**
+   * Retrieves a stream of subscribers to this source's updates.
+   *
+   * @return the subscribers to be notified
+   */
+  @Override
+  public Stream<Consumer<Map<String, String>>> subscribers() {
+    return this.subscribers.stream();
+  }
+
+  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
+  @Override
+  public void updateSubscribers() {
+    Map<String, String> data = Collections.unmodifiableMap(this.get());
+    this.subscribers().forEach(d -> d.accept(data));
+  }
+
+  @Override
+  public String toString() {
+    return format("Source(%s)", this.id());
+  }
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
@@ -61,7 +107,8 @@ public interface Source extends Supplier<Map<String, String>> {
    * @throws IllegalArgumentException if a null <code>InputStream</code> was passed
    * @throws IOException if the <code>InputStream</code> cannot be read
    */
-  default Map<String, String> loadPropertiesFromStream(InputStream stream) throws IOException {
+  protected static Map<String, String> loadPropertiesFromStream(InputStream stream)
+      throws IOException {
     if (isNull(stream)) {
       throw new IllegalArgumentException(
           "loadPropertiesFromStream expects a non-null input stream");
@@ -69,7 +116,7 @@ public interface Source extends Supplier<Map<String, String>> {
 
     Properties properties = new Properties();
     properties.load(stream);
-    return this.readPropertiesToMap(properties);
+    return Source.readPropertiesToMap(properties);
   }
 
   /**
@@ -79,7 +126,7 @@ public interface Source extends Supplier<Map<String, String>> {
    * @param properties the properties object to read
    * @return a map containing all the defined properties
    */
-  default Map<String, String> readPropertiesToMap(Properties properties) {
+  protected static Map<String, String> readPropertiesToMap(Properties properties) {
     return properties.stringPropertyNames().stream()
         .collect(Collectors.toUnmodifiableMap(Function.identity(), properties::getProperty));
   }
