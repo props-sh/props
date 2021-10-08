@@ -30,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
@@ -75,5 +76,47 @@ class RegistryTest {
           // ACT
           new RegistryBuilder().build();
         });
+  }
+
+  @Test
+  void propCanBeBoundAndItsValueIsSet() {
+    // ARRANGE
+    InMemory source = new InMemory();
+    source.put("key", "1");
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    // ACT
+    Prop<Integer> prop = new IntProp("key", null);
+    registry.bind(prop);
+
+    // ASSERT
+    assertThat(prop.value(), equalTo(1));
+  }
+
+  @Test
+  void propCanBeBoundAndUpdated() {
+    // ARRANGE
+    InMemory source = new InMemory();
+    source.put("key", "1");
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    Prop<Integer> prop = new IntProp("key", null);
+    registry.bind(prop);
+
+    // ACT
+    source.put("key", "2");
+    source.updateSubscribers();
+
+    // ASSERT
+    assertThat(prop.value(), equalTo(2));
+  }
+
+  private static class IntProp extends Prop<Integer> implements IntegerConverter {
+
+    protected IntProp(String key, Integer defaultValue) {
+      super(key, defaultValue, null, false, false);
+    }
   }
 }

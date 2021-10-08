@@ -112,17 +112,27 @@ public abstract class Prop<T> implements Converter<T> {
     }
   }
 
-  /** Update this property's value. */
-  void setValue(@Nullable T updateValue) {
+  /**
+   * Update this property's value.
+   *
+   * @param updateValue the new value to set
+   */
+  void setValue(@Nullable String updateValue) {
+    // decode the value, if non null
+    T value = null;
+    if (updateValue != null) {
+      value = this.decode(updateValue);
+    }
+
     // ensure the value is validated before it is set
     try {
-      this.validateBeforeSet(updateValue);
+      this.validateBeforeSet(value);
     } catch (RuntimeException e) {
       // TODO: send exception to subscribers
       throw e;
     }
 
-    this.currentValue = updateValue;
+    this.currentValue = value;
 
     // TODO: send update to subscribers
   }

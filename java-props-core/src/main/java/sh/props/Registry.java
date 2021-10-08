@@ -25,14 +25,24 @@
 
 package sh.props;
 
+import static java.lang.String.format;
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 public class Registry implements Notifiable {
 
+  private static final Logger log = Logger.getLogger(Registry.class.getName());
+
   final Datastore store;
   final List<Layer> layers = new ArrayList<>();
+  final ConcurrentHashMap<String, HashSet<Prop<?>>> notifications = new ConcurrentHashMap<>();
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry() {
@@ -41,7 +51,62 @@ public class Registry implements Notifiable {
 
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-    // TODO: implement handling of events
+    // check if we have any props to notify
+    Collection<Prop<?>> props = this.notifications.get(key);
+    if (props == null || props.isEmpty()) {
+      // nothing to do if the key is not registered or there aren't any props to notify
+      return;
+    }
+
+    // update all props
+    for (Prop<?> prop : props) {
+      prop.setValue(value);
+      if (log.isLoggable(Level.FINE)) {
+        log.fine(() -> format("Prop %s updated by %s", prop.key(), layer));
+      }
+    }
+  }
+
+  /**
+   * Binds the specified {@link Prop} to this registry. If the registry already has a value for this
+   * prop, it will set it.
+   *
+   * @param prop the prop object to bind
+   */
+  public void bind(Prop<?> prop) {
+    HashSet<Prop<?>> props =
+        this.notifications.compute(
+            prop.key(),
+            (s, current) -> {
+              // initialize the list if not already present
+              if (current == null) {
+                current = new HashSet<>();
+              }
+
+              // bind the property and return the holder object
+              if (current.add(prop)) {
+                // if the prop was bound now attempt to set its value from the registry
+                ValueLayerTuple vl = this.store.get(prop.key());
+                if (vl != null) {
+                  // we currently have a value; set it
+                  prop.setValue(vl.value());
+                }
+              }
+
+              return current;
+            });
+
+    // log a warning message if more than one prop objects is bound for the same key
+    // encourage good practices that lead to a performant implementation
+    if (props.size() > 1 && log.isLoggable(Level.FINE)) {
+      log.fine(
+          () ->
+              format(
+                  "More than one Prop object bound for key %s; "
+                      + "the performance of the updates will decrease linearly to the number of Prop objects "
+                      + "bound per key. Consider reusing an existing object!",
+                  prop.key()));
+    }
   }
 
   /**

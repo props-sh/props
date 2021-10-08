@@ -1,8 +1,7 @@
+- send updates to prop subscribers
+- define AbstractBaseProps
 - RefactoredProp
 - TemplateStringUtils / renderTemplate
 - module-info
-- AbstractBaseProps
-- registry bind
 - prop builder or multi constructors
 - log.isLoggable(FINER)
-- get prop vs. bound prop + updates
