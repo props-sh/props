@@ -20,6 +20,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.org.hamcrest.core)
     testImplementation(libs.org.mockito.core)
+    testImplementation(libs.org.awaitility.awaitility)
 
     testRuntimeOnly(libs.junit.jupiter.engine)
 }

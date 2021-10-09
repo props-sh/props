@@ -33,6 +33,7 @@ dependencyResolutionManagement {
             version("checkstyle", "9.0")
             version("hamcrest", "2.2")
             version("mockito", "3.12.4")
+            version("awaitility", "4.1.0")
 
             alias("errorprone-core").to("com.google.errorprone", "error_prone_core").version("2.9.0")
             alias("nullaway").to("com.uber.nullaway", "nullaway").version("0.9.2")
@@ -41,6 +42,7 @@ dependencyResolutionManagement {
             alias("junit-jupiter-engine").to("org.junit.jupiter", "junit-jupiter-engine").versionRef("junit")
             alias("org-hamcrest-core").to("org.hamcrest", "hamcrest-core").versionRef("hamcrest")
             alias("org-mockito-core").to("org.mockito", "mockito-core").versionRef("mockito")
+            alias("org-awaitility-awaitility").to("org.awaitility", "awaitility").versionRef("awaitility")
 
             alias("guava").to("com.google.guava:guava:30.1.1-jre")
         }

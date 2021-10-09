@@ -25,10 +25,11 @@
 
 package sh.props;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.time.Duration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
@@ -111,7 +112,7 @@ class RegistryTest {
     source.updateSubscribers();
 
     // ASSERT
-    Assertions.assertTimeout(Duration.ofSeconds(2L), () -> assertThat(prop.value(), equalTo(2)));
+    await().atMost(5, SECONDS).until(prop::value, equalTo(2));
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {
