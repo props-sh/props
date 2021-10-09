@@ -29,6 +29,9 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
 import sh.props.exceptions.InvalidReadOpException;
@@ -40,6 +43,8 @@ import sh.props.exceptions.InvalidUpdateOpException;
  * @param <T> the property's type
  */
 public abstract class Prop<T> extends SubscribedProp<T> implements Converter<T> {
+
+  private static final Logger log = Logger.getLogger(Prop.class.getName());
 
   public final String key;
 
@@ -89,10 +94,10 @@ public abstract class Prop<T> extends SubscribedProp<T> implements Converter<T> 
    * <p>This method can be overridden for more advanced validation requirements.
    *
    * @param value the value to validate
-   * @throws InvalidUpdateOpException when validation fails
+   * @throws InvalidUpdateOpException when the validation fails
    */
-  protected void validateBeforeSet(@Nullable T value) {
-    // left empty
+  protected void validateBeforeSet(@Nullable T value) throws InvalidUpdateOpException {
+    // no validation ops by default
   }
 
   /**
@@ -117,32 +122,64 @@ public abstract class Prop<T> extends SubscribedProp<T> implements Converter<T> 
   /**
    * Update this property's value.
    *
+   * <p>This method catches all exceptions (checked and unchecked) and then logs and notifies any
+   * subscribers.
+   *
    * @param updateValue the new value to set
+   * @return true if the update operation succeeded
    */
-  void setValue(@Nullable String updateValue) {
+  boolean setValue(@Nullable String updateValue) {
     // decode the value, if non null
-    T value = null;
-    if (updateValue != null) {
-      value = this.decode(updateValue);
-    }
+    T value = updateValue != null ? this.decode(updateValue) : null;
 
-    // ensure the value is validated before it is set
     try {
+      // validate the value before updating it
       this.validateBeforeSet(value);
-    } catch (RuntimeException e) {
+
+      // update the value
+      this.currentValue = value;
+
+      // log the event
+      Prop.logDebug(() -> format("%s updated", this));
+
+      // and notify subscribers
+      this.sendUpdate(value);
+
+      return true;
+
+    } catch (InvalidUpdateOpException | RuntimeException e) {
+      // logs the exception and signals any subscribers
+      this.logError(e);
       this.signalError(e);
-      throw e;
     }
 
-    // update the value and send it to the subscriber
-    this.currentValue = value;
-    this.sendUpdate(value);
+    // the update failed
+    return false;
   }
 
-  /** Retrieve this property's value. */
-  @Nullable
-  T getValueInternal() {
-    return this.currentValue;
+  /**
+   * Logs debug messages to the default logger, at {@link Level#FINE}.
+   *
+   * <p>Can be overwritten if a custom implementation is desirable.
+   *
+   * @param message supplies the message to log
+   */
+  protected static void logDebug(Supplier<String> message) {
+    if (log.isLoggable(Level.FINE)) {
+      log.fine(message);
+    }
+  }
+
+  /**
+   * Logs exceptions to the default logger.
+   *
+   * <p>Can be overwritten if a custom implementation is desirable.
+   *
+   * @param t the exception to log
+   */
+  @Override
+  protected void logError(Throwable t) {
+    log.log(Level.SEVERE, t, () -> format("Error while updating %s to a new value", this));
   }
 
   /**

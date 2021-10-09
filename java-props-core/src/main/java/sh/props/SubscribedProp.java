@@ -27,8 +27,6 @@ package sh.props;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /**
@@ -38,8 +36,6 @@ import sh.props.annotations.Nullable;
  * @param <T> the Prop's parameter
  */
 abstract class SubscribedProp<T> {
-
-  private static final Logger log = Logger.getLogger(SubscribedProp.class.getName());
 
   private final AtomicReference<Consumer<T>> onUpdate = new AtomicReference<>();
 
@@ -70,7 +66,7 @@ abstract class SubscribedProp<T> {
    *     called
    */
   public boolean subscribe(Consumer<T> onUpdate) {
-    return this.subscribe(onUpdate, SubscribedProp::logError);
+    return this.subscribe(onUpdate, this::logError);
   }
 
   /**
@@ -98,11 +94,9 @@ abstract class SubscribedProp<T> {
   }
 
   /**
-   * Logs exceptions to the default logger.
+   * Helper method used to log exceptions.
    *
    * @param t the exception to log
    */
-  private static void logError(Throwable t) {
-    log.log(Level.SEVERE, t, () -> "Error while updating to a new value");
-  }
+  protected abstract void logError(Throwable t);
 }

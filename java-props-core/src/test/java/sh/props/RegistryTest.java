@@ -28,6 +28,7 @@ package sh.props;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.time.Duration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
@@ -110,7 +111,7 @@ class RegistryTest {
     source.updateSubscribers();
 
     // ASSERT
-    assertThat(prop.value(), equalTo(2));
+    Assertions.assertTimeout(Duration.ofSeconds(2L), () -> assertThat(prop.value(), equalTo(2)));
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {

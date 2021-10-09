@@ -25,8 +25,13 @@
 
 package sh.props.exceptions;
 
-/** Signals that a Prop object could not be updated to a new value. */
-public class InvalidUpdateOpException extends RuntimeException {
+/**
+ * Signals that a Prop object could not be updated to a new value.
+ *
+ * <p>This class is a checked exception because it needs to be handled by the registry and should
+ * not be left to callers.
+ */
+public class InvalidUpdateOpException extends Exception {
 
   private static final long serialVersionUID = -8725185292576512276L;
 

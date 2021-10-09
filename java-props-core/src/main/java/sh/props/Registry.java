@@ -32,6 +32,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
@@ -58,12 +60,25 @@ public class Registry implements Notifiable {
       return;
     }
 
-    // update all props
+    // alleviate the risk of blocking the main (update) thread
+    // by offloading to an executor pool, since we don't control Prop subscribers
+    ForkJoinTask<?> task = ForkJoinTask.adapt(() -> Registry.updateProps(props, value, layer));
+    ForkJoinPool.commonPool().execute(task);
+  }
+
+  /**
+   * Updates all registered props.
+   *
+   * @param props the props ot
+   * @param value the value to set
+   * @param layer the originating layer
+   */
+  //
+  private static void updateProps(
+      Collection<Prop<?>> props, @Nullable String value, @Nullable Layer layer) {
     for (Prop<?> prop : props) {
-      // TODO: deal with validation errors (InvalidUpdateOpException)
-      prop.setValue(value);
-      if (log.isLoggable(Level.FINE)) {
-        log.fine(() -> format("Prop %s updated by %s", prop.key(), layer));
+      if (prop.setValue(value) && log.isLoggable(Level.FINE)) {
+        log.fine(() -> format("%s received new value from %s", prop, layer));
       }
     }
   }
