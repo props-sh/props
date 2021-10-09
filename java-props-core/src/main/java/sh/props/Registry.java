@@ -60,6 +60,7 @@ public class Registry implements Notifiable {
 
     // update all props
     for (Prop<?> prop : props) {
+      // TODO: deal with validation errors (InvalidUpdateOpException)
       prop.setValue(value);
       if (log.isLoggable(Level.FINE)) {
         log.fine(() -> format("Prop %s updated by %s", prop.key(), layer));

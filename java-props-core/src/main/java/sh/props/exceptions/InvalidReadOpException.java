@@ -23,43 +23,14 @@
  *
  */
 
-package sh.props;
+package sh.props.exceptions;
 
-import sh.props.annotations.Nullable;
+/** Signals that a Prop object could not be read. */
+public class InvalidReadOpException extends RuntimeException {
 
-/**
- * Common interface for datastore implementations.
- *
- * <p>Currently, this interface is not ready to be made public and only a single (internal)
- * implementation is provided.
- */
-interface Datastore {
+  private static final long serialVersionUID = -1203249458144372108L;
 
-  /**
-   * Retrieves a value,layer pair for the specified key.
-   *
-   * @param key the key to retrieve
-   * @return a value,layer pair, or null if not found
-   */
-  @Nullable
-  ValueLayerTuple get(String key);
-
-  /**
-   * Updates a value and its originating layer, for the specified key.
-   *
-   * @param key the key to update
-   * @param value the value to set
-   * @param layer the originating layer
-   * @return a value,layer pair if the key is defined in any layer, or null if this operation
-   *     results in a deletion of the key
-   */
-  @Nullable
-  ValueLayerTuple put(String key, @Nullable String value, Layer layer);
-
-  /**
-   * Notifies any subscribers of updates.
-   *
-   * @return a functional interface that accepts updates
-   */
-  Notifiable notifier();
+  public InvalidReadOpException(String message) {
+    super(message);
+  }
 }

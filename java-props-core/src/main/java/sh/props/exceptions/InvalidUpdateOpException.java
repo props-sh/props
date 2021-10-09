@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Mihai Bojin
+ * Copyright (c) 2021 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,14 @@
  *
  */
 
-package sh.props;
+package sh.props.exceptions;
 
-/**
- * Exception class thrown by {@link Prop#validateBeforeSet(Object)} and {@link
- * Prop#validateBeforeGet(Object)} ()}.
- */
-public class ValidationException extends RuntimeException {
+/** Signals that a Prop object could not be updated to a new value. */
+public class InvalidUpdateOpException extends RuntimeException {
 
-  private static final long serialVersionUID = -1203249458144372108L;
+  private static final long serialVersionUID = -8725185292576512276L;
 
-  public ValidationException(String message) {
+  public InvalidUpdateOpException(String message) {
     super(message);
-  }
-
-  public ValidationException(String message, Throwable cause) {
-    super(message, cause);
   }
 }

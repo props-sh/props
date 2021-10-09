@@ -31,13 +31,15 @@ import static java.util.Objects.nonNull;
 
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
+import sh.props.exceptions.InvalidReadOpException;
+import sh.props.exceptions.InvalidUpdateOpException;
 
 /**
  * The base property object.
  *
  * @param <T> the property's type
  */
-public abstract class Prop<T> implements Converter<T> {
+public abstract class Prop<T> extends SubscribedProp<T> implements Converter<T> {
 
   public final String key;
 
@@ -87,7 +89,7 @@ public abstract class Prop<T> implements Converter<T> {
    * <p>This method can be overridden for more advanced validation requirements.
    *
    * @param value the value to validate
-   * @throws ValidationException when validation fails
+   * @throws InvalidUpdateOpException when validation fails
    */
   protected void validateBeforeSet(@Nullable T value) {
     // left empty
@@ -101,12 +103,12 @@ public abstract class Prop<T> implements Converter<T> {
    * to preserve the non-null value required property guarantee.
    *
    * @param value the value to validate
-   * @throws ValidationException when validation fails
+   * @throws InvalidReadOpException when validation fails
    */
   protected void validateBeforeGet(@Nullable T value) {
     // if the Prop is required, a value must be available
     if (this.isRequired && isNull(value)) {
-      throw new ValidationException(
+      throw new InvalidReadOpException(
           format(
               "Prop '%s' is required, but neither a value or a default were specified", this.key));
     }
@@ -128,13 +130,13 @@ public abstract class Prop<T> implements Converter<T> {
     try {
       this.validateBeforeSet(value);
     } catch (RuntimeException e) {
-      // TODO: send exception to subscribers
+      this.signalError(e);
       throw e;
     }
 
+    // update the value and send it to the subscriber
     this.currentValue = value;
-
-    // TODO: send update to subscribers
+    this.sendUpdate(value);
   }
 
   /** Retrieve this property's value. */
@@ -147,7 +149,7 @@ public abstract class Prop<T> implements Converter<T> {
    * Returns the property's current value.
    *
    * @return the {@link Prop}'s current value, or <code>null</code>.
-   * @throws ValidationException if the value could not be validated
+   * @throws InvalidReadOpException if the value could not be validated
    */
   @Nullable
   public T value() {
@@ -155,11 +157,6 @@ public abstract class Prop<T> implements Converter<T> {
     // ensure the Prop is in a valid state before returning it
     this.validateBeforeGet(value);
     return value;
-  }
-
-  /** Allows the caller to subscribe to value updates (and any observed errors). */
-  public void onUpdate() {
-    // TODO: implement
   }
 
   /**

@@ -105,8 +105,8 @@ class SyncStore implements Datastore {
               return null;
             }
 
-            // otherwise map the effective value and its owning layer
-            return this.withUpdate(key, new ValueLayerTuple(value, layer));
+            // otherwise, map the effective value and its owning layer
+            return this.onValueChanged(key, new ValueLayerTuple(value, layer));
           }
 
           // if we already defined a mapping for this key
@@ -147,10 +147,10 @@ class SyncStore implements Datastore {
           // if the owning layer unsets the value
           if (value == null) {
             // find a lower priority layer that defines this key
-            return this.withUpdate(key, findNextPotentialOwner(key, current));
+            return this.onValueChanged(key, findNextPotentialOwner(key, current));
           } else {
             // otherwise update the layer/value mapping
-            return this.withUpdate(key, new ValueLayerTuple(value, layer));
+            return this.onValueChanged(key, new ValueLayerTuple(value, layer));
           }
         });
   }
@@ -163,7 +163,7 @@ class SyncStore implements Datastore {
    * @return the same value,layer pair
    */
   @Nullable
-  private ValueLayerTuple withUpdate(String key, @Nullable ValueLayerTuple vl) {
+  private ValueLayerTuple onValueChanged(String key, @Nullable ValueLayerTuple vl) {
     if (vl == null) {
       this.notifier().sendUpdate(key, null, null);
       return null;
