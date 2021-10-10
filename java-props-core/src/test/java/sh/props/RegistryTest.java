@@ -30,6 +30,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
@@ -143,6 +144,27 @@ class RegistryTest {
 
     // ASSERT
     assertThat(registry.get("key", String.class), equalTo("value"));
+  }
+
+  @Test
+  void propBoundAndReceivesAsyncUpdates() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
+
+    AtomicInteger localValue = new AtomicInteger(0);
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    Prop<Integer> prop = new IntProp("key", null);
+    registry.bind(prop);
+
+    prop.subscribe(localValue::set);
+
+    // ACT
+    source.put("key", "2");
+
+    // ASSERT
+    await().atMost(5, SECONDS).until(localValue::get, equalTo(2));
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {
