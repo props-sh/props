@@ -36,6 +36,27 @@ public class InMemory extends Source {
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
+  private final boolean updateOnEveryWrite;
+
+  /**
+   * Class constructor that defaults to not notifying subscribers on {@link #put(String, String)}s.
+   *
+   * <p>When you want to make a series of changes final, you will have to manually call {@link
+   * #updateSubscribers()}.
+   */
+  public InMemory() {
+    this(false);
+  }
+
+  /**
+   * Class constructor.
+   *
+   * @param updateOnEveryWrite if true, {@link #updateSubscribers()} will be called on every put.
+   */
+  public InMemory(boolean updateOnEveryWrite) {
+    this.updateOnEveryWrite = updateOnEveryWrite;
+  }
+
   @Override
   public String id() {
     return "memory";
@@ -70,12 +91,19 @@ public class InMemory extends Source {
    *     mapping
    */
   public void put(String key, @Nullable String value) {
-    if (value == null) {
-      this.store.remove(key);
-      return;
-    }
+    try {
+      if (value == null) {
+        this.store.remove(key);
+        return;
+      }
 
-    this.store.put(key, value);
+      this.store.put(key, value);
+    } finally {
+      if (this.updateOnEveryWrite) {
+        // notify subscribers automatically on every update
+        this.updateSubscribers();
+      }
+    }
   }
 
   /**

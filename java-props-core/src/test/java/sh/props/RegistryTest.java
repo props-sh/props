@@ -115,6 +115,36 @@ class RegistryTest {
     await().atMost(5, SECONDS).until(prop::value, equalTo(2));
   }
 
+  @Test
+  void autoUpdated() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
+    source.put("key", "value");
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    // ACT
+    source.put("key", "value2");
+
+    // ASSERT
+    assertThat(registry.get("key", String.class), equalTo("value2"));
+  }
+
+  @Test
+  void manuallyUpdated() {
+    // ARRANGE
+    InMemory source = new InMemory();
+    source.put("key", "value");
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    // ACT
+    source.put("key", "value2");
+
+    // ASSERT
+    assertThat(registry.get("key", String.class), equalTo("value"));
+  }
+
   private static class IntProp extends Prop<Integer> implements IntegerConverter {
 
     protected IntProp(String key, Integer defaultValue) {
