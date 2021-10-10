@@ -1,4 +1,4 @@
-- send updates to prop subscribers
+- multi-prop Provider
 - define AbstractBaseProps
 - RefactoredProp
 - TemplateStringUtils / renderTemplate
