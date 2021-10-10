@@ -167,6 +167,31 @@ class RegistryTest {
     await().atMost(5, SECONDS).until(localValue::get, equalTo(2));
   }
 
+  @Test
+  void bindMultipleProps() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    AtomicInteger localValue1 = new AtomicInteger(0);
+    Prop<Integer> prop1 = new IntProp("key", null);
+    registry.bind(prop1);
+    prop1.subscribe(localValue1::set);
+
+    AtomicInteger localValue2 = new AtomicInteger(0);
+    Prop<Integer> prop2 = new IntProp("key", null);
+    registry.bind(prop2);
+    prop2.subscribe(localValue2::set);
+
+    // ACT
+    source.put("key", "2");
+
+    // ASSERT
+    await().atMost(5, SECONDS).until(localValue1::get, equalTo(2));
+    await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
+  }
+
   private static class IntProp extends Prop<Integer> implements IntegerConverter {
 
     protected IntProp(String key, Integer defaultValue) {
