@@ -32,7 +32,6 @@ import static java.util.Objects.nonNull;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
-import sh.props.event.Subscribable;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.exceptions.InvalidUpdateOpException;
 
@@ -55,7 +54,7 @@ public abstract class Prop<T> implements Converter<T> {
 
   @Nullable private volatile T currentValue;
 
-  private final Subscribable<T> subscribers;
+  private final SubscriberProxy<T> subscribers;
 
   /**
    * Constructs a new property class.
@@ -75,7 +74,7 @@ public abstract class Prop<T> implements Converter<T> {
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
-    this(key, defaultValue, description, isRequired, isSecret, Subscribable.processSync());
+    this(key, defaultValue, description, isRequired, isSecret, SubscriberProxy.processSync());
   }
 
   /**
@@ -88,7 +87,7 @@ public abstract class Prop<T> implements Converter<T> {
    * @param isRequired true if a value (or default) must be provided
    * @param isSecret true if this prop represents a secret and its value must not be accidentally
    *     exposed
-   * @param subscribers the {@link Subscribable} strategy to use for sending update events
+   * @param subscribers the {@link SubscriberProxy} strategy to use for sending update events
    * @throws NullPointerException if the constructed object is in an invalid state
    */
   protected Prop(
@@ -97,7 +96,7 @@ public abstract class Prop<T> implements Converter<T> {
       @Nullable String description,
       boolean isRequired,
       boolean isSecret,
-      Subscribable<T> subscribers) {
+      SubscriberProxy<T> subscribers) {
     // validate
     if (isNull(key)) {
       throw new NullPointerException("The property's key cannot be null");
@@ -163,6 +162,8 @@ public abstract class Prop<T> implements Converter<T> {
       this.currentValue = value;
 
       // and notify subscribers
+      // note that the implementation makes no guarantees that by the time
+      // the subscribers have been notified, the value won't change
       this.subscribers.sendUpdate(value);
 
       return true;

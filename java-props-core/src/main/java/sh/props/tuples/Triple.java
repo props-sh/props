@@ -25,6 +25,9 @@
 
 package sh.props.tuples;
 
+import static java.lang.String.format;
+
+import java.util.Objects;
 import sh.props.annotations.Nullable;
 
 /**
@@ -48,5 +51,46 @@ public class Triple<T, U, V> extends Pair<T, U> {
   Triple(@Nullable T first, @Nullable U second, @Nullable V third) {
     super(first, second);
     this.third = third;
+  }
+
+  /**
+   * Generated equals implementation.
+   *
+   * @param o the object to compare
+   * @return true if all three values are equal
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Triple)) {
+      return false;
+    }
+
+    Triple<?, ?, ?> triple = (Triple<?, ?, ?>) o;
+    return Objects.equals(this.first, triple.first)
+        && Objects.equals(this.second, triple.second)
+        && Objects.equals(this.third, triple.third);
+  }
+
+  /**
+   * Generated hashcode implementation.
+   *
+   * @return this object's computed hashcode
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.first, this.second, this.third);
+  }
+
+  /**
+   * Renders this object as a string.
+   *
+   * @return this object's string representation
+   */
+  @Override
+  public String toString() {
+    return format("(%s, %s, %s)", this.first, this.second, this.third);
   }
 }

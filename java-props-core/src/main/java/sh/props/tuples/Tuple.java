@@ -30,11 +30,6 @@ import sh.props.annotations.Nullable;
 /** Helper class that provides a fluent interface for creating tuples. */
 public final class Tuple {
 
-  /** Private constructor, preventing instantiation. */
-  private Tuple() {
-    // intentionally not to be instantiated
-  }
-
   /**
    * Convenience method for constructing a pair of objects.
    *
@@ -79,5 +74,10 @@ public final class Tuple {
   public static <T, U, V, W> Quad<T, U, V, W> of(
       @Nullable T first, @Nullable U second, @Nullable V third, @Nullable W fourth) {
     return new Quad<>(first, second, third, fourth);
+  }
+
+  /** Private constructor, preventing instantiation. */
+  private Tuple() {
+    // intentionally left blank
   }
 }

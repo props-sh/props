@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.event;
+package sh.props;
 
 import static java.lang.String.format;
 
@@ -36,11 +36,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
-public class Subscribable<T> {
+public class SubscriberProxy<T> implements Subscribable<T> {
 
   private final int parallelThreshold;
 
-  private static final Logger log = Logger.getLogger(Subscribable.class.getName());
+  private static final Logger log = Logger.getLogger(SubscriberProxy.class.getName());
 
   private final List<Consumer<T>> updateConsumers = new ArrayList<>();
   private final List<Consumer<Throwable>> errorHandlers = new ArrayList<>();
@@ -51,29 +51,29 @@ public class Subscribable<T> {
    * @param parallelThreshold the number of subscribers after which the processing is offloaded to
    *     the {@link ForkJoinPool}
    */
-  public Subscribable(int parallelThreshold) {
+  public SubscriberProxy(int parallelThreshold) {
     this.parallelThreshold = parallelThreshold;
   }
 
   /**
-   * Constructs a {@link Subscribable} which notifies all subscribers synchronously.
+   * Constructs a {@link SubscriberProxy} which notifies all subscribers synchronously.
    *
    * @param <T> the type of the subscribers
    * @return a holder of subscribers
    */
-  public static <T> Subscribable<T> processSync() {
-    return new Subscribable<>(0);
+  public static <T> SubscriberProxy<T> processSync() {
+    return new SubscriberProxy<>(0);
   }
 
   /**
-   * Constructs a {@link Subscribable} which notifies all subscribers asynchronously, by offloading
-   * sending the notifications to the {@link ForkJoinPool}.
+   * Constructs a {@link SubscriberProxy} which notifies all subscribers asynchronously, by
+   * offloading sending the notifications to the {@link ForkJoinPool}.
    *
    * @param <T> the type of the subscribers
    * @return a holder of subscribers
    */
-  public static <T> Subscribable<T> processAsync() {
-    return new Subscribable<>(Integer.MAX_VALUE);
+  public static <T> SubscriberProxy<T> processAsync() {
+    return new SubscriberProxy<>(Integer.MAX_VALUE);
   }
 
   /**
@@ -83,6 +83,7 @@ public class Subscribable<T> {
    * @param onUpdate called when a new value is received
    * @param onError called when an error occurs (a value cannot be received)
    */
+  @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
     this.updateConsumers.add(safe(onUpdate, onError));
     this.errorHandlers.add(safe(onError, null));
@@ -106,7 +107,7 @@ public class Subscribable<T> {
         // do not allow any exceptions to permeate out of this consumer
 
         // log exceptions so that developers are aware where they originated
-        Subscribable.log.log(
+        SubscriberProxy.log.log(
             Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
 
         // and also pass them to the associated Throwable handler

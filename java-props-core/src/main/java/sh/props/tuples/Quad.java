@@ -25,6 +25,9 @@
 
 package sh.props.tuples;
 
+import static java.lang.String.format;
+
+import java.util.Objects;
 import sh.props.annotations.Nullable;
 
 /**
@@ -48,5 +51,47 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   Quad(@Nullable T first, @Nullable U second, @Nullable V third, @Nullable W fourth) {
     super(first, second, third);
     this.fourth = fourth;
+  }
+
+  /**
+   * Generated equals implementation.
+   *
+   * @param o the object to compare
+   * @return true if all four values are equal
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Quad)) {
+      return false;
+    }
+
+    Quad<?, ?, ?, ?> quad = (Quad<?, ?, ?, ?>) o;
+    return Objects.equals(this.first, quad.first)
+        && Objects.equals(this.second, quad.second)
+        && Objects.equals(this.third, quad.third)
+        && Objects.equals(this.fourth, quad.fourth);
+  }
+
+  /**
+   * Generated hashcode implementation.
+   *
+   * @return this object's computed hashcode
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.first, this.second, this.third, this.fourth);
+  }
+
+  /**
+   * Renders this object as a string.
+   *
+   * @return this object's string representation
+   */
+  @Override
+  public String toString() {
+    return format("(%s, %s, %s, %s)", this.first, this.second, this.third, this.fourth);
   }
 }

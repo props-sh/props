@@ -25,6 +25,9 @@
 
 package sh.props.tuples;
 
+import static java.lang.String.format;
+
+import java.util.Objects;
 import sh.props.annotations.Nullable;
 
 /**
@@ -47,5 +50,43 @@ public class Pair<T, U> {
   Pair(@Nullable T first, @Nullable U second) {
     this.first = first;
     this.second = second;
+  }
+
+  /**
+   * Generated equals implementation.
+   *
+   * @param o the object to compare
+   * @return true if both values are equal
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Pair)) {
+      return false;
+    }
+    Pair<?, ?> pair = (Pair<?, ?>) o;
+    return Objects.equals(this.first, pair.first) && Objects.equals(this.second, pair.second);
+  }
+
+  /**
+   * Generated hashcode implementation.
+   *
+   * @return this object's computed hashcode
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.first, this.second);
+  }
+
+  /**
+   * Renders this object as a string.
+   *
+   * @return this object's string representation
+   */
+  @Override
+  public String toString() {
+    return format("(%s, %s)", this.first, this.second);
   }
 }

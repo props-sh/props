@@ -23,20 +23,18 @@
  *
  */
 
-package sh.props.event;
+package sh.props;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import sh.props.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
-public class PairProvider<T, U> implements Supplier<Pair<T, U>> {
+public class PairSupplier<T, U> implements Supplier<Pair<T, U>> {
 
-  protected final AtomicReference<T> refT = new AtomicReference<>();
-  protected final AtomicReference<U> refU = new AtomicReference<>();
-  private final Subscribable<Pair<T, U>> subscribers;
+  private final Prop<T> propT;
+  private final Prop<U> propU;
+  private final SubscriberProxy<Pair<T, U>> subscribers;
 
   /**
    * Constructs the provider. Any updates are processed synchronously by default.
@@ -44,8 +42,8 @@ public class PairProvider<T, U> implements Supplier<Pair<T, U>> {
    * @param propT the first prop
    * @param propU the second prop
    */
-  public PairProvider(Prop<T> propT, Prop<U> propU) {
-    this(propT, propU, Subscribable.processSync());
+  public PairSupplier(Prop<T> propT, Prop<U> propU) {
+    this(propT, propU, SubscriberProxy.processSync());
   }
 
   /**
@@ -55,32 +53,26 @@ public class PairProvider<T, U> implements Supplier<Pair<T, U>> {
    * @param propU the second prop
    * @param subscribers the subscribers that get notified when any of the values change
    */
-  public PairProvider(Prop<T> propT, Prop<U> propU, Subscribable<Pair<T, U>> subscribers) {
+  public PairSupplier(Prop<T> propT, Prop<U> propU, SubscriberProxy<Pair<T, U>> subscribers) {
     // initialize
     this.subscribers = subscribers;
+    this.propT = propT;
+    this.propU = propU;
 
-    // set initial prop values
-    this.refT.set(propT.value());
-    this.refU.set(propU.value());
-
-    // subscribe to individual updates
-    propT.subscribe(this::updateT, this.subscribers::handleError);
-    propU.subscribe(this::updateU, this.subscribers::handleError);
-  }
-
-  private void updateT(T t) {
-    this.refT.set(t);
-    this.subscribers.sendUpdate(Tuple.of(t, this.refU.get()));
-  }
-
-  protected void updateU(U u) {
-    this.refU.set(u);
-    this.subscribers.sendUpdate(Tuple.of(this.refT.get(), u));
+    // subscribe to updates
+    propT.subscribe(
+        value -> this.subscribers.sendUpdate(Tuple.of(value, this.propU.value())),
+        this.subscribers::handleError);
+    propU.subscribe(
+        value -> {
+          this.subscribers.sendUpdate(Tuple.of(this.propT.value(), value));
+        },
+        this.subscribers::handleError);
   }
 
   @Override
   public Pair<T, U> get() {
-    return Tuple.of(this.refT.get(), this.refU.get());
+    return Tuple.of(this.propT.value(), this.propU.value());
   }
 
   /**
