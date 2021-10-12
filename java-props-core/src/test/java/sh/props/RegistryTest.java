@@ -158,7 +158,7 @@ class RegistryTest {
     Prop<Integer> prop = new IntProp("key", null);
     registry.bind(prop);
 
-    prop.subscribe(localValue::set);
+    prop.subscribe(localValue::set, RegistryTest::ignoreErrors);
 
     // ACT
     source.put("key", "2");
@@ -177,12 +177,12 @@ class RegistryTest {
     AtomicInteger localValue1 = new AtomicInteger(0);
     Prop<Integer> prop1 = new IntProp("key", null);
     registry.bind(prop1);
-    prop1.subscribe(localValue1::set);
+    prop1.subscribe(localValue1::set, RegistryTest::ignoreErrors);
 
     AtomicInteger localValue2 = new AtomicInteger(0);
     Prop<Integer> prop2 = new IntProp("key", null);
     registry.bind(prop2);
-    prop2.subscribe(localValue2::set);
+    prop2.subscribe(localValue2::set, RegistryTest::ignoreErrors);
 
     // ACT
     source.put("key", "2");
@@ -190,6 +190,10 @@ class RegistryTest {
     // ASSERT
     await().atMost(5, SECONDS).until(localValue1::get, equalTo(2));
     await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
+  }
+
+  private static void ignoreErrors(Throwable t) {
+    // do nothing
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {
