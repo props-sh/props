@@ -31,14 +31,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import sh.props.Coordinated.PairSupplier;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
-import sh.props.tuples.Pair;
-import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
 class RegistryTest {
@@ -194,31 +190,6 @@ class RegistryTest {
     // ASSERT
     await().atMost(5, SECONDS).until(localValue1::get, equalTo(2));
     await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
-  }
-
-  @Test
-  void coordinatePairOfProps() {
-    // ARRANGE
-    InMemory source = new InMemory(true);
-
-    Registry registry = new RegistryBuilder().withSource(source).build();
-
-    Prop<Integer> prop1 = new IntProp("key1", null);
-    registry.bind(prop1);
-
-    Prop<Integer> prop2 = new IntProp("key2", null);
-    registry.bind(prop2);
-
-    AtomicReference<Pair<Integer, Integer>> result = new AtomicReference<>();
-    PairSupplier<Integer, Integer> supplier = Coordinated.coordinate(prop1, prop2);
-    supplier.subscribe(result::set, RegistryTest::ignoreErrors);
-
-    // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-
-    // ASSERT
-    await().atMost(5, SECONDS).until(result::get, equalTo(Tuple.of(1, 2)));
   }
 
   private static void ignoreErrors(Throwable t) {

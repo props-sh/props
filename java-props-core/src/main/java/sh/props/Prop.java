@@ -27,8 +27,9 @@ package sh.props;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
@@ -52,7 +53,7 @@ public abstract class Prop<T> implements Converter<T> {
 
   private final boolean isSecret;
 
-  @Nullable private volatile T currentValue;
+  private final AtomicReference<T> currentValue = new AtomicReference<>();
 
   private final SubscriberProxy<T> subscribers;
 
@@ -159,7 +160,8 @@ public abstract class Prop<T> implements Converter<T> {
       this.validateBeforeSet(value);
 
       // update the value
-      this.currentValue = value;
+
+      this.currentValue.set(value);
 
       // and notify subscribers
       // note that the implementation makes no guarantees that by the time
@@ -176,6 +178,8 @@ public abstract class Prop<T> implements Converter<T> {
     // the update failed
     return false;
   }
+
+  AtomicLong epoch = new AtomicLong();
 
   /**
    * Subscribes the passed update/error consumers. This method is not thread-safe and care must be
@@ -196,7 +200,10 @@ public abstract class Prop<T> implements Converter<T> {
    */
   @Nullable
   public T value() {
-    T value = nonNull(this.currentValue) ? this.currentValue : this.defaultValue;
+    // retrieve the value from the atomic ref
+    T currentValue = this.currentValue.get();
+    // set a default, if the value is missing
+    T value = currentValue != null ? currentValue : this.defaultValue;
     // ensure the Prop is in a valid state before returning it
     this.validateBeforeGet(value);
     return value;
@@ -254,7 +261,7 @@ public abstract class Prop<T> implements Converter<T> {
   @Override
   public String toString() {
     // copy the value to avoid an NPE caused by a race condition
-    T currentValue = this.currentValue;
+    T currentValue = this.currentValue.get();
     if (currentValue != null) {
       return format(
           "Prop{%s=(%s)%s}",

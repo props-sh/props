@@ -25,6 +25,7 @@
 
 package sh.props;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import sh.props.tuples.Pair;
@@ -35,6 +36,7 @@ public class PairSupplier<T, U> implements Supplier<Pair<T, U>> {
   private final Prop<T> propT;
   private final Prop<U> propU;
   private final SubscriberProxy<Pair<T, U>> subscribers;
+  private final AtomicLong epoch = new AtomicLong();
 
   /**
    * Constructs the provider. Any updates are processed synchronously by default.

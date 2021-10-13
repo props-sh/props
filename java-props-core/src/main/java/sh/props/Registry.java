@@ -87,42 +87,35 @@ public class Registry implements Notifiable {
    * Binds the specified {@link Prop} to this registry. If the registry already has a value for this
    * prop, it will set it.
    *
+   * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
+   * Keep the implementation performant by reducing the number of Prop objects registered for the
+   * same key.
+   *
    * @param prop the prop object to bind
+   * @return the bound prop
    */
-  public void bind(Prop<?> prop) {
-    HashSet<Prop<?>> props =
-        this.notifications.compute(
-            prop.key(),
-            (s, current) -> {
-              // initialize the list if not already present
-              if (current == null) {
-                current = new HashSet<>();
-              }
+  public <T> Prop<T> bind(Prop<T> prop) {
+    this.notifications.compute(
+        prop.key(),
+        (s, current) -> {
+          // initialize the list if not already present
+          if (current == null) {
+            current = new HashSet<>();
+          }
 
-              // bind the property and return the holder object
-              if (current.add(prop)) {
-                // if the prop was bound now attempt to set its value from the registry
-                ValueLayerTuple vl = this.store.get(prop.key());
-                if (vl != null) {
-                  // we currently have a value; set it
-                  prop.setValue(vl.value());
-                }
-              }
+          // bind the property and return the holder object
+          if (current.add(prop)) {
+            // if the prop was bound now attempt to set its value from the registry
+            ValueLayerTuple vl = this.store.get(prop.key());
+            if (vl != null) {
+              // we currently have a value; set it
+              prop.setValue(vl.value());
+            }
+          }
 
-              return current;
-            });
-
-    // log a warning message if more than one prop objects is bound for the same key
-    // encourage good practices that lead to a performant implementation
-    if (props.size() > 1 && log.isLoggable(Level.FINE)) {
-      log.fine(
-          () ->
-              format(
-                  "More than one Prop object bound for key %s; "
-                      + "the performance of the updates will decrease linearly to the number of Prop objects "
-                      + "bound per key. Consider reusing an existing object!",
-                  prop.key()));
-    }
+          return current;
+        });
+    return prop;
   }
 
   /**

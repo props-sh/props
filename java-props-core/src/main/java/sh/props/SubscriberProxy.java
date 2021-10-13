@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.LongUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
@@ -44,6 +46,9 @@ public class SubscriberProxy<T> implements Subscribable<T> {
 
   private final List<Consumer<T>> updateConsumers = new ArrayList<>();
   private final List<Consumer<Throwable>> errorHandlers = new ArrayList<>();
+
+  private final AtomicLong epoch = new AtomicLong();
+  private final AtomicLong lastEpoch = new AtomicLong();
 
   /**
    * Class constructor.
@@ -62,7 +67,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @return a holder of subscribers
    */
   public static <T> SubscriberProxy<T> processSync() {
-    return new SubscriberProxy<>(0);
+    return new SubscriberProxy<>(Integer.MAX_VALUE);
   }
 
   /**
@@ -73,7 +78,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @return a holder of subscribers
    */
   public static <T> SubscriberProxy<T> processAsync() {
-    return new SubscriberProxy<>(Integer.MAX_VALUE);
+    return new SubscriberProxy<>(0);
   }
 
   /**
@@ -125,7 +130,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @param value the updated value
    */
   public void sendUpdate(@Nullable T value) {
-    syncAsyncProcessing(this.updateConsumers, this.parallelThreshold, value);
+    this.syncAsyncProcessing(
+        this.updateConsumers, this.parallelThreshold, value, this.epoch.getAndIncrement());
   }
 
   /**
@@ -135,19 +141,21 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @param throwable the thrown exception
    */
   public void handleError(Throwable throwable) {
-    syncAsyncProcessing(this.errorHandlers, this.parallelThreshold, throwable);
+    this.syncAsyncProcessing(
+        this.errorHandlers, this.parallelThreshold, throwable, this.epoch.getAndIncrement());
   }
 
   /**
    * Method that decides how to consume the value, based on the specified threshold.
    *
+   * @param <V> the type of the value
    * @param consumers the consumers to which the value is sent
    * @param parallelThreshold the threshold that decides if the processing should by sync/async
    * @param value the value to send
-   * @param <T> the type of the value
+   * @param epoch the epoch corresponding to the current value
    */
-  private static <T> void syncAsyncProcessing(
-      List<Consumer<T>> consumers, int parallelThreshold, @Nullable T value) {
+  private <V> void syncAsyncProcessing(
+      List<Consumer<V>> consumers, int parallelThreshold, @Nullable V value, long epoch) {
     if (consumers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
@@ -155,13 +163,46 @@ public class SubscriberProxy<T> implements Subscribable<T> {
 
     // if we have less than the threshold, process synchronously
     if (consumers.size() < parallelThreshold) {
-      consumers.forEach(c -> c.accept(value));
+      this.acceptIfNotStaleWrite(consumers, value, epoch);
       return;
     }
 
     // otherwise process asynchronously
     // TODO: Refactor as RecursiveAction and split into multiple subtasks
-    ForkJoinTask<?> task = ForkJoinTask.adapt(() -> consumers.forEach(c -> c.accept(value)));
+    ForkJoinTask<?> task =
+        ForkJoinTask.adapt(() -> this.acceptIfNotStaleWrite(consumers, value, epoch));
     ForkJoinPool.commonPool().execute(task);
+  }
+
+  private <V> void acceptIfNotStaleWrite(
+      List<Consumer<V>> consumers, @Nullable V value, long epoch) {
+    // determine if the update can be accepted
+    long newEpoch = this.lastEpoch.updateAndGet(SubscriberProxy.epochComparator(epoch));
+    if (newEpoch == epoch) {
+      // the value was accepted
+      // notify all consumers
+      for (Consumer<V> consumer : consumers) {
+        consumer.accept(value);
+      }
+    }
+  }
+
+  /**
+   * Creates an {@link AtomicLong} comparator.
+   *
+   * @param epoch the epoch to test against
+   * @return an operator that can be applied to a {@link AtomicLong}
+   */
+  private static LongUnaryOperator epochComparator(long epoch) {
+    return currentEpoch -> {
+      // if a more recent epoch is passed
+      if (Long.compareUnsigned(epoch, currentEpoch) > 0) {
+        // return it
+        return epoch;
+      } else {
+        // otherwise return the existing epoch
+        return currentEpoch;
+      }
+    };
   }
 }

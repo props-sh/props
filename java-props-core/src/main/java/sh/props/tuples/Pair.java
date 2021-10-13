@@ -53,6 +53,26 @@ public class Pair<T, U> {
   }
 
   /**
+   * Constructs a new {@link Pair} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  public Pair<T, U> updateFirst(T value) {
+    return new Pair<>(value, this.second);
+  }
+
+  /**
+   * Constructs a new {@link Pair} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  public Pair<T, U> updateSecond(U value) {
+    return new Pair<>(this.first, value);
+  }
+
+  /**
    * Generated equals implementation.
    *
    * @param o the object to compare

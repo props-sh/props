@@ -54,6 +54,38 @@ public class Triple<T, U, V> extends Pair<T, U> {
   }
 
   /**
+   * Constructs a new {@link Pair} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Triple<T, U, V> updateFirst(T value) {
+    return new Triple<>(value, this.second, this.third);
+  }
+
+  /**
+   * Constructs a new {@link Pair} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Triple<T, U, V> updateSecond(U value) {
+    return new Triple<>(this.first, value, this.third);
+  }
+
+  /**
+   * Constructs a new {@link Triple} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  public Triple<T, U, V> updateThird(V value) {
+    return new Triple<>(this.first, this.second, value);
+  }
+
+  /**
    * Generated equals implementation.
    *
    * @param o the object to compare

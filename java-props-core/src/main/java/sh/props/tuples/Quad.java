@@ -54,6 +54,53 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   }
 
   /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Quad<T, U, V, W> updateFirst(T value) {
+    System.out.println("Quad first: " + value);
+    return new Quad<>(value, this.second, this.third, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Quad<T, U, V, W> updateSecond(U value) {
+    System.out.println("Quad second: " + value);
+    return new Quad<>(this.first, value, this.third, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Quad<T, U, V, W> updateThird(V value) {
+    System.out.println("Quad third: " + value);
+    return new Quad<>(this.first, this.second, value, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  public Quad<T, U, V, W> updateFourth(W value) {
+    System.out.println("Quad fourth: " + value);
+    return new Quad<>(this.first, this.second, this.third, value);
+  }
+
+  /**
    * Generated equals implementation.
    *
    * @param o the object to compare
