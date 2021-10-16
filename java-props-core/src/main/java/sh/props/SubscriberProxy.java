@@ -130,8 +130,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @param value the updated value
    */
   public void sendUpdate(@Nullable T value) {
-    this.syncAsyncProcessing(
-        this.updateConsumers, this.parallelThreshold, value, this.epoch.getAndIncrement());
+    long epoch = this.epoch.getAndIncrement();
+    this.syncAsyncProcessing(this.updateConsumers, this.parallelThreshold, value, epoch);
   }
 
   /**

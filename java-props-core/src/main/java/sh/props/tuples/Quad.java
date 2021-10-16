@@ -28,6 +28,7 @@ package sh.props.tuples;
 import static java.lang.String.format;
 
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import sh.props.annotations.Nullable;
 
 /**
@@ -54,50 +55,43 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   }
 
   /**
-   * Constructs a new {@link Quad} with the updated value.
+   * Returns an operation that can be applied to the given object, modifying its first value.
    *
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  @Override
-  public Quad<T, U, V, W> updateFirst(T value) {
-    System.out.println("Quad first: " + value);
-    return new Quad<>(value, this.second, this.third, this.fourth);
+  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFirst(T value) {
+    return prev -> new Quad<>(value, prev.second, prev.third, prev.fourth);
   }
 
   /**
-   * Constructs a new {@link Quad} with the updated value.
+   * Returns an operation that can be applied to the given object, modifying its second value.
    *
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  @Override
-  public Quad<T, U, V, W> updateSecond(U value) {
-    System.out.println("Quad second: " + value);
-    return new Quad<>(this.first, value, this.third, this.fourth);
+  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applySecond(U value) {
+    return prev -> new Quad<>(prev.first, value, prev.third, prev.fourth);
   }
 
   /**
-   * Constructs a new {@link Quad} with the updated value.
+   * Returns an operation that can be applied to the given object, modifying its third value.
    *
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  @Override
-  public Quad<T, U, V, W> updateThird(V value) {
-    System.out.println("Quad third: " + value);
-    return new Quad<>(this.first, this.second, value, this.fourth);
+  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyThird(V value) {
+    return prev -> new Quad<>(prev.first, prev.second, value, prev.fourth);
   }
 
   /**
-   * Constructs a new {@link Quad} with the updated value.
+   * Returns an operation that can be applied to the given object, modifying its fourth value.
    *
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  public Quad<T, U, V, W> updateFourth(W value) {
-    System.out.println("Quad fourth: " + value);
-    return new Quad<>(this.first, this.second, this.third, value);
+  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFourth(W value) {
+    return prev -> new Quad<>(prev.first, prev.second, prev.third, value);
   }
 
   /**
