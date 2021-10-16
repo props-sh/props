@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.LongUnaryOperator;
@@ -40,7 +41,7 @@ import sh.props.annotations.Nullable;
 
 public class SubscriberProxy<T> implements Subscribable<T> {
 
-  private final int parallelThreshold;
+  private final int maxNotificationPerTask;
 
   private static final Logger log = Logger.getLogger(SubscriberProxy.class.getName());
 
@@ -53,32 +54,11 @@ public class SubscriberProxy<T> implements Subscribable<T> {
   /**
    * Class constructor.
    *
-   * @param parallelThreshold the number of subscribers after which the processing is offloaded to
-   *     the {@link ForkJoinPool}
+   * @param maxNotificationPerTask the maximum number of subscribers that is processed in a single
+   *     {@link ForkJoinPool} task
    */
-  public SubscriberProxy(int parallelThreshold) {
-    this.parallelThreshold = parallelThreshold;
-  }
-
-  /**
-   * Constructs a {@link SubscriberProxy} which notifies all subscribers synchronously.
-   *
-   * @param <T> the type of the subscribers
-   * @return a holder of subscribers
-   */
-  public static <T> SubscriberProxy<T> processSync() {
-    return new SubscriberProxy<>(Integer.MAX_VALUE);
-  }
-
-  /**
-   * Constructs a {@link SubscriberProxy} which notifies all subscribers asynchronously, by
-   * offloading sending the notifications to the {@link ForkJoinPool}.
-   *
-   * @param <T> the type of the subscribers
-   * @return a holder of subscribers
-   */
-  public static <T> SubscriberProxy<T> processAsync() {
-    return new SubscriberProxy<>(0);
+  public SubscriberProxy(int maxNotificationPerTask) {
+    this.maxNotificationPerTask = maxNotificationPerTask;
   }
 
   /**
@@ -124,14 +104,90 @@ public class SubscriberProxy<T> implements Subscribable<T> {
   }
 
   /**
-   * Sends the updated value to all subscribers. If more than {@link #parallelThreshold} subscribers
-   * are registered, the update is asynchronously executed by the {@link ForkJoinPool}.
+   * Sends the updated value to all subscribers. If more than {@link #maxNotificationPerTask}
+   * subscribers are registered, the update is asynchronously executed by the {@link ForkJoinPool}.
    *
    * @param value the updated value
    */
   public void sendUpdate(@Nullable T value) {
-    long epoch = this.epoch.getAndIncrement();
-    this.syncAsyncProcessing(this.updateConsumers, this.parallelThreshold, value, epoch);
+    if (this.updateConsumers.isEmpty()) {
+      // nothing to do if we have no consumers
+      return;
+    }
+
+    // submit the update for processing
+    var epoch = this.epoch.getAndIncrement();
+    ForkJoinPool.commonPool()
+        .execute(
+            new SubNotifier<>(this.updateConsumers, 0, this.updateConsumers.size(), value, epoch));
+  }
+
+  private class SubNotifier<N> extends RecursiveAction {
+
+    private static final long serialVersionUID = 7089582888343373810L;
+    private final List<Consumer<N>> consumers;
+    private final int start;
+    private final int end;
+    @Nullable private final N value;
+    private final long epoch;
+
+    private SubNotifier(
+        List<Consumer<N>> consumers, int start, int end, @Nullable N value, long epoch) {
+      this.consumers = consumers;
+      this.start = start;
+      this.end = end;
+      this.value = value;
+      this.epoch = epoch;
+    }
+
+    @Override
+    protected void compute() {
+      // split the work into multiple subtasks, if needed
+      if (this.end - this.start > SubscriberProxy.this.maxNotificationPerTask) {
+        int middle = this.start + (this.end - this.start) / 2;
+        ForkJoinTask.invokeAll(
+            new SubNotifier<>(this.consumers, this.start, middle, this.value, this.epoch),
+            new SubNotifier<>(this.consumers, middle, this.end, this.value, this.epoch));
+        return;
+      }
+
+      // determine if the update can be accepted
+      SubscriberProxy.this.lastEpoch.updateAndGet(this.epochComparator(this.epoch));
+
+      // notify consumers between start-end (non-inclusive), as long as the epoch is not stale
+      for (int i = this.start; i < this.end && this.isNotStale(); i++) {
+        // notify consumers
+        this.consumers.get(i).accept(this.value);
+      }
+    }
+
+    /**
+     * Determines if the epoch is still correct.
+     *
+     * @return true if the epoch is valid and the operation can be applied
+     */
+    private boolean isNotStale() {
+      return SubscriberProxy.this.lastEpoch.get() == this.epoch;
+    }
+
+    /**
+     * Creates an {@link AtomicLong} comparator.
+     *
+     * @param epoch the epoch to test against
+     * @return an operator that can be applied to a {@link AtomicLong}
+     */
+    private LongUnaryOperator epochComparator(long epoch) {
+      return currentEpoch -> {
+        // if a more recent epoch is passed
+        if (Long.compareUnsigned(epoch, currentEpoch) > 0) {
+          // return it
+          return epoch;
+        } else {
+          // otherwise return the existing epoch
+          return currentEpoch;
+        }
+      };
+    }
   }
 
   /**
@@ -141,68 +197,15 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @param throwable the thrown exception
    */
   public void handleError(Throwable throwable) {
-    this.syncAsyncProcessing(
-        this.errorHandlers, this.parallelThreshold, throwable, this.epoch.getAndIncrement());
-  }
-
-  /**
-   * Method that decides how to consume the value, based on the specified threshold.
-   *
-   * @param <V> the type of the value
-   * @param consumers the consumers to which the value is sent
-   * @param parallelThreshold the threshold that decides if the processing should by sync/async
-   * @param value the value to send
-   * @param epoch the epoch corresponding to the current value
-   */
-  private <V> void syncAsyncProcessing(
-      List<Consumer<V>> consumers, int parallelThreshold, @Nullable V value, long epoch) {
-    if (consumers.isEmpty()) {
+    if (this.errorHandlers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
     }
 
-    // if we have less than the threshold, process synchronously
-    if (consumers.size() < parallelThreshold) {
-      this.acceptIfNotStaleWrite(consumers, value, epoch);
-      return;
-    }
-
-    // otherwise process asynchronously
-    // TODO: Refactor as RecursiveAction and split into multiple subtasks
-    ForkJoinTask<?> task =
-        ForkJoinTask.adapt(() -> this.acceptIfNotStaleWrite(consumers, value, epoch));
-    ForkJoinPool.commonPool().execute(task);
-  }
-
-  private <V> void acceptIfNotStaleWrite(
-      List<Consumer<V>> consumers, @Nullable V value, long epoch) {
-    // determine if the update can be accepted
-    long newEpoch = this.lastEpoch.updateAndGet(SubscriberProxy.epochComparator(epoch));
-    if (newEpoch == epoch) {
-      // the value was accepted
-      // notify all consumers
-      for (Consumer<V> consumer : consumers) {
-        consumer.accept(value);
-      }
-    }
-  }
-
-  /**
-   * Creates an {@link AtomicLong} comparator.
-   *
-   * @param epoch the epoch to test against
-   * @return an operator that can be applied to a {@link AtomicLong}
-   */
-  private static LongUnaryOperator epochComparator(long epoch) {
-    return currentEpoch -> {
-      // if a more recent epoch is passed
-      if (Long.compareUnsigned(epoch, currentEpoch) > 0) {
-        // return it
-        return epoch;
-      } else {
-        // otherwise return the existing epoch
-        return currentEpoch;
-      }
-    };
+    // submit the update for processing
+    var epoch = this.epoch.getAndIncrement();
+    ForkJoinPool.commonPool()
+        .execute(
+            new SubNotifier<>(this.errorHandlers, 0, this.errorHandlers.size(), throwable, epoch));
   }
 }

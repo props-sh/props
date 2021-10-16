@@ -52,7 +52,7 @@ public final class Coordinated {
    * @return a coordinated pair of props, which can be retrieved together
    */
   public static <T, U> PairSupplier<T, U> coordinate(Prop<T> first, Prop<U> second) {
-    return coordinate(first, second, SubscriberProxy.processSync());
+    return coordinate(first, second, new SubscriberProxy<>(5));
   }
 
   /**
@@ -87,7 +87,7 @@ public final class Coordinated {
    */
   public static <T, U, V> TripleSupplier<T, U, V> coordinate(
       Prop<T> first, Prop<U> second, Prop<V> third) {
-    return new TripleSupplierImpl<>(first, second, third, SubscriberProxy.processSync());
+    return new TripleSupplierImpl<>(first, second, third, new SubscriberProxy<>(5));
   }
 
   /**
@@ -126,7 +126,7 @@ public final class Coordinated {
    */
   public static <T, U, V, W> QuadSupplier<T, U, V, W> coordinate(
       Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
-    return new QuadSupplierImpl<>(first, second, third, fourth, SubscriberProxy.processSync());
+    return new QuadSupplierImpl<>(first, second, third, fourth, new SubscriberProxy<>(5));
   }
 
   /**

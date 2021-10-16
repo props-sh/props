@@ -43,7 +43,7 @@ public class PairSupplier<T, U> implements Supplier<Pair<T, U>> {
    * @param propU the second prop
    */
   public PairSupplier(Prop<T> propT, Prop<U> propU) {
-    this(propT, propU, SubscriberProxy.processSync());
+    this(propT, propU, new SubscriberProxy<>(5));
   }
 
   /**

@@ -75,7 +75,7 @@ public abstract class Prop<T> implements Converter<T> {
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
-    this(key, defaultValue, description, isRequired, isSecret, SubscriberProxy.processSync());
+    this(key, defaultValue, description, isRequired, isSecret, new SubscriberProxy<>(5));
   }
 
   /**
@@ -160,15 +160,16 @@ public abstract class Prop<T> implements Converter<T> {
       this.validateBeforeSet(value);
 
       // update the value
+      T prev = this.currentValue.get();
+      boolean updated = this.currentValue.compareAndSet(prev, value);
 
-      this.currentValue.set(value);
+      // if the value was not changed by another thread
+      if (updated) {
+        // notify subscribers of an accepted value
+        this.subscribers.sendUpdate(value);
+      }
 
-      // and notify subscribers
-      // note that the implementation makes no guarantees that by the time
-      // the subscribers have been notified, the value won't change
-      this.subscribers.sendUpdate(value);
-
-      return true;
+      return updated;
 
     } catch (InvalidUpdateOpException | RuntimeException e) {
       // logs the exception and signals any subscribers
