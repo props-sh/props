@@ -55,7 +55,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * Class constructor.
    *
    * @param maxNotificationPerTask the maximum number of subscribers that is processed in a single
-   *     {@link ForkJoinPool} task
+   *                               {@link ForkJoinPool} task
    */
   public SubscriberProxy(int maxNotificationPerTask) {
     this.maxNotificationPerTask = maxNotificationPerTask;
@@ -66,7 +66,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * taken when registering subscribers.
    *
    * @param onUpdate called when a new value is received
-   * @param onError called when an error occurs (a value cannot be received)
+   * @param onError  called when an error occurs (a value cannot be received)
    */
   @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
@@ -80,8 +80,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * exceptions thrown by the <code>consumer</code> will be sent to it.
    *
    * @param consumer the consumer to wrap
-   * @param onError an error handler
-   * @param <T> the type of the consumer
+   * @param onError  an error handler
+   * @param <T>      the type of the consumer
    * @return a wrapped, safe consumer that never throws exceptions
    */
   private static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
@@ -116,6 +116,10 @@ public class SubscriberProxy<T> implements Subscribable<T> {
 
     // submit the update for processing
     var epoch = this.epoch.getAndIncrement();
+    // determine if the update can be accepted
+    SubscriberProxy.this.lastEpoch.updateAndGet(SubscriberProxy.epochComparator(epoch));
+
+    System.out.printf("Attempting to send value %s (epoch=%d)\n", value, epoch);
     ForkJoinPool.commonPool()
         .execute(
             new SubNotifier<>(this.updateConsumers, 0, this.updateConsumers.size(), value, epoch));
@@ -135,9 +139,31 @@ public class SubscriberProxy<T> implements Subscribable<T> {
 
     // submit the update for processing
     var epoch = this.epoch.getAndIncrement();
+    // determine if the update can be accepted
+    SubscriberProxy.this.lastEpoch.updateAndGet(SubscriberProxy.epochComparator(epoch));
+
     ForkJoinPool.commonPool()
         .execute(
             new SubNotifier<>(this.errorHandlers, 0, this.errorHandlers.size(), throwable, epoch));
+  }
+
+  /**
+   * Creates an {@link AtomicLong} comparator.
+   *
+   * @param epoch the epoch to test against
+   * @return an operator that can be applied to a {@link AtomicLong}
+   */
+  private static LongUnaryOperator epochComparator(long epoch) {
+    return currentEpoch -> {
+      // if a more recent epoch is passed
+      if (Long.compareUnsigned(epoch, currentEpoch) > 0) {
+        // return it
+        return epoch;
+      } else {
+        // otherwise return the existing epoch
+        return currentEpoch;
+      }
+    };
   }
 
   private class SubNotifier<N> extends RecursiveAction {
@@ -146,7 +172,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
     private final List<Consumer<N>> consumers;
     private final int start;
     private final int end;
-    @Nullable private final N value;
+    @Nullable
+    private final N value;
     private final long epoch;
 
     private SubNotifier(
@@ -169,13 +196,17 @@ public class SubscriberProxy<T> implements Subscribable<T> {
         return;
       }
 
+      // TODO: back here?
       // determine if the update can be accepted
-      SubscriberProxy.this.lastEpoch.updateAndGet(this.epochComparator(this.epoch));
+//      SubscriberProxy.this.lastEpoch.updateAndGet(this.epochComparator(this.epoch));
 
       // notify consumers between start-end (non-inclusive), as long as the epoch is not stale
-      for (int i = this.start; i < this.end && this.isNotStale(); i++) {
+      int i = this.start - 1;
+      while (++i < this.end && this.isNotStale()) {
         // notify consumers
         this.consumers.get(i).accept(this.value);
+        System.out.printf("Sent value %s (epoch=%d/%d)\n", this.value, this.epoch,
+            SubscriberProxy.this.lastEpoch.get());
       }
     }
 
@@ -185,7 +216,9 @@ public class SubscriberProxy<T> implements Subscribable<T> {
      * @return true if the epoch is valid and the operation can be applied
      */
     private boolean isNotStale() {
-      return SubscriberProxy.this.lastEpoch.get() == this.epoch;
+      long last = SubscriberProxy.this.lastEpoch.get();
+      System.out.printf("epoch=%d/%d\n", this.epoch, last);
+      return last == this.epoch;
     }
 
     /**

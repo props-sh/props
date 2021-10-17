@@ -33,7 +33,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Disabled;
@@ -48,7 +48,7 @@ class CoordinatedAsyncTest {
 
   @Test
   @Disabled
-  // TODO: fix the impl.
+    // TODO: fix the impl.
   void coordinatePairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -72,7 +72,7 @@ class CoordinatedAsyncTest {
 
   @Test
   @Disabled
-  // TODO: fix the impl.
+    // TODO: fix the impl.
   void coordinateTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -113,6 +113,7 @@ class CoordinatedAsyncTest {
     supplier.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3, 4);
+
     // ACT
     source.put("key1", "1");
     source.put("key2", "2");
@@ -120,28 +121,47 @@ class CoordinatedAsyncTest {
     source.put("key4", "4");
 
     // ASSERT
-    verify(consumer, timeout(5_000)).accept(expected);
+    verify(consumer, timeout(10_000).atLeastOnce()).accept(expected);
+
     var quad = CoordinatedAsyncTest.getLast(consumer);
-    assertThat("Last notification should be a complete value", quad, equalTo(expected));
+    try {
+      assertThat("Last notification should be a complete value", quad, equalTo(expected));
+    } catch (AssertionError e) {
+      for (int i = 0; i < consumer.collector.size(); i++) {
+        System.out.println(consumer.collector.get(i));
+      }
+      throw e;
+    }
   }
 
   private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
-    Quad<Integer, Integer, Integer, Integer> var = null;
-    while (!consumer.collector.isEmpty()) {
-      var = consumer.collector.poll();
-      System.out.printf("%d: %s%s", System.nanoTime(), var, System.lineSeparator());
+    synchronized (consumer) {
+      Quad<Integer, Integer, Integer, Integer> result = consumer.collector.peekLast();
+      System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
+      return result;
     }
-    return var;
+//    Quad<Integer, Integer, Integer, Integer> var = null;
+//    Quad<Integer, Integer, Integer, Integer> last = null;
+//    while ((var = consumer.collector.poll()) != null) {
+//      last = var;
+//      System.out.printf("%d: %s%s", System.nanoTime(), last, System.lineSeparator());
+//      System.out.flush();
+//    }
+//    return last;
   }
 
   private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {
 
-    final ConcurrentLinkedQueue<Quad<Integer, Integer, Integer, Integer>> collector =
-        new ConcurrentLinkedQueue<>();
+    final LinkedList<Quad<Integer, Integer, Integer, Integer>> collector =
+        new LinkedList<>();
 
     @Override
     public void accept(Quad<Integer, Integer, Integer, Integer> quad) {
-      this.collector.add(quad);
+      synchronized (this) {
+        this.collector.add(quad);
+        System.out.printf("Accepted value %s (index=%d)\n", quad, this.collector.size() - 1);
+
+      }
     }
   }
 
