@@ -140,27 +140,26 @@ class CoordinatedAsyncTest {
       System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
       return result;
     }
-//    Quad<Integer, Integer, Integer, Integer> var = null;
-//    Quad<Integer, Integer, Integer, Integer> last = null;
-//    while ((var = consumer.collector.poll()) != null) {
-//      last = var;
-//      System.out.printf("%d: %s%s", System.nanoTime(), last, System.lineSeparator());
-//      System.out.flush();
-//    }
-//    return last;
+    //    Quad<Integer, Integer, Integer, Integer> var = null;
+    //    Quad<Integer, Integer, Integer, Integer> last = null;
+    //    while ((var = consumer.collector.poll()) != null) {
+    //      last = var;
+    //      System.out.printf("%d: %s%s", System.nanoTime(), last, System.lineSeparator());
+    //      System.out.flush();
+    //    }
+    //    return last;
   }
 
   private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {
 
-    final LinkedList<Quad<Integer, Integer, Integer, Integer>> collector =
-        new LinkedList<>();
+    @SuppressWarnings("checkstyle:JdkObsolete")
+    final LinkedList<Quad<Integer, Integer, Integer, Integer>> collector = new LinkedList<>();
 
     @Override
     public void accept(Quad<Integer, Integer, Integer, Integer> quad) {
       synchronized (this) {
         this.collector.add(quad);
         System.out.printf("Accepted value %s (index=%d)\n", quad, this.collector.size() - 1);
-
       }
     }
   }

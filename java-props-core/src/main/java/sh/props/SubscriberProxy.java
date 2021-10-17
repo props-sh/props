@@ -198,15 +198,16 @@ public class SubscriberProxy<T> implements Subscribable<T> {
 
       // TODO: back here?
       // determine if the update can be accepted
-//      SubscriberProxy.this.lastEpoch.updateAndGet(this.epochComparator(this.epoch));
+      //      SubscriberProxy.this.lastEpoch.updateAndGet(this.epochComparator(this.epoch));
 
       // notify consumers between start-end (non-inclusive), as long as the epoch is not stale
       int i = this.start - 1;
       while (++i < this.end && this.isNotStale()) {
         // notify consumers
         this.consumers.get(i).accept(this.value);
-        System.out.printf("Sent value %s (epoch=%d/%d)\n", this.value, this.epoch,
-            SubscriberProxy.this.lastEpoch.get());
+        System.out.printf(
+            "Sent value %s (epoch=%d/%d)\n",
+            this.value, this.epoch, SubscriberProxy.this.lastEpoch.get());
       }
     }
 
@@ -219,25 +220,6 @@ public class SubscriberProxy<T> implements Subscribable<T> {
       long last = SubscriberProxy.this.lastEpoch.get();
       System.out.printf("epoch=%d/%d\n", this.epoch, last);
       return last == this.epoch;
-    }
-
-    /**
-     * Creates an {@link AtomicLong} comparator.
-     *
-     * @param epoch the epoch to test against
-     * @return an operator that can be applied to a {@link AtomicLong}
-     */
-    private LongUnaryOperator epochComparator(long epoch) {
-      return currentEpoch -> {
-        // if a more recent epoch is passed
-        if (Long.compareUnsigned(epoch, currentEpoch) > 0) {
-          // return it
-          return epoch;
-        } else {
-          // otherwise return the existing epoch
-          return currentEpoch;
-        }
-      };
     }
   }
 }
