@@ -55,7 +55,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * Class constructor.
    *
    * @param maxNotificationPerTask the maximum number of subscribers that is processed in a single
-   *                               {@link ForkJoinPool} task
+   *     {@link ForkJoinPool} task
    */
   public SubscriberProxy(int maxNotificationPerTask) {
     this.maxNotificationPerTask = maxNotificationPerTask;
@@ -66,7 +66,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * taken when registering subscribers.
    *
    * @param onUpdate called when a new value is received
-   * @param onError  called when an error occurs (a value cannot be received)
+   * @param onError called when an error occurs (a value cannot be received)
    */
   @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
@@ -80,8 +80,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * exceptions thrown by the <code>consumer</code> will be sent to it.
    *
    * @param consumer the consumer to wrap
-   * @param onError  an error handler
-   * @param <T>      the type of the consumer
+   * @param onError an error handler
+   * @param <T> the type of the consumer
    * @return a wrapped, safe consumer that never throws exceptions
    */
   private static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
@@ -172,8 +172,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
     private final List<Consumer<N>> consumers;
     private final int start;
     private final int end;
-    @Nullable
-    private final N value;
+    @Nullable private final N value;
     private final long epoch;
 
     private SubNotifier(

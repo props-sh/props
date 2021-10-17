@@ -33,7 +33,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.util.LinkedList;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Disabled;
@@ -48,7 +48,7 @@ class CoordinatedAsyncTest {
 
   @Test
   @Disabled
-    // TODO: fix the impl.
+  // TODO: fix the impl.
   void coordinatePairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -72,7 +72,7 @@ class CoordinatedAsyncTest {
 
   @Test
   @Disabled
-    // TODO: fix the impl.
+  // TODO: fix the impl.
   void coordinateTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -136,7 +136,7 @@ class CoordinatedAsyncTest {
 
   private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
     synchronized (consumer) {
-      Quad<Integer, Integer, Integer, Integer> result = consumer.collector.peekLast();
+      Quad<Integer, Integer, Integer, Integer> result = consumer.collector.peek();
       System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
       return result;
     }
@@ -152,8 +152,8 @@ class CoordinatedAsyncTest {
 
   private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {
 
-    @SuppressWarnings("checkstyle:JdkObsolete")
-    final LinkedList<Quad<Integer, Integer, Integer, Integer>> collector = new LinkedList<>();
+    @SuppressWarnings("JdkObsolete")
+    final Stack<Quad<Integer, Integer, Integer, Integer>> collector = new Stack<>();
 
     @Override
     public void accept(Quad<Integer, Integer, Integer, Integer> quad) {
