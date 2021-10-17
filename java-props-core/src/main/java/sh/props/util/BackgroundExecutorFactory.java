@@ -20,10 +20,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package sh.props.source.refresh;
+package sh.props.util;
 
 import static java.lang.String.format;
 
@@ -34,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-class BackgroundExecutorFactory {
+public class BackgroundExecutorFactory {
 
   public static final Duration DEFAULT_GRACE_PERIOD = Duration.ofSeconds(5);
 
@@ -59,9 +58,9 @@ class BackgroundExecutorFactory {
    * <p>Any such executors will attempt graceful shutdown when instructed and will wait for any
    * current requests to complete, up to the specified grace period (millisecond granularity).
    *
-   * @param threads the number of threads in the pool
+   * @param threads             the number of threads in the pool
    * @param shutdownGracePeriod the maximum grace period before forcefully shutting down the
-   *     executor
+   *                            executor
    * @return an initialized scheduled executor
    */
   public static ScheduledExecutorService create(int threads, Duration shutdownGracePeriod) {
@@ -79,7 +78,7 @@ class BackgroundExecutorFactory {
    * Gracefully terminate the specified {@link ScheduledExecutorService}, waiting for the specified
    * grace period (millisecond granularity).
    *
-   * @param executor the executor to shutdown
+   * @param executor    the executor to shutdown
    * @param gracePeriod the maximum grace period before forcing a shutdown
    */
   public static void shutdown(ExecutorService executor, Duration gracePeriod) {

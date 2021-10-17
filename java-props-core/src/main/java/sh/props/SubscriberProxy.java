@@ -29,36 +29,57 @@ import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.function.LongUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.util.BackgroundExecutorFactory;
 
 public class SubscriberProxy<T> implements Subscribable<T> {
 
-  private final int maxNotificationPerTask;
-
   private static final Logger log = Logger.getLogger(SubscriberProxy.class.getName());
 
+  private final ReentrantLock ensureOrderedMessageReceipt = new ReentrantLock();
   private final List<Consumer<T>> updateConsumers = new ArrayList<>();
   private final List<Consumer<Throwable>> errorHandlers = new ArrayList<>();
 
-  private final AtomicLong epoch = new AtomicLong();
-  private final AtomicLong lastEpoch = new AtomicLong();
+  private final BlockingQueue<T> values = new LinkedBlockingQueue<>();
+  private final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
 
   /**
    * Class constructor.
-   *
-   * @param maxNotificationPerTask the maximum number of subscribers that is processed in a single
-   *     {@link ForkJoinPool} task
    */
-  public SubscriberProxy(int maxNotificationPerTask) {
-    this.maxNotificationPerTask = maxNotificationPerTask;
+  public SubscriberProxy() {
+    ScheduledExecutorService executor = BackgroundExecutorFactory.create(2);
+    executor.submit(this::sendValues);
+    executor.submit(this::handleErrors);
+  }
+
+  private void sendValues() {
+    try {
+      while (true) {
+        T value = this.values.take();
+        this.compute(this.updateConsumers, value);
+      }
+    } catch (InterruptedException e) {
+      this.errors.add(e);
+    }
+  }
+
+  private void handleErrors() {
+    try {
+      while (true) {
+        Throwable throwable = this.errors.take();
+        this.compute(this.errorHandlers, throwable);
+      }
+    } catch (InterruptedException e) {
+      this.errors.add(e);
+    }
   }
 
   /**
@@ -66,7 +87,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * taken when registering subscribers.
    *
    * @param onUpdate called when a new value is received
-   * @param onError called when an error occurs (a value cannot be received)
+   * @param onError  called when an error occurs (a value cannot be received)
    */
   @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
@@ -80,8 +101,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * exceptions thrown by the <code>consumer</code> will be sent to it.
    *
    * @param consumer the consumer to wrap
-   * @param onError an error handler
-   * @param <T> the type of the consumer
+   * @param onError  an error handler
+   * @param <T>      the type of the consumer
    * @return a wrapped, safe consumer that never throws exceptions
    */
   private static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
@@ -109,20 +130,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @param value the updated value
    */
   public void sendUpdate(@Nullable T value) {
-    if (this.updateConsumers.isEmpty()) {
-      // nothing to do if we have no consumers
-      return;
-    }
-
-    // submit the update for processing
-    var epoch = this.epoch.getAndIncrement();
-    // determine if the update can be accepted
-    SubscriberProxy.this.lastEpoch.updateAndGet(SubscriberProxy.epochComparator(epoch));
-
-    System.out.printf("Attempting to send value %s (epoch=%d)\n", value, epoch);
-    ForkJoinPool.commonPool()
-        .execute(
-            new SubNotifier<>(this.updateConsumers, 0, this.updateConsumers.size(), value, epoch));
+    this.values.add(value);
   }
 
   /**
@@ -132,93 +140,24 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * @param throwable the thrown exception
    */
   public void handleError(Throwable throwable) {
-    if (this.errorHandlers.isEmpty()) {
+    this.errors.add(throwable);
+  }
+
+  private <N> void compute(List<Consumer<N>> consumers, @Nullable N value) {
+    if (consumers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
     }
 
-    // submit the update for processing
-    var epoch = this.epoch.getAndIncrement();
-    // determine if the update can be accepted
-    SubscriberProxy.this.lastEpoch.updateAndGet(SubscriberProxy.epochComparator(epoch));
-
-    ForkJoinPool.commonPool()
-        .execute(
-            new SubNotifier<>(this.errorHandlers, 0, this.errorHandlers.size(), throwable, epoch));
-  }
-
-  /**
-   * Creates an {@link AtomicLong} comparator.
-   *
-   * @param epoch the epoch to test against
-   * @return an operator that can be applied to a {@link AtomicLong}
-   */
-  private static LongUnaryOperator epochComparator(long epoch) {
-    return currentEpoch -> {
-      // if a more recent epoch is passed
-      if (Long.compareUnsigned(epoch, currentEpoch) > 0) {
-        // return it
-        return epoch;
-      } else {
-        // otherwise return the existing epoch
-        return currentEpoch;
-      }
-    };
-  }
-
-  private class SubNotifier<N> extends RecursiveAction {
-
-    private static final long serialVersionUID = 7089582888343373810L;
-    private final List<Consumer<N>> consumers;
-    private final int start;
-    private final int end;
-    @Nullable private final N value;
-    private final long epoch;
-
-    private SubNotifier(
-        List<Consumer<N>> consumers, int start, int end, @Nullable N value, long epoch) {
-      this.consumers = consumers;
-      this.start = start;
-      this.end = end;
-      this.value = value;
-      this.epoch = epoch;
-    }
-
-    @Override
-    protected void compute() {
-      // split the work into multiple subtasks, if needed
-      if (this.end - this.start > SubscriberProxy.this.maxNotificationPerTask) {
-        int middle = this.start + (this.end - this.start) / 2;
-        ForkJoinTask.invokeAll(
-            new SubNotifier<>(this.consumers, this.start, middle, this.value, this.epoch),
-            new SubNotifier<>(this.consumers, middle, this.end, this.value, this.epoch));
-        return;
-      }
-
-      // TODO: back here?
-      // determine if the update can be accepted
-      //      SubscriberProxy.this.lastEpoch.updateAndGet(this.epochComparator(this.epoch));
-
-      // notify consumers between start-end (non-inclusive), as long as the epoch is not stale
-      int i = this.start - 1;
-      while (++i < this.end && this.isNotStale()) {
-        // notify consumers
-        this.consumers.get(i).accept(this.value);
-        System.out.printf(
-            "Sent value %s (epoch=%d/%d)\n",
-            this.value, this.epoch, SubscriberProxy.this.lastEpoch.get());
-      }
-    }
-
-    /**
-     * Determines if the epoch is still correct.
-     *
-     * @return true if the epoch is valid and the operation can be applied
-     */
-    private boolean isNotStale() {
-      long last = SubscriberProxy.this.lastEpoch.get();
-      System.out.printf("epoch=%d/%d\n", this.epoch, last);
-      return last == this.epoch;
+    // synchronize sending updates
+    // only send one update at a time
+    SubscriberProxy.this.ensureOrderedMessageReceipt.lock();
+    try {
+      consumers.forEach(c -> c.accept(value));
+    } finally {
+      // ensure the updated value was received by all consumers
+      // before allowing a new update to be processed
+      SubscriberProxy.this.ensureOrderedMessageReceipt.unlock();
     }
   }
 }

@@ -30,6 +30,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
 import sh.props.source.Source;
+import sh.props.util.BackgroundExecutorFactory;
 
 public class Scheduler {
 
@@ -38,7 +39,8 @@ public class Scheduler {
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with
+   * a
    * single thread.
    */
   public Scheduler() {
@@ -57,8 +59,8 @@ public class Scheduler {
   /**
    * Schedules an {@link Source} for periodic data refreshes.
    *
-   * @param source the source to refresh
-   * @param initialDelay the initial delay before the first refresh is executed
+   * @param source        the source to refresh
+   * @param initialDelay  the initial delay before the first refresh is executed
    * @param refreshPeriod the refresh period
    * @return a {@link ScheduledSource} object
    */
@@ -76,7 +78,7 @@ public class Scheduler {
    * Schedules an {@link Source} for periodic data refreshes. It eagerly scheduled the first data
    * load by setting the initial interval to zero.
    *
-   * @param source the source to refresh
+   * @param source        the source to refresh
    * @param refreshPeriod the refresh period
    * @return a {@link ScheduledSource} object
    */
@@ -94,7 +96,9 @@ public class Scheduler {
     return Holder.DEFAULT;
   }
 
-  /** Static holder for the default instance, ensuring lazy initialization. */
+  /**
+   * Static holder for the default instance, ensuring lazy initialization.
+   */
   private static class Holder {
 
     private static final Scheduler DEFAULT = new Scheduler();
