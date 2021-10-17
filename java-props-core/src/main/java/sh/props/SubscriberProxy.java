@@ -104,8 +104,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
   }
 
   /**
-   * Sends the updated value to all subscribers. If more than {@link #maxNotificationPerTask}
-   * subscribers are registered, the update is asynchronously executed by the {@link ForkJoinPool}.
+   * Queues the update to be sent to all subscribers, via the {@link ForkJoinPool}.
    *
    * @param value the updated value
    */
@@ -120,6 +119,25 @@ public class SubscriberProxy<T> implements Subscribable<T> {
     ForkJoinPool.commonPool()
         .execute(
             new SubNotifier<>(this.updateConsumers, 0, this.updateConsumers.size(), value, epoch));
+  }
+
+  /**
+   * Signals to subscribers that an error occurred. In most cases this means that the value could
+   * not be updated or {@link #sendUpdate(Object)}} threw an exception while accepting the value.
+   *
+   * @param throwable the thrown exception
+   */
+  public void handleError(Throwable throwable) {
+    if (this.errorHandlers.isEmpty()) {
+      // nothing to do if we have no consumers
+      return;
+    }
+
+    // submit the update for processing
+    var epoch = this.epoch.getAndIncrement();
+    ForkJoinPool.commonPool()
+        .execute(
+            new SubNotifier<>(this.errorHandlers, 0, this.errorHandlers.size(), throwable, epoch));
   }
 
   private class SubNotifier<N> extends RecursiveAction {
@@ -188,24 +206,5 @@ public class SubscriberProxy<T> implements Subscribable<T> {
         }
       };
     }
-  }
-
-  /**
-   * Signals to subscribers that an error occurred. In most cases this means that the value could
-   * not be updated or {@link #sendUpdate(Object)}} threw an exception while accepting the value.
-   *
-   * @param throwable the thrown exception
-   */
-  public void handleError(Throwable throwable) {
-    if (this.errorHandlers.isEmpty()) {
-      // nothing to do if we have no consumers
-      return;
-    }
-
-    // submit the update for processing
-    var epoch = this.epoch.getAndIncrement();
-    ForkJoinPool.commonPool()
-        .execute(
-            new SubNotifier<>(this.errorHandlers, 0, this.errorHandlers.size(), throwable, epoch));
   }
 }

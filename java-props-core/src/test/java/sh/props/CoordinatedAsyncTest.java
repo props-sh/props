@@ -28,15 +28,22 @@ package sh.props;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
+import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 class CoordinatedAsyncTest {
 
   @Test
@@ -101,10 +108,11 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
     Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
-    var result = new AtomicReference<>();
+    SpyConsumer consumer = spy(new SpyConsumer());
     var supplier = Coordinated.coordinate(prop1, prop2, prop3, prop4);
-    supplier.subscribe(result::set, CoordinatedAsyncTest::ignoreErrors);
+    supplier.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
+    var expected = Tuple.of(1, 2, 3, 4);
     // ACT
     source.put("key1", "1");
     source.put("key2", "2");
@@ -112,7 +120,29 @@ class CoordinatedAsyncTest {
     source.put("key4", "4");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(result::get, equalTo(Tuple.of(1, 2, 3, 4)));
+    verify(consumer, timeout(5_000)).accept(expected);
+    var quad = CoordinatedAsyncTest.getLast(consumer);
+    assertThat("Last notification should be a complete value", quad, equalTo(expected));
+  }
+
+  private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
+    Quad<Integer, Integer, Integer, Integer> var = null;
+    while (!consumer.collector.isEmpty()) {
+      var = consumer.collector.poll();
+      System.out.printf("%d: %s%s", System.nanoTime(), var, System.lineSeparator());
+    }
+    return var;
+  }
+
+  private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {
+
+    final ConcurrentLinkedQueue<Quad<Integer, Integer, Integer, Integer>> collector =
+        new ConcurrentLinkedQueue<>();
+
+    @Override
+    public void accept(Quad<Integer, Integer, Integer, Integer> quad) {
+      this.collector.add(quad);
+    }
   }
 
   private static void ignoreErrors(Throwable t) {

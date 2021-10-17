@@ -25,9 +25,11 @@
 
 package sh.props;
 
-import java.util.ArrayDeque;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -319,7 +321,11 @@ public final class Coordinated {
     private final Prop<W> fourth;
     private final SubscriberProxy<Quad<T, U, V, W>> subscribers;
 
-    private final ArrayDeque<UnaryOperator<Quad<T, U, V, W>>> ops = new ArrayDeque<>();
+    private final Queue<UnaryOperator<Quad<T, U, V, W>>> ops = new ConcurrentLinkedQueue<>();
+
+    private final ReentrantLock sendUpdate = new ReentrantLock();
+    private final CountDownLatch allowedToSend = new CountDownLatch(1);
+    private final AtomicReference<Quad<T, U, V, W>> ref = new AtomicReference<>();
 
     /**
      * Constructs the provider.
@@ -343,30 +349,77 @@ public final class Coordinated {
       this.third = third;
       this.fourth = fourth;
 
-      // subscribe to updates
-      first.subscribe(value -> this.sendUpdate(), this.subscribers::handleError);
-      second.subscribe(value -> this.sendUpdate(), this.subscribers::handleError);
-      third.subscribe(value -> this.sendUpdate(), this.subscribers::handleError);
-      fourth.subscribe(value -> this.sendUpdate(), this.subscribers::handleError);
+      // subscribe to all updates
+      first.subscribe(
+          v -> {
+            this.ops.add(Quad.applyFirst(v));
+            this.sendUpdateSynchronized();
+          },
+          this.subscribers::handleError);
+      second.subscribe(
+          v -> {
+            this.ops.add(Quad.applySecond(v));
+            this.sendUpdateSynchronized();
+          },
+          this.subscribers::handleError);
+      third.subscribe(
+          v -> {
+            this.ops.add(Quad.applyThird(v));
+            this.sendUpdateSynchronized();
+          },
+          this.subscribers::handleError);
+      fourth.subscribe(
+          v -> {
+            this.ops.add(Quad.applyFourth(v));
+            this.sendUpdateSynchronized();
+          },
+          this.subscribers::handleError);
+
+      // ensure we capture the state of the tuple after subscribing to all updates
+      this.ref.set(this.get());
+
+      // from this moment, we can start sending updates, since all the ops will be applied
+      this.allowedToSend.countDown();
     }
 
-    private void sendUpdate() {
-      ForkJoinTask<?> task =
-          ForkJoinTask.adapt(
-              () -> {
-                synchronized (this.ops) {
-                  this.subscribers.sendUpdate(this.get());
-                }
-              });
-      ForkJoinPool.commonPool().execute(task);
+    private void sendUpdateSynchronized() {
+      // wait for initialization before sending any updates
+      try {
+        this.allowedToSend.await();
+      } catch (InterruptedException e) {
+        this.subscribers.handleError(e);
+        return;
+      }
+
+      // limit to a single concurrent update that first applies all transformations
+      // before sending an update
+      //      boolean updated = false;
+      this.sendUpdate.lock();
+      try {
+        Quad<T, U, V, W> value = null;
+
+        // in case there are ops to apply
+        UnaryOperator<Quad<T, U, V, W>> op;
+        while ((op = this.ops.poll()) != null) {
+          // process all of them until the queue is empty
+          value = this.ref.updateAndGet(op);
+          //          updated = true;
+        }
+
+        // if at least one op was applied, send an update
+        if (value != null) {
+          //          var value = this.ref.get();
+          this.subscribers.sendUpdate(value);
+        }
+      } finally {
+        this.sendUpdate.unlock();
+      }
     }
 
     @Override
     public Quad<T, U, V, W> get() {
-      synchronized (this.ops) {
-        return Tuple.of(
-            this.first.value(), this.second.value(), this.third.value(), this.fourth.value());
-      }
+      return Tuple.of(
+          this.first.value(), this.second.value(), this.third.value(), this.fourth.value());
     }
 
     /**
