@@ -45,11 +45,9 @@ public abstract class Prop<T> implements Converter<T> {
 
   public final String key;
 
-  @Nullable
-  private final T defaultValue;
+  @Nullable private final T defaultValue;
 
-  @Nullable
-  private final String description;
+  @Nullable private final String description;
 
   private final boolean isRequired;
 
@@ -62,13 +60,13 @@ public abstract class Prop<T> implements Converter<T> {
   /**
    * Constructs a new property class.
    *
-   * @param key          the property's key
+   * @param key the property's key
    * @param defaultValue a default value for this key, if one isn't defined
-   * @param description  describes this property and what it is used for; mostly aimed at allowing
-   *                     developers to easily understand the intended usage of a Prop
-   * @param isRequired   true if a value (or default) must be provided
-   * @param isSecret     true if this prop represents a secret and its value must not be
-   *                     accidentally exposed
+   * @param description describes this property and what it is used for; mostly aimed at allowing
+   *     developers to easily understand the intended usage of a Prop
+   * @param isRequired true if a value (or default) must be provided
+   * @param isSecret true if this prop represents a secret and its value must not be accidentally
+   *     exposed
    * @throws NullPointerException if the constructed object is in an invalid state
    */
   protected Prop(
@@ -83,14 +81,14 @@ public abstract class Prop<T> implements Converter<T> {
   /**
    * Constructs a new property class.
    *
-   * @param key          the property's key
+   * @param key the property's key
    * @param defaultValue a default value for this key, if one isn't defined
-   * @param description  describes this property and what it is used for; mostly aimed at allowing
-   *                     developers to easily understand the intended usage of a Prop
-   * @param isRequired   true if a value (or default) must be provided
-   * @param isSecret     true if this prop represents a secret and its value must not be
-   *                     accidentally exposed
-   * @param subscribers  the {@link SubscriberProxy} strategy to use for sending update events
+   * @param description describes this property and what it is used for; mostly aimed at allowing
+   *     developers to easily understand the intended usage of a Prop
+   * @param isRequired true if a value (or default) must be provided
+   * @param isSecret true if this prop represents a secret and its value must not be accidentally
+   *     exposed
+   * @param subscribers the {@link SubscriberProxy} strategy to use for sending update events
    * @throws NullPointerException if the constructed object is in an invalid state
    */
   protected Prop(
@@ -189,7 +187,7 @@ public abstract class Prop<T> implements Converter<T> {
    * taken when registering subscribers.
    *
    * @param onUpdate called when a new value is received
-   * @param onError  called when an error occurs (a value cannot be received)
+   * @param onError called when an error occurs (a value cannot be received)
    */
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
     this.subscribers.subscribe(onUpdate, onError);

@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package sh.props.util;
@@ -58,9 +59,9 @@ public class BackgroundExecutorFactory {
    * <p>Any such executors will attempt graceful shutdown when instructed and will wait for any
    * current requests to complete, up to the specified grace period (millisecond granularity).
    *
-   * @param threads             the number of threads in the pool
+   * @param threads the number of threads in the pool
    * @param shutdownGracePeriod the maximum grace period before forcefully shutting down the
-   *                            executor
+   *     executor
    * @return an initialized scheduled executor
    */
   public static ScheduledExecutorService create(int threads, Duration shutdownGracePeriod) {
@@ -78,7 +79,7 @@ public class BackgroundExecutorFactory {
    * Gracefully terminate the specified {@link ScheduledExecutorService}, waiting for the specified
    * grace period (millisecond granularity).
    *
-   * @param executor    the executor to shutdown
+   * @param executor the executor to shutdown
    * @param gracePeriod the maximum grace period before forcing a shutdown
    */
   public static void shutdown(ExecutorService executor, Duration gracePeriod) {

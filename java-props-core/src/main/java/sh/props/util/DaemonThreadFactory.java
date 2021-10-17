@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package sh.props.util;
@@ -27,16 +28,12 @@ package sh.props.util;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-/**
- * Creates daemon {@link Thread}s.
- */
+/** Creates daemon {@link Thread}s. */
 class DaemonThreadFactory implements ThreadFactory {
 
   private final ThreadFactory factory;
 
-  /**
-   * Spawns threads using the default {@link ThreadFactory}.
-   */
+  /** Spawns threads using the default {@link ThreadFactory}. */
   public DaemonThreadFactory() {
     this(Executors.defaultThreadFactory());
   }
@@ -50,9 +47,7 @@ class DaemonThreadFactory implements ThreadFactory {
     this.factory = factory;
   }
 
-  /**
-   * Creates a new daemon {@link Thread}.
-   */
+  /** Creates a new daemon {@link Thread}. */
   @Override
   public Thread newThread(Runnable runnable) {
     Thread thread = this.factory.newThread(runnable);

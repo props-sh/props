@@ -61,8 +61,7 @@ public class FileWatchSvc implements Runnable {
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with
-   * a
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
    * single thread.
    *
    * @throws IOException if a {@link WatchService} cannot be initialized for whatever reason
@@ -86,8 +85,8 @@ public class FileWatchSvc implements Runnable {
    * Registers the specified path for notification on updates.
    *
    * @param source an {@link Source} that is also {@link FileWatchable}
-   * @param <T>    the type of the source to register; it must be both {@link Source} and {@link
-   *               FileWatchable}
+   * @param <T> the type of the source to register; it must be both {@link Source} and {@link
+   *     FileWatchable}
    * @return a {@link ScheduledSource} wrapping the input parameter
    * @throws IOException if the source's path could not be registered with the {@link WatchService}
    */
@@ -108,9 +107,7 @@ public class FileWatchSvc implements Runnable {
     return new ScheduledSource(source, true);
   }
 
-  /**
-   * Main file-watching logic.
-   */
+  /** Main file-watching logic. */
   @Override
   public void run() {
     WatchKey key = null;
@@ -125,7 +122,8 @@ public class FileWatchSvc implements Runnable {
             // retrieve the file
             .map(
                 event -> {
-                  @SuppressWarnings("unchecked") WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                  @SuppressWarnings("unchecked")
+                  WatchEvent<Path> ev = (WatchEvent<Path>) event;
                   return ev.context();
                 })
 
@@ -178,9 +176,7 @@ public class FileWatchSvc implements Runnable {
     return Holder.DEFAULT;
   }
 
-  /**
-   * Static holder for the default instance, ensuring lazy initialization.
-   */
+  /** Static holder for the default instance, ensuring lazy initialization. */
   private static final class Holder {
 
     private static final FileWatchSvc DEFAULT;

@@ -51,9 +51,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
   private final BlockingQueue<T> values = new LinkedBlockingQueue<>();
   private final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
 
-  /**
-   * Class constructor.
-   */
+  /** Class constructor. */
+  @SuppressWarnings("FutureReturnValueIgnored")
   public SubscriberProxy() {
     ScheduledExecutorService executor = BackgroundExecutorFactory.create(2);
     executor.submit(this::sendValues);
@@ -87,7 +86,7 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * taken when registering subscribers.
    *
    * @param onUpdate called when a new value is received
-   * @param onError  called when an error occurs (a value cannot be received)
+   * @param onError called when an error occurs (a value cannot be received)
    */
   @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
@@ -101,8 +100,8 @@ public class SubscriberProxy<T> implements Subscribable<T> {
    * exceptions thrown by the <code>consumer</code> will be sent to it.
    *
    * @param consumer the consumer to wrap
-   * @param onError  an error handler
-   * @param <T>      the type of the consumer
+   * @param onError an error handler
+   * @param <T> the type of the consumer
    * @return a wrapped, safe consumer that never throws exceptions
    */
   private static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
