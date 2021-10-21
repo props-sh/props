@@ -41,11 +41,6 @@ public class ClasspathPropertyFile extends Source {
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;
 
-  @Override
-  public String id() {
-    return "classpath://" + this.location;
-  }
-
   /**
    * Constructs a {@link Source} which reads values from a property file in the classpath.
    *
@@ -53,6 +48,11 @@ public class ClasspathPropertyFile extends Source {
    */
   public ClasspathPropertyFile(String location) {
     this.location = location;
+  }
+
+  @Override
+  public String id() {
+    return "classpath://" + this.location;
   }
 
   @Override

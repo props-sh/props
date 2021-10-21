@@ -60,6 +60,35 @@ public class SubscriberProxy<T> implements Subscribable<T> {
     executor.submit(this::handleErrors);
   }
 
+  /**
+   * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
+   * Consumer#accept(Object)}, they will be logged. If <code>onError</code> is non-null, any
+   * exceptions thrown by the <code>consumer</code> will be sent to it.
+   *
+   * @param consumer the consumer to wrap
+   * @param onError an error handler
+   * @param <T> the type of the consumer
+   * @return a wrapped, safe consumer that never throws exceptions
+   */
+  private static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
+    return value -> {
+      try {
+        consumer.accept(value);
+      } catch (Exception e) {
+        // do not allow any exceptions to permeate out of this consumer
+
+        // log exceptions so that developers are aware where they originated
+        SubscriberProxy.log.log(
+            Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
+
+        // and also pass them to the associated Throwable handler
+        if (onError != null) {
+          onError.accept(e);
+        }
+      }
+    };
+  }
+
   private void sendValues() {
     try {
       while (true) {
@@ -93,35 +122,6 @@ public class SubscriberProxy<T> implements Subscribable<T> {
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
     this.updateConsumers.add(safe(onUpdate, onError));
     this.errorHandlers.add(safe(onError, null));
-  }
-
-  /**
-   * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
-   * Consumer#accept(Object)}, they will be logged. If <code>onError</code> is non-null, any
-   * exceptions thrown by the <code>consumer</code> will be sent to it.
-   *
-   * @param consumer the consumer to wrap
-   * @param onError an error handler
-   * @param <T> the type of the consumer
-   * @return a wrapped, safe consumer that never throws exceptions
-   */
-  private static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
-    return value -> {
-      try {
-        consumer.accept(value);
-      } catch (Exception e) {
-        // do not allow any exceptions to permeate out of this consumer
-
-        // log exceptions so that developers are aware where they originated
-        SubscriberProxy.log.log(
-            Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
-
-        // and also pass them to the associated Throwable handler
-        if (onError != null) {
-          onError.accept(e);
-        }
-      }
-    };
   }
 
   /**

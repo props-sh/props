@@ -38,6 +38,16 @@ import sh.props.source.impl.InMemory;
 @SuppressWarnings("NullAway")
 class SyncStoreTest {
 
+  private static void assertValueIs(String result, String value) {
+    if (value == null) {
+      assertThat(result, nullValue());
+      return;
+    }
+
+    assertThat(result, notNullValue());
+    assertThat(result, equalTo(value));
+  }
+
   @BeforeEach
   void setUp() {}
 
@@ -91,15 +101,5 @@ class SyncStoreTest {
     source1.remove("key");
     source1.updateSubscribers();
     SyncStoreTest.assertValueIs(registry.get("key", String.class), null);
-  }
-
-  private static void assertValueIs(String result, String value) {
-    if (value == null) {
-      assertThat(result, nullValue());
-      return;
-    }
-
-    assertThat(result, notNullValue());
-    assertThat(result, equalTo(value));
   }
 }

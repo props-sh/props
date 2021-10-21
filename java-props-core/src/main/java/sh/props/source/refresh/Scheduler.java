@@ -56,6 +56,15 @@ public class Scheduler {
   }
 
   /**
+   * Returns the default scheduler, ensuring it is initialized on first-use.
+   *
+   * @return the default {@link Scheduler}
+   */
+  public static Scheduler instance() {
+    return Holder.DEFAULT;
+  }
+
+  /**
    * Schedules an {@link Source} for periodic data refreshes.
    *
    * @param source the source to refresh
@@ -84,15 +93,6 @@ public class Scheduler {
   @SuppressWarnings("FutureReturnValueIgnored")
   public ScheduledSource scheduleEagerly(Source source, Duration refreshPeriod) {
     return this.schedule(source, Duration.ZERO, refreshPeriod);
-  }
-
-  /**
-   * Returns the default scheduler, ensuring it is initialized on first-use.
-   *
-   * @return the default {@link Scheduler}
-   */
-  public static Scheduler instance() {
-    return Holder.DEFAULT;
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */

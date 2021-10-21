@@ -52,6 +52,39 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   private final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
 
   /**
+   * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
+   * containing all key,value mappings.
+   *
+   * @param stream the stream to process
+   * @return a valid map of properties
+   * @throws IllegalArgumentException if a null <code>InputStream</code> was passed
+   * @throws IOException if the <code>InputStream</code> cannot be read
+   */
+  protected static Map<String, String> loadPropertiesFromStream(InputStream stream)
+      throws IOException {
+    if (isNull(stream)) {
+      throw new IllegalArgumentException(
+          "loadPropertiesFromStream expects a non-null input stream");
+    }
+
+    Properties properties = new Properties();
+    properties.load(stream);
+    return Source.readPropertiesToMap(properties);
+  }
+
+  /**
+   * Iterates over all the input {@link Properties} and returns a {@link Map} containing all
+   * key,value mappings.
+   *
+   * @param properties the properties object to read
+   * @return a map containing all the defined properties
+   */
+  protected static Map<String, String> readPropertiesToMap(Properties properties) {
+    return properties.stringPropertyNames().stream()
+        .collect(Collectors.toUnmodifiableMap(Function.identity(), properties::getProperty));
+  }
+
+  /**
    * An unique identifier representing this source in the {@link sh.props.Registry}.
    *
    * @return an unique id
@@ -96,38 +129,5 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   @Override
   public String toString() {
     return format("Source(%s)", this.id());
-  }
-
-  /**
-   * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
-   * containing all key,value mappings.
-   *
-   * @param stream the stream to process
-   * @return a valid map of properties
-   * @throws IllegalArgumentException if a null <code>InputStream</code> was passed
-   * @throws IOException if the <code>InputStream</code> cannot be read
-   */
-  protected static Map<String, String> loadPropertiesFromStream(InputStream stream)
-      throws IOException {
-    if (isNull(stream)) {
-      throw new IllegalArgumentException(
-          "loadPropertiesFromStream expects a non-null input stream");
-    }
-
-    Properties properties = new Properties();
-    properties.load(stream);
-    return Source.readPropertiesToMap(properties);
-  }
-
-  /**
-   * Iterates over all the input {@link Properties} and returns a {@link Map} containing all
-   * key,value mappings.
-   *
-   * @param properties the properties object to read
-   * @return a map containing all the defined properties
-   */
-  protected static Map<String, String> readPropertiesToMap(Properties properties) {
-    return properties.stringPropertyNames().stream()
-        .collect(Collectors.toUnmodifiableMap(Function.identity(), properties::getProperty));
   }
 }

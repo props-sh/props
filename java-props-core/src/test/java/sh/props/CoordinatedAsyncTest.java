@@ -49,6 +49,20 @@ import sh.props.tuples.Tuple;
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 class CoordinatedAsyncTest {
 
+  private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
+    synchronized (consumer) {
+      Quad<Integer, Integer, Integer, Integer> result =
+          consumer.collector.get(consumer.collector.size() - 1);
+      System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
+      return result;
+    }
+  }
+
+  private static void ignoreErrors(Throwable t) {
+    // do nothing
+    t.printStackTrace();
+  }
+
   @Test
   @Disabled
   // TODO: fix the impl.
@@ -137,15 +151,6 @@ class CoordinatedAsyncTest {
     }
   }
 
-  private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
-    synchronized (consumer) {
-      Quad<Integer, Integer, Integer, Integer> result =
-          consumer.collector.get(consumer.collector.size() - 1);
-      System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
-      return result;
-    }
-  }
-
   private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {
 
     @SuppressWarnings("JdkObsolete")
@@ -157,11 +162,6 @@ class CoordinatedAsyncTest {
       this.collector.add(quad);
       System.out.printf("Accepted value %s (index=%d)\n", quad, this.collector.size() - 1);
     }
-  }
-
-  private static void ignoreErrors(Throwable t) {
-    // do nothing
-    t.printStackTrace();
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {

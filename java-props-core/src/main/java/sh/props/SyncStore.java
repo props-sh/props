@@ -39,6 +39,77 @@ class SyncStore implements Datastore {
     this.notifiable = notifiable;
   }
 
+  private static void assertLayerIsValid(Layer search, ValueLayerTuple vl) {
+    if (!Objects.equals(search.registry(), vl.layer().registry())) {
+      throw new IllegalArgumentException(
+          "Invalid layer passed (does not belong to current registry)");
+    }
+  }
+
+  /**
+   * When an owner relinquishes control, find the first lower priority layer that defines the key.
+   *
+   * @param key the key we're searching for
+   * @param vl the starting value/layer pair
+   * @return a {@link ValueLayerTuple} if found, or <code>null</code> if no layer defines the key
+   */
+  @Nullable
+  private static ValueLayerTuple findNextPotentialOwner(String key, ValueLayerTuple vl) {
+    Layer l = vl.layer();
+    // search all layers with lower priority for the key
+    while (l.prev() != null) {
+      l = l.prev();
+      String value = l.get(key);
+      if (value != null) {
+        return new ValueLayerTuple(value, l);
+      }
+    }
+
+    // if no layer defines this key
+    return null;
+  }
+
+  /**
+   * Find a specific layer that defines the key.
+   *
+   * @param key the key to search for
+   * @param vl the effective value/layer pair
+   * @param search the layer to search for
+   * @return a {@link ValueLayerTuple} if a layer defines the key, or <code>null</code> otherwise
+   */
+  @Nullable
+  private static ValueLayerTuple findLayer(String key, ValueLayerTuple vl, Layer search) {
+    Layer l = vl.layer();
+
+    SyncStore.assertLayerIsValid(search, vl);
+
+    if (Objects.equals(search.id(), l.id())) {
+      // we're searching for this key's owner
+      return vl;
+    }
+
+    // find the desired layer
+    while (l != null && l.priority() != search.priority()) {
+      // if we found a mapping
+      String value = l.get(key);
+      if (value != null) {
+        // return it
+        return new ValueLayerTuple(value, l);
+      }
+
+      if (l.priority() < search.priority()) {
+        // go to next layer
+        l = l.next();
+      } else if (l.priority() > search.priority()) {
+        // go to previous layer
+        l = l.prev();
+      }
+    }
+
+    // if no layer defines this key
+    return null;
+  }
+
   @Override
   public Notifiable notifier() {
     return this.notifiable;
@@ -72,13 +143,6 @@ class SyncStore implements Datastore {
     }
 
     return findLayer(key, effective, layer);
-  }
-
-  private static void assertLayerIsValid(Layer search, ValueLayerTuple vl) {
-    if (!Objects.equals(search.registry(), vl.layer().registry())) {
-      throw new IllegalArgumentException(
-          "Invalid layer passed (does not belong to current registry)");
-    }
   }
 
   /**
@@ -171,69 +235,5 @@ class SyncStore implements Datastore {
 
     this.notifier().sendUpdate(key, vl.value(), vl.layer());
     return vl;
-  }
-
-  /**
-   * When an owner relinquishes control, find the first lower priority layer that defines the key.
-   *
-   * @param key the key we're searching for
-   * @param vl the starting value/layer pair
-   * @return a {@link ValueLayerTuple} if found, or <code>null</code> if no layer defines the key
-   */
-  @Nullable
-  private static ValueLayerTuple findNextPotentialOwner(String key, ValueLayerTuple vl) {
-    Layer l = vl.layer();
-    // search all layers with lower priority for the key
-    while (l.prev() != null) {
-      l = l.prev();
-      String value = l.get(key);
-      if (value != null) {
-        return new ValueLayerTuple(value, l);
-      }
-    }
-
-    // if no layer defines this key
-    return null;
-  }
-
-  /**
-   * Find a specific layer that defines the key.
-   *
-   * @param key the key to search for
-   * @param vl the effective value/layer pair
-   * @param search the layer to search for
-   * @return a {@link ValueLayerTuple} if a layer defines the key, or <code>null</code> otherwise
-   */
-  @Nullable
-  private static ValueLayerTuple findLayer(String key, ValueLayerTuple vl, Layer search) {
-    Layer l = vl.layer();
-
-    SyncStore.assertLayerIsValid(search, vl);
-
-    if (Objects.equals(search.id(), l.id())) {
-      // we're searching for this key's owner
-      return vl;
-    }
-
-    // find the desired layer
-    while (l != null && l.priority() != search.priority()) {
-      // if we found a mapping
-      String value = l.get(key);
-      if (value != null) {
-        // return it
-        return new ValueLayerTuple(value, l);
-      }
-
-      if (l.priority() < search.priority()) {
-        // go to next layer
-        l = l.next();
-      } else if (l.priority() > search.priority()) {
-        // go to previous layer
-        l = l.prev();
-      }
-    }
-
-    // if no layer defines this key
-    return null;
   }
 }

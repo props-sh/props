@@ -39,6 +39,10 @@ import sh.props.source.impl.InMemory;
 @SuppressWarnings("NullAway")
 class RegistryTest {
 
+  private static void ignoreErrors(Throwable t) {
+    // do nothing
+  }
+
   @Test
   void updateValue() {
     // ARRANGE
@@ -190,10 +194,6 @@ class RegistryTest {
     // ASSERT
     await().atMost(5, SECONDS).until(localValue1::get, equalTo(2));
     await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
-  }
-
-  private static void ignoreErrors(Throwable t) {
-    // do nothing
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {

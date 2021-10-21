@@ -82,6 +82,15 @@ public class FileWatchSvc implements Runnable {
   }
 
   /**
+   * Returns the default file watch service, ensuring it is initialized on first-use.
+   *
+   * @return the default {@link FileWatchSvc}
+   */
+  public static FileWatchSvc instance() {
+    return Holder.DEFAULT;
+  }
+
+  /**
    * Registers the specified path for notification on updates.
    *
    * @param source an {@link Source} that is also {@link FileWatchable}
@@ -165,15 +174,6 @@ public class FileWatchSvc implements Runnable {
   public FileWatchSvc start() {
     this.executor.execute(this);
     return this;
-  }
-
-  /**
-   * Returns the default file watch service, ensuring it is initialized on first-use.
-   *
-   * @return the default {@link FileWatchSvc}
-   */
-  public static FileWatchSvc instance() {
-    return Holder.DEFAULT;
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */

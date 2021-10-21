@@ -51,21 +51,6 @@ public class Registry implements Notifiable {
     this.store = new SyncStore(this);
   }
 
-  @Override
-  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-    // check if we have any props to notify
-    Collection<Prop<?>> props = this.notifications.get(key);
-    if (props == null || props.isEmpty()) {
-      // nothing to do if the key is not registered or there aren't any props to notify
-      return;
-    }
-
-    // alleviate the risk of blocking the main (update) thread
-    // by offloading to an executor pool, since we don't control Prop subscribers
-    ForkJoinTask<?> task = ForkJoinTask.adapt(() -> Registry.updateProps(props, value, layer));
-    ForkJoinPool.commonPool().execute(task);
-  }
-
   /**
    * Updates all registered props.
    *
@@ -81,6 +66,21 @@ public class Registry implements Notifiable {
         log.fine(() -> format("%s received new value from %s", prop, layer));
       }
     }
+  }
+
+  @Override
+  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+    // check if we have any props to notify
+    Collection<Prop<?>> props = this.notifications.get(key);
+    if (props == null || props.isEmpty()) {
+      // nothing to do if the key is not registered or there aren't any props to notify
+      return;
+    }
+
+    // alleviate the risk of blocking the main (update) thread
+    // by offloading to an executor pool, since we don't control Prop subscribers
+    ForkJoinTask<?> task = ForkJoinTask.adapt(() -> Registry.updateProps(props, value, layer));
+    ForkJoinPool.commonPool().execute(task);
   }
 
   /**

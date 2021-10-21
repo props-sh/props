@@ -35,6 +35,11 @@ import sh.props.tuples.Tuple;
 @Deprecated
 public final class Coordinated {
 
+  /** Private constructor, preventing instantiation. */
+  private Coordinated() {
+    // intentionally left blank
+  }
+
   /**
    * Coordinates a pair of values. The returned type implements {@link Subscribable}, allowing the
    * user to receive events when any of the values are updated.
@@ -48,6 +53,8 @@ public final class Coordinated {
   public static <T, U> PairSupplier<T, U> coordinate(Prop<T> first, Prop<U> second) {
     return new PairSupplierImpl<>(first, second, new SubscriberProxy<>());
   }
+
+  // Pair
 
   /**
    * Coordinates a triple of values. The returned type implements {@link Subscribable}, allowing the
@@ -66,8 +73,6 @@ public final class Coordinated {
     return new TripleSupplierImpl<>(first, second, third, new SubscriberProxy<>());
   }
 
-  // Pair
-
   /**
    * A coordinated pair of props.
    *
@@ -75,6 +80,18 @@ public final class Coordinated {
    * @param <U> the type of the second prop
    */
   public interface PairSupplier<T, U> extends Supplier<Pair<T, U>>, Subscribable<Pair<T, U>> {}
+
+  // Triple
+
+  /**
+   * A coordinated pair of props.
+   *
+   * @param <T> the type of the first prop
+   * @param <U> the type of the second prop
+   * @param <V> the type of the third prop
+   */
+  public interface TripleSupplier<T, U, V>
+      extends Supplier<Triple<T, U, V>>, Subscribable<Triple<T, U, V>> {}
 
   private static class PairSupplierImpl<T, U> implements PairSupplier<T, U> {
 
@@ -120,18 +137,6 @@ public final class Coordinated {
       this.subscribers.subscribe(onUpdate, onError);
     }
   }
-
-  // Triple
-
-  /**
-   * A coordinated pair of props.
-   *
-   * @param <T> the type of the first prop
-   * @param <U> the type of the second prop
-   * @param <V> the type of the third prop
-   */
-  public interface TripleSupplier<T, U, V>
-      extends Supplier<Triple<T, U, V>>, Subscribable<Triple<T, U, V>> {}
 
   /**
    * Internal implementation class.
@@ -204,10 +209,5 @@ public final class Coordinated {
     public String toString() {
       return "TripleSupplier{" + this.get() + '}';
     }
-  }
-
-  /** Private constructor, preventing instantiation. */
-  private Coordinated() {
-    // intentionally left blank
   }
 }

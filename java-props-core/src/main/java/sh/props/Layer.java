@@ -47,12 +47,10 @@ public class Layer implements Consumer<Map<String, String>> {
   private final HashMap<String, String> store = new HashMap<>();
 
   private final ReentrantLock lock = new ReentrantLock();
-
-  @Nullable Layer prev;
-  @Nullable Layer next;
-
   private final int priority;
   private final AtomicBoolean initialized = new AtomicBoolean(false);
+  @Nullable Layer prev;
+  @Nullable Layer next;
 
   /**
    * Class constructor.

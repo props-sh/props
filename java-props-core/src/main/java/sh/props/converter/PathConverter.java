@@ -31,6 +31,26 @@ import java.nio.file.Path;
 public interface PathConverter extends Converter<Path> {
 
   /**
+   * Prefixes the specified path with the user's home directory, if the input starts with <code>~
+   * </code>.
+   *
+   * <p>It is the caller's responsibility to prevent any edge-cases or bad input (e.g., '~~'); this
+   * method will simply replace the first tilda character with the user's home directory.
+   *
+   * @param path the path to process
+   * @return the resulting path, prefixe with the user's home directory
+   */
+  static String replaceTildeWithUserHomeDir(String path) {
+    // if the specified path starts with '~'
+    if (path.startsWith("~")) {
+      // prefix the path with the user's home directory
+      return System.getProperty("user.home") + path.substring(1);
+    }
+
+    return path;
+  }
+
+  /**
    * If true, <code>~</code> will expand to the user's home directory, as returned by <code>
    * System.getProperty("user.home")</code>.
    *
@@ -55,25 +75,5 @@ public interface PathConverter extends Converter<Path> {
       return Path.of(replaceTildeWithUserHomeDir(value));
     }
     return Path.of(value);
-  }
-
-  /**
-   * Prefixes the specified path with the user's home directory, if the input starts with <code>~
-   * </code>.
-   *
-   * <p>It is the caller's responsibility to prevent any edge-cases or bad input (e.g., '~~'); this
-   * method will simply replace the first tilda character with the user's home directory.
-   *
-   * @param path the path to process
-   * @return the resulting path, prefixe with the user's home directory
-   */
-  static String replaceTildeWithUserHomeDir(String path) {
-    // if the specified path starts with '~'
-    if (path.startsWith("~")) {
-      // prefix the path with the user's home directory
-      return System.getProperty("user.home") + path.substring(1);
-    }
-
-    return path;
   }
 }

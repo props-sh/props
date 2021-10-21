@@ -47,29 +47,6 @@ import sh.props.source.impl.InMemory;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class OwnershipBenchmark {
 
-  @State(Scope.Benchmark)
-  public static class ExecutionPlan {
-
-    public Map<String, String> control;
-    public Registry registry;
-    public InMemory source1;
-
-    @Setup(Level.Invocation)
-    public void setUp() {
-      this.source1 = new InMemory();
-      this.registry = new RegistryBuilder().withSource(this.source1).build();
-
-      // set initial values
-      this.source1.put("key", "v1");
-      this.source1.put("preset", "preset-value");
-      this.source1.updateSubscribers();
-
-      // control
-      this.control = new HashMap<>();
-      this.control.put("preset", "preset-value");
-    }
-  }
-
   @Benchmark
   public static void setUnset(ExecutionPlan plan) {
     // set
@@ -113,5 +90,28 @@ public class OwnershipBenchmark {
   @Benchmark
   public static void getFromHashMap(ExecutionPlan plan, Blackhole blackhole) {
     blackhole.consume(plan.control.get("preset"));
+  }
+
+  @State(Scope.Benchmark)
+  public static class ExecutionPlan {
+
+    public Map<String, String> control;
+    public Registry registry;
+    public InMemory source1;
+
+    @Setup(Level.Invocation)
+    public void setUp() {
+      this.source1 = new InMemory();
+      this.registry = new RegistryBuilder().withSource(this.source1).build();
+
+      // set initial values
+      this.source1.put("key", "v1");
+      this.source1.put("preset", "preset-value");
+      this.source1.updateSubscribers();
+
+      // control
+      this.control = new HashMap<>();
+      this.control.put("preset", "preset-value");
+    }
   }
 }
