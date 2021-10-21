@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
+import sh.props.sync.Syncd;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
@@ -109,7 +110,7 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     SpyConsumer consumer = spy(new SpyConsumer());
-    var supplier = Coordinated.coordinate(prop1, prop2, prop3, prop4);
+    var supplier = Syncd.coordinate(prop1, prop2, prop3, prop4);
     supplier.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3, 4);
@@ -140,14 +141,6 @@ class CoordinatedAsyncTest {
       System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
       return result;
     }
-    //    Quad<Integer, Integer, Integer, Integer> var = null;
-    //    Quad<Integer, Integer, Integer, Integer> last = null;
-    //    while ((var = consumer.collector.poll()) != null) {
-    //      last = var;
-    //      System.out.printf("%d: %s%s", System.nanoTime(), last, System.lineSeparator());
-    //      System.out.flush();
-    //    }
-    //    return last;
   }
 
   private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {

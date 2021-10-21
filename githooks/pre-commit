@@ -6,6 +6,10 @@ echo "==> Running the pre-commit git hook..."
 # stash any unstaged changes
 git stash -q --keep-index --include-untracked
 
+# format and add any modifications
+./gradlew spotlessApply --daemon
+git add .
+
 # run the spotlessCheck with the gradle wrapper
 ./gradlew spotlessCheck --daemon
 

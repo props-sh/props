@@ -25,18 +25,11 @@
 
 package sh.props;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import sh.props.tuples.Pair;
-import sh.props.tuples.Quad;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
-import sh.props.util.BackgroundExecutorFactory;
 
 /** Helper class used to coordinate retrieving groups of {@link Prop}s. */
 public final class Coordinated {
@@ -70,25 +63,6 @@ public final class Coordinated {
   public static <T, U, V> TripleSupplier<T, U, V> coordinate(
       Prop<T> first, Prop<U> second, Prop<V> third) {
     return new TripleSupplierImpl<>(first, second, third, new SubscriberProxy<>());
-  }
-
-  /**
-   * Coordinates a quadruple of values. The returned type implements {@link Subscribable}, allowing
-   * the user to receive events when any of the values are updated.
-   *
-   * @param first the first prop
-   * @param second the second prop
-   * @param third the third prop
-   * @param fourth the fourth prop
-   * @param <T> the type of the first prop
-   * @param <U> the type of the second prop
-   * @param <V> the type of the third prop
-   * @param <W> the type of the fourth prop
-   * @return a coordinated Quad of props, which can be retrieved together
-   */
-  public static <T, U, V, W> QuadSupplier<T, U, V, W> coordinate(
-      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
-    return new QuadSupplierImpl<>(first, second, third, fourth, new SubscriberProxy<>());
   }
 
   // Pair
@@ -228,109 +202,6 @@ public final class Coordinated {
     @Override
     public String toString() {
       return "TripleSupplier{" + this.get() + '}';
-    }
-  }
-
-  // Quad
-
-  /**
-   * A coordinated pair of props.
-   *
-   * @param <T> the type of the first prop
-   * @param <U> the type of the second prop
-   */
-  public interface QuadSupplier<T, U, V, W>
-      extends Supplier<Quad<T, U, V, W>>, Subscribable<Quad<T, U, V, W>> {}
-
-  /**
-   * Internal implementation class.
-   *
-   * @param <T> the type of the first prop
-   * @param <U> the type of the second prop
-   * @param <V> the type of the third prop
-   */
-  private static class QuadSupplierImpl<T, U, V, W> implements QuadSupplier<T, U, V, W> {
-
-    private final SubscriberProxy<Quad<T, U, V, W>> subscribers;
-
-    private final BlockingQueue<UnaryOperator<Quad<T, U, V, W>>> ops = new LinkedBlockingQueue<>();
-    private final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
-    private final AtomicReference<Quad<T, U, V, W>> value;
-
-    /**
-     * Constructs the provider.
-     *
-     * @param first the first prop
-     * @param second the second prop
-     * @param third the third prop
-     * @param fourth the fourth prop
-     * @param subscribers the subscribers that get notified when any of the values change
-     */
-    @SuppressWarnings("FutureReturnValueIgnored")
-    QuadSupplierImpl(
-        Prop<T> first,
-        Prop<U> second,
-        Prop<V> third,
-        Prop<W> fourth,
-        SubscriberProxy<Quad<T, U, V, W>> subscribers) {
-      // initialize
-      this.subscribers = subscribers;
-
-      // subscribe to all updates
-      first.subscribe(v -> this.ops.add(Quad.applyFirst(v)), this.errors::add);
-      second.subscribe(v -> this.ops.add(Quad.applySecond(v)), this.errors::add);
-      third.subscribe(v -> this.ops.add(Quad.applyThird(v)), this.errors::add);
-      fourth.subscribe(v -> this.ops.add(Quad.applyFourth(v)), this.errors::add);
-
-      // retrieve a state of underlying props
-      this.value =
-          new AtomicReference<>(
-              Tuple.of(first.value(), second.value(), third.value(), fourth.value()));
-
-      ScheduledExecutorService executor = BackgroundExecutorFactory.create(2);
-      executor.submit(this::sendValues);
-      executor.submit(this::handleErrors);
-    }
-
-    public void sendValues() {
-      try {
-        while (true) {
-          UnaryOperator<Quad<T, U, V, W>> op = this.ops.take();
-          Quad<T, U, V, W> updated = this.value.updateAndGet(op);
-          System.out.printf("Sending %s\n", updated);
-          this.subscribers.sendUpdate(updated);
-        }
-      } catch (InterruptedException e) {
-        this.errors.add(e);
-      }
-    }
-
-    public void handleErrors() {
-      try {
-        while (true) {
-          Throwable throwable = this.errors.take();
-          this.subscribers.handleError(throwable);
-        }
-      } catch (InterruptedException e) {
-        // nothing else we can do, return
-      }
-    }
-
-    @Override
-    @SuppressWarnings("NullAway")
-    public Quad<T, U, V, W> get() {
-      return this.value.get();
-    }
-
-    /**
-     * Subscribes to value updates and errors.
-     *
-     * @param onUpdate called when any value is updated
-     * @param onError called when an update fails
-     */
-    @Override
-    public void subscribe(Consumer<Quad<T, U, V, W>> onUpdate, Consumer<Throwable> onError) {
-      this.subscribers.subscribe(onUpdate, onError);
     }
   }
 

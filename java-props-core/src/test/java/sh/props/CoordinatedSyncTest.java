@@ -32,6 +32,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
+import sh.props.sync.Syncd;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
@@ -93,7 +94,7 @@ class CoordinatedSyncTest {
     Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    var supplier = Coordinated.coordinate(prop1, prop2, prop3, prop4);
+    var supplier = Syncd.coordinate(prop1, prop2, prop3, prop4);
 
     // ACT
     source.put("key1", "1");
@@ -102,7 +103,7 @@ class CoordinatedSyncTest {
     source.put("key4", "4");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
+    await().atMost(5, SECONDS).until(supplier::value, equalTo(Tuple.of(1, 2, 3, 4)));
   }
 
   private static class IntProp extends Prop<Integer> implements IntegerConverter {
