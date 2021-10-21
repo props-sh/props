@@ -94,7 +94,7 @@ class RegistryTest {
     registry.bind(prop);
 
     // ASSERT
-    assertThat(prop.value(), equalTo(1));
+    assertThat(prop.get(), equalTo(1));
   }
 
   @Test
@@ -113,7 +113,7 @@ class RegistryTest {
     source.updateSubscribers();
 
     // ASSERT
-    await().atMost(5, SECONDS).until(prop::value, equalTo(2));
+    await().atMost(5, SECONDS).until(prop::get, equalTo(2));
   }
 
   @Test

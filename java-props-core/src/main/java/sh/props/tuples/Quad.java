@@ -55,6 +55,24 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   }
 
   /**
+   * Convert this quad to a pair, using its first two values.
+   *
+   * @return a pair containing this object's first two values
+   */
+  public Pair<T, U> toPair() {
+    return Tuple.of(this.first, this.second);
+  }
+
+  /**
+   * Convert this quad to a triple, using its first three values.
+   *
+   * @return a triple containing this object's first three values
+   */
+  public Triple<T, U, V> toTriple() {
+    return Tuple.of(this.first, this.second, this.third);
+  }
+
+  /**
    * Returns an operation that can be applied to the given object, modifying its first value.
    *
    * @param value the new value to set

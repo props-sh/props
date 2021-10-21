@@ -32,6 +32,7 @@ import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 /** Helper class used to coordinate retrieving groups of {@link Prop}s. */
+@Deprecated
 public final class Coordinated {
 
   /**
@@ -96,16 +97,16 @@ public final class Coordinated {
 
       // subscribe to updates
       first.subscribe(
-          value -> this.subscribers.sendUpdate(Tuple.of(value, this.second.value())),
+          value -> this.subscribers.sendUpdate(Tuple.of(value, this.second.get())),
           this.subscribers::handleError);
       second.subscribe(
-          value -> this.subscribers.sendUpdate(Tuple.of(this.first.value(), value)),
+          value -> this.subscribers.sendUpdate(Tuple.of(this.first.get(), value)),
           this.subscribers::handleError);
     }
 
     @Override
     public Pair<T, U> get() {
-      return Tuple.of(this.first.value(), this.second.value());
+      return Tuple.of(this.first.get(), this.second.get());
     }
 
     /**
@@ -185,7 +186,7 @@ public final class Coordinated {
 
     @Override
     public Triple<T, U, V> get() {
-      return Tuple.of(this.first.value(), this.second.value(), this.third.value());
+      return Tuple.of(this.first.get(), this.second.get(), this.third.get());
     }
 
     /**

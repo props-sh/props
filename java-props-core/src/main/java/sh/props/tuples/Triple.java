@@ -54,6 +54,15 @@ public class Triple<T, U, V> extends Pair<T, U> {
   }
 
   /**
+   * Convert this triple to a pair, using its first two values.
+   *
+   * @return a pair containing this object's first two values
+   */
+  public Pair<T, U> toPair() {
+    return Tuple.of(this.first, this.second);
+  }
+
+  /**
    * Constructs a new {@link Pair} with the updated value.
    *
    * @param value the new value to set

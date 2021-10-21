@@ -31,22 +31,24 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.UnaryOperator;
-import sh.props.BaseAsyncProp;
 import sh.props.Prop;
+import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
 /**
- * Internal implementation class.
+ * Quadruple supplier implementation
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
  * @param <V> the type of the third prop
  */
-public class QuadSupplierImpl<T, U, V, W> extends BaseAsyncProp<Quad<T, U, V, W>> {
+class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
+    implements QuadSupplier<T, U, V, W> {
 
   private final BlockingQueue<UnaryOperator<Quad<T, U, V, W>>> ops = new LinkedBlockingQueue<>();
+  private final ReentrantLock sendStage = new ReentrantLock();
   private final AtomicReference<Quad<T, U, V, W>> value;
 
   /**
@@ -86,11 +88,8 @@ public class QuadSupplierImpl<T, U, V, W> extends BaseAsyncProp<Quad<T, U, V, W>
 
     // retrieve a current state of the underlying props
     this.value =
-        new AtomicReference<>(
-            Tuple.of(first.value(), second.value(), third.value(), fourth.value()));
+        new AtomicReference<>(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
   }
-
-  private final ReentrantLock sendStage = new ReentrantLock();
 
   /**
    * Custom implementation that Notifies all subscribers of the newest value of this prop. This
@@ -110,14 +109,13 @@ public class QuadSupplierImpl<T, U, V, W> extends BaseAsyncProp<Quad<T, U, V, W>
             () -> {
               // ensure we execute a single update concurrently
               this.sendStage.lock();
-              try {
-                if (!this.processUpdates()) {
-                  // the value was not updated, do not notify subscribers
-                  return;
-                }
 
+              // apply the update ops
+              this.processUpdates();
+
+              try {
                 // send the same value to all consumers
-                Quad<T, U, V, W> value = this.value();
+                Quad<T, U, V, W> value = this.get();
                 this.valueSubscribers.forEach(c -> c.accept(value));
               } finally {
                 // ensure the updated value was received by all consumers
@@ -148,7 +146,7 @@ public class QuadSupplierImpl<T, U, V, W> extends BaseAsyncProp<Quad<T, U, V, W>
 
   @Override
   @Nullable
-  public Quad<T, U, V, W> value() {
+  public Quad<T, U, V, W> get() {
     return this.value.get();
   }
 }

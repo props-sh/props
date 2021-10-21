@@ -29,6 +29,7 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
 import sh.props.exceptions.InvalidReadOpException;
@@ -39,7 +40,8 @@ import sh.props.exceptions.InvalidUpdateOpException;
  *
  * @param <T> the property's type
  */
-public abstract class Prop<T> extends BaseAsyncProp<T> implements Converter<T> {
+public abstract class Prop<T> extends SubscribableProp<T>
+    implements Supplier<T>, Subscribable<T>, Converter<T> {
 
   public final String key;
 
@@ -156,7 +158,7 @@ public abstract class Prop<T> extends BaseAsyncProp<T> implements Converter<T> {
    */
   @Override
   @Nullable
-  public T value() {
+  public T get() {
     // retrieve the value from the atomic ref
     T currentValue = this.currentValue.get();
     // set a default, if the value is missing

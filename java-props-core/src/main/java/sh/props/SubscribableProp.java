@@ -33,6 +33,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
@@ -46,9 +47,9 @@ import sh.props.annotations.Nullable;
  *
  * @param <T> the type of the prop object
  */
-public abstract class BaseAsyncProp<T> implements Subscribable<T> {
+public abstract class SubscribableProp<T> implements Subscribable<T>, Supplier<T> {
 
-  private static final Logger log = Logger.getLogger(BaseAsyncProp.class.getName());
+  private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
 
   protected AtomicLong epoch = new AtomicLong();
 
@@ -61,8 +62,9 @@ public abstract class BaseAsyncProp<T> implements Subscribable<T> {
    *
    * @return the current value of this object
    */
+  @Override
   @Nullable
-  public abstract T value();
+  public abstract T get();
 
   /**
    * Notifies all subscribers of the newest value of this prop. This method does not accept a value
@@ -94,8 +96,7 @@ public abstract class BaseAsyncProp<T> implements Subscribable<T> {
 
               try {
                 // send the same value to all consumers
-                T value = this.value();
-                System.out.printf("Sending %s\n", value);
+                T value = this.get();
                 this.valueSubscribers.forEach(c -> c.accept(value));
               } finally {
                 // ensure the updated value was received by all consumers

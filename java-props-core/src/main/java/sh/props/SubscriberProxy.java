@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.util.BackgroundExecutorFactory;
 
+@Deprecated
 public class SubscriberProxy<T> implements Subscribable<T> {
 
   private static final Logger log = Logger.getLogger(SubscriberProxy.class.getName());
