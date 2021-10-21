@@ -28,9 +28,7 @@ package sh.props;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
 import sh.props.exceptions.InvalidReadOpException;
@@ -41,7 +39,7 @@ import sh.props.exceptions.InvalidUpdateOpException;
  *
  * @param <T> the property's type
  */
-public abstract class Prop<T> implements Converter<T> {
+public abstract class Prop<T> extends BaseAsyncProp<T> implements Converter<T> {
 
   public final String key;
 
@@ -54,8 +52,6 @@ public abstract class Prop<T> implements Converter<T> {
   private final boolean isSecret;
 
   private final AtomicReference<T> currentValue = new AtomicReference<>();
-
-  private final SubscriberProxy<T> subscribers;
 
   /**
    * Constructs a new property class.
@@ -75,29 +71,6 @@ public abstract class Prop<T> implements Converter<T> {
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
-    this(key, defaultValue, description, isRequired, isSecret, new SubscriberProxy<>());
-  }
-
-  /**
-   * Constructs a new property class.
-   *
-   * @param key the property's key
-   * @param defaultValue a default value for this key, if one isn't defined
-   * @param description describes this property and what it is used for; mostly aimed at allowing
-   *     developers to easily understand the intended usage of a Prop
-   * @param isRequired true if a value (or default) must be provided
-   * @param isSecret true if this prop represents a secret and its value must not be accidentally
-   *     exposed
-   * @param subscribers the {@link SubscriberProxy} strategy to use for sending update events
-   * @throws NullPointerException if the constructed object is in an invalid state
-   */
-  protected Prop(
-      String key,
-      @Nullable T defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret,
-      SubscriberProxy<T> subscribers) {
     // validate
     if (isNull(key)) {
       throw new NullPointerException("The property's key cannot be null");
@@ -108,7 +81,6 @@ public abstract class Prop<T> implements Converter<T> {
     this.description = description;
     this.isRequired = isRequired;
     this.isSecret = isSecret;
-    this.subscribers = subscribers;
   }
 
   /**
@@ -160,37 +132,20 @@ public abstract class Prop<T> implements Converter<T> {
       this.validateBeforeSet(value);
 
       // update the value
-      T prev = this.currentValue.get();
-      boolean updated = this.currentValue.compareAndSet(prev, value);
+      this.currentValue.set(value);
 
-      // if the value was not changed by another thread
-      if (updated) {
-        // notify subscribers of an accepted value
-        this.subscribers.sendUpdate(value);
-      }
+      // notify subscribers of an accepted value
+      this.onUpdatedValue();
 
-      return updated;
+      return true;
 
     } catch (InvalidUpdateOpException | RuntimeException e) {
       // logs the exception and signals any subscribers
-      this.subscribers.handleError(e);
+      this.onUpdateError(e);
     }
 
     // the update failed
     return false;
-  }
-
-  AtomicLong epoch = new AtomicLong();
-
-  /**
-   * Subscribes the passed update/error consumers. This method is not thread-safe and care must be
-   * taken when registering subscribers.
-   *
-   * @param onUpdate called when a new value is received
-   * @param onError called when an error occurs (a value cannot be received)
-   */
-  public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
-    this.subscribers.subscribe(onUpdate, onError);
   }
 
   /**
@@ -199,6 +154,7 @@ public abstract class Prop<T> implements Converter<T> {
    * @return the {@link Prop}'s current value, or <code>null</code>.
    * @throws InvalidReadOpException if the value could not be validated
    */
+  @Override
   @Nullable
   public T value() {
     // retrieve the value from the atomic ref
