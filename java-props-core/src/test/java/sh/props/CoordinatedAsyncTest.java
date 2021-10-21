@@ -50,12 +50,7 @@ import sh.props.tuples.Tuple;
 class CoordinatedAsyncTest {
 
   private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
-    synchronized (consumer) {
-      Quad<Integer, Integer, Integer, Integer> result =
-          consumer.collector.get(consumer.collector.size() - 1);
-      System.out.printf("Returned result %s (index=%d)\n", result, consumer.collector.size() - 1);
-      return result;
-    }
+    return consumer.collector.get(consumer.collector.size() - 1);
   }
 
   private static void ignoreErrors(Throwable t) {
@@ -160,7 +155,6 @@ class CoordinatedAsyncTest {
     @Override
     public void accept(Quad<Integer, Integer, Integer, Integer> quad) {
       this.collector.add(quad);
-      System.out.printf("Accepted value %s (index=%d)\n", quad, this.collector.size() - 1);
     }
   }
 
