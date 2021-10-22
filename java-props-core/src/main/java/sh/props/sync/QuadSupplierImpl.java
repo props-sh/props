@@ -99,8 +99,12 @@ class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
    */
   @Override
   protected void onUpdatedValue() {
+    // apply the update ops
+    this.processUpdates();
+
+    // check if any consumers are registered
     if (this.valueSubscribers.isEmpty()) {
-      // nothing to do if we have no consumers
+      // do not submit a ForkJoinTask if there are no subscribers to notify
       return;
     }
 
@@ -110,10 +114,10 @@ class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
               // ensure we execute a single update concurrently
               this.sendStage.lock();
 
-              // apply the update ops
-              this.processUpdates();
-
               try {
+                // apply the update ops
+                this.processUpdates();
+
                 // send the same value to all consumers
                 Quad<T, U, V, W> value = this.get();
                 this.valueSubscribers.forEach(c -> c.accept(value));
