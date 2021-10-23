@@ -26,7 +26,9 @@
 package sh.props.sync;
 
 import sh.props.BaseProp;
+import sh.props.Prop;
 import sh.props.Subscribable;
+import sh.props.tuples.Tuple;
 
 public class Synchronized {
 
@@ -48,5 +50,31 @@ public class Synchronized {
   public static <T, U, V, W> QuadSupplier<T, U, V, W> synchronize(
       BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
     return new QuadSupplierImpl<>(first, second, third, fourth);
+  }
+
+  /**
+   * Synchronizes five Props, allowing the user to retrieve all four values concurrently. The
+   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
+   * the values are updated.
+   *
+   * @param first the first prop
+   * @param second the second prop
+   * @param third the third prop
+   * @param fourth the fourth prop
+   * @param fifth the fourth prop
+   * @param <T> the type of the first prop
+   * @param <U> the type of the second prop
+   * @param <V> the type of the third prop
+   * @param <W> the type of the fourth prop
+   * @param <X> the type of the fifth prop
+   * @return a synchronized Quad of props, which can be retrieved together
+   */
+  public static <T, U, V, W, X> Prop<Tuple<T, U, V, W, X>> synchronize(
+      BaseProp<T> first,
+      BaseProp<U> second,
+      BaseProp<V> third,
+      BaseProp<W> fourth,
+      BaseProp<X> fifth) {
+    return new SynchronizedTuple<>(first, second, third, fourth, fifth);
   }
 }

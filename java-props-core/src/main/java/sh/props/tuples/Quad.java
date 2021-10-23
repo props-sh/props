@@ -44,11 +44,12 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   @Nullable public final W fourth;
 
   /**
-   * Constructs the triple.
+   * Constructs the quad.
    *
    * @param first the first object
    * @param second the second object
    * @param third the third object
+   * @param fourth the fourth object
    */
   Quad(@Nullable T first, @Nullable U second, @Nullable V third, @Nullable W fourth) {
     super(first, second, third);
