@@ -45,8 +45,8 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
     var supplier = Coordinated.coordinate(prop1, prop2);
 
@@ -65,9 +65,9 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Coordinated.coordinate(prop1, prop2, prop3);
@@ -88,10 +88,10 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
-    Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Synchronized.synchronize(prop1, prop2, prop3, prop4);
@@ -106,7 +106,7 @@ class CoordinatedSyncTest {
     await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
   }
 
-  private static class IntProp extends Prop<Integer> implements IntegerConverter {
+  private static class IntProp extends BaseProp<Integer> implements IntegerConverter {
 
     protected IntProp(String key, Integer defaultValue) {
       super(key, defaultValue, null, false, false);

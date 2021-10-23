@@ -94,7 +94,7 @@ class RegistryTest {
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     // ACT
-    Prop<Integer> prop = new IntProp("key", null);
+    BaseProp<Integer> prop = new IntProp("key", null);
     registry.bind(prop);
 
     // ASSERT
@@ -109,7 +109,7 @@ class RegistryTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<Integer> prop = new IntProp("key", null);
+    BaseProp<Integer> prop = new IntProp("key", null);
     registry.bind(prop);
 
     // ACT
@@ -159,7 +159,7 @@ class RegistryTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<Integer> prop = new IntProp("key", null);
+    BaseProp<Integer> prop = new IntProp("key", null);
     registry.bind(prop);
 
     prop.subscribe(localValue::set, RegistryTest::ignoreErrors);
@@ -179,12 +179,12 @@ class RegistryTest {
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     AtomicInteger localValue1 = new AtomicInteger(0);
-    Prop<Integer> prop1 = new IntProp("key", null);
+    BaseProp<Integer> prop1 = new IntProp("key", null);
     registry.bind(prop1);
     prop1.subscribe(localValue1::set, RegistryTest::ignoreErrors);
 
     AtomicInteger localValue2 = new AtomicInteger(0);
-    Prop<Integer> prop2 = new IntProp("key", null);
+    BaseProp<Integer> prop2 = new IntProp("key", null);
     registry.bind(prop2);
     prop2.subscribe(localValue2::set, RegistryTest::ignoreErrors);
 
@@ -196,7 +196,7 @@ class RegistryTest {
     await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
   }
 
-  private static class IntProp extends Prop<Integer> implements IntegerConverter {
+  private static class IntProp extends BaseProp<Integer> implements IntegerConverter {
 
     protected IntProp(String key, Integer defaultValue) {
       super(key, defaultValue, null, false, false);

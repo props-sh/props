@@ -25,7 +25,7 @@
 
 package sh.props.sync;
 
-import sh.props.Prop;
+import sh.props.BaseProp;
 import sh.props.Subscribable;
 
 public class Synchronized {
@@ -46,7 +46,7 @@ public class Synchronized {
    * @return a synchronized Quad of props, which can be retrieved together
    */
   public static <T, U, V, W> QuadSupplier<T, U, V, W> synchronize(
-      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
+      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
     return new QuadSupplierImpl<>(first, second, third, fourth);
   }
 }
