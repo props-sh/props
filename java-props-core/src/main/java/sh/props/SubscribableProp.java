@@ -49,7 +49,7 @@ import sh.props.annotations.Nullable;
 public abstract class SubscribableProp<T> implements Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
-  protected final List<Consumer<T>> valueSubscribers = new CopyOnWriteArrayList<>();
+  protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
   protected final List<Consumer<Throwable>> errorHandlers = new CopyOnWriteArrayList<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   protected AtomicLong epoch = new AtomicLong();
@@ -68,7 +68,7 @@ public abstract class SubscribableProp<T> implements Prop<T> {
    */
   @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
-    this.valueSubscribers.add(safe(onUpdate, onError));
+    this.updateHandlers.add(safe(onUpdate, onError));
     this.errorHandlers.add(safe(onError, null));
   }
 
@@ -88,7 +88,7 @@ public abstract class SubscribableProp<T> implements Prop<T> {
    * single update event for a group of concurrent changes.
    */
   protected void onUpdatedValue() {
-    if (this.valueSubscribers.isEmpty()) {
+    if (this.updateHandlers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
     }
@@ -118,7 +118,7 @@ public abstract class SubscribableProp<T> implements Prop<T> {
               try {
                 // send the same value to all consumers
                 T value = this.get();
-                this.valueSubscribers.forEach(c -> c.accept(value));
+                this.updateHandlers.forEach(c -> c.accept(value));
               } finally {
                 // ensure the updated value was received by all consumers
                 // before allowing a new update to be processed

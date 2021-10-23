@@ -100,7 +100,7 @@ class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
     this.processUpdates();
 
     // check if any consumers are registered
-    if (this.valueSubscribers.isEmpty()) {
+    if (this.updateHandlers.isEmpty()) {
       // do not submit a ForkJoinTask if there are no subscribers to notify
       return;
     }
@@ -113,11 +113,10 @@ class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
 
               try {
                 // apply the update ops
-                this.processUpdates();
+                Quad<T, U, V, W> value = this.processUpdates();
 
                 // send the same value to all consumers
-                Quad<T, U, V, W> value = this.get();
-                this.valueSubscribers.forEach(c -> c.accept(value));
+                this.updateHandlers.forEach(c -> c.accept(value));
               } finally {
                 // ensure the updated value was received by all consumers
                 // before allowing a new update to be processed
@@ -132,17 +131,17 @@ class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
    *
    * @return true if updates were processed
    */
-  private boolean processUpdates() {
-    boolean res = false;
+  @Nullable
+  private Quad<T, U, V, W> processUpdates() {
     UnaryOperator<Quad<T, U, V, W>> op;
+    Quad<T, U, V, W> result = this.value.get();
 
     // iterate over all ops and apply them
     while ((op = this.ops.poll()) != null) {
-      this.value.updateAndGet(op);
-      res = true;
+      result = this.value.updateAndGet(op);
     }
 
-    return res;
+    return result;
   }
 
   @Override

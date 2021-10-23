@@ -25,8 +25,9 @@
 
 package sh.props.sync;
 
+import static sh.props.sync.Synchronizer.applyOpsAndNotifySubscribers;
+
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
@@ -111,57 +112,7 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
    */
   private <K> void apply(Function<K, UnaryOperator<Tuple<T, U, V, W, X>>> f, K v) {
     this.ops.add(f.apply(v));
-    this.onUpdatedValue();
-  }
-
-  /**
-   * Custom implementation that Notifies all subscribers of the newest value of this prop. This
-   * method does not accept a value but instead retrieves the latest value at the time of execution
-   * (the update is processed using the default {@link ForkJoinPool}, only if another update is not
-   * in-progress and also ensuring a single update event for a group of concurrent changes.
-   */
-  @Override
-  protected void onUpdatedValue() {
-    // check if any consumers are registered
-    if (this.valueSubscribers.isEmpty()) {
-      // if there are no subscribers, ensure that the updates are applied before returning
-      this.processUpdates();
-
-      // do not submit a ForkJoinTask if there are no subscribers to notify
-      return;
-    }
-
-    ForkJoinPool.commonPool()
-        .execute(
-            () -> {
-              // ensure we execute a single update concurrently
-              this.sendStage.lock();
-
-              try {
-                // apply the update ops
-                this.processUpdates();
-
-                // send the same value to all consumers
-                Tuple<T, U, V, W, X> value = this.get();
-                this.valueSubscribers.forEach(c -> c.accept(value));
-              } finally {
-                // ensure the updated value was received by all consumers
-                // before allowing a new update to be processed
-                this.sendStage.unlock();
-              }
-            });
-  }
-
-  /**
-   * Processes any operations on the associated value, applying the modifications before allowing
-   * the encompassing logic to proceed.
-   */
-  private void processUpdates() {
-    // iterate over all ops and apply them
-    UnaryOperator<Tuple<T, U, V, W, X>> op;
-    while ((op = this.ops.poll()) != null) {
-      this.value.updateAndGet(op);
-    }
+    applyOpsAndNotifySubscribers(this.ops, this.value, this.updateHandlers, this.sendStage);
   }
 
   @Override
