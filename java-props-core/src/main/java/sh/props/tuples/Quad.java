@@ -32,11 +32,12 @@ import java.util.function.UnaryOperator;
 import sh.props.annotations.Nullable;
 
 /**
- * Represents a triple of objects.
+ * Represents a quadruple of objects.
  *
  * @param <T> the type of the first object
  * @param <U> the type of the second object
  * @param <V> the type of the third object
+ * @param <W> the type of the fourth object
  */
 public class Quad<T, U, V, W> extends Triple<T, U, V> {
 
@@ -58,6 +59,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * Returns an operation that can be applied to the given object, modifying its first value.
    *
    * @param value the new value to set
+   * @param <T> the type of the first object in the value
+   * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
+   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
   public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFirst(T value) {
@@ -68,6 +73,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * Returns an operation that can be applied to the given object, modifying its second value.
    *
    * @param value the new value to set
+   * @param <T> the type of the first object in the value
+   * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
+   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
   public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applySecond(U value) {
@@ -78,6 +87,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * Returns an operation that can be applied to the given object, modifying its third value.
    *
    * @param value the new value to set
+   * @param <T> the type of the first object in the value
+   * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
+   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
   public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyThird(V value) {
@@ -88,6 +101,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * Returns an operation that can be applied to the given object, modifying its fourth value.
    *
    * @param value the new value to set
+   * @param <T> the type of the first object in the value
+   * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
+   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
   public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFourth(W value) {

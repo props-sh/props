@@ -92,6 +92,7 @@ public class Registry implements Notifiable {
    * same key.
    *
    * @param prop the prop object to bind
+   * @param <T> the prop's type
    * @return the bound prop
    */
   public <T> BaseProp<T> bind(BaseProp<T> prop) {

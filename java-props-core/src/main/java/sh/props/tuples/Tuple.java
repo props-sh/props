@@ -74,6 +74,7 @@ public final class Tuple {
    * @param <T> the first object's type
    * @param <U> the second object's type
    * @param <V> the third object's type
+   * @param <W> the fourth object's type
    * @return a pair of objects
    */
   public static <T, U, V, W> Quad<T, U, V, W> of(
