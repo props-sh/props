@@ -25,9 +25,12 @@
 
 package sh.props.sync;
 
+import java.util.function.Consumer;
 import sh.props.BaseProp;
 import sh.props.Prop;
 import sh.props.Subscribable;
+import sh.props.annotations.Nullable;
+import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
 public class Synchronized {
@@ -76,5 +79,37 @@ public class Synchronized {
       BaseProp<W> fourth,
       BaseProp<X> fifth) {
     return new SynchronizedTuple<>(first, second, third, fourth, fifth);
+  }
+
+  private static <T, U, V, W, X> Prop<Quad<T, U, V, W>> toQuad(Prop<Tuple<T, U, V, W, X>> tuple) {
+    return new Prop<>() {
+      @Override
+      @Nullable
+      public Quad<T, U, V, W> get() {
+        return Synchronized.tupleToQuad(tuple.get());
+      }
+
+      @Override
+      public void subscribe(Consumer<Quad<T, U, V, W>> onUpdate, Consumer<Throwable> onError) {
+        tuple.subscribe(value -> onUpdate.accept(Synchronized.tupleToQuad(value)), onError);
+      }
+    };
+  }
+
+  /**
+   * Safely converts a tuple to a quad, accounting for null tuples
+   *
+   * @param tuple the initial tuple
+   * @param <T> the type of the first prop
+   * @param <U> the type of the second prop
+   * @param <V> the type of the third prop
+   * @param <W> the type of the fourth prop
+   * @param <X> the type of the fifth prop
+   * @return a quad containing the result of {@link Tuple#toQuad()}, or null
+   */
+  @Nullable
+  private static <T, U, V, W, X> Quad<T, U, V, W> tupleToQuad(
+      @Nullable Tuple<T, U, V, W, X> tuple) {
+    return tuple != null ? tuple.toQuad() : null;
   }
 }

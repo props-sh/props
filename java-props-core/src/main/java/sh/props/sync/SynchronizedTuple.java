@@ -57,7 +57,10 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
   private final AtomicReference<Tuple<T, U, V, W, X>> value;
 
   /**
-   * Constructs the provider.
+   * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
+   * nullable), otherwise using this implementation makes no sense.
+   *
+   * <p>The third, fourth, and fifth values are optional.
    *
    * @param first the first prop
    * @param second the second prop
@@ -65,14 +68,25 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
    * @param fourth the fourth prop
    * @param fifth the fifth prop
    */
-  SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
+  SynchronizedTuple(
+      Prop<T> first,
+      Prop<U> second,
+      @Nullable Prop<V> third,
+      @Nullable Prop<W> fourth,
+      @Nullable Prop<X> fifth) {
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTuple::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedTuple::updateSecond, v), this::onUpdateError);
-    third.subscribe(v -> this.apply(SynchronizedTuple::updateThird, v), this::onUpdateError);
-    fourth.subscribe(v -> this.apply(SynchronizedTuple::updateFourth, v), this::onUpdateError);
-    fifth.subscribe(v -> this.apply(SynchronizedTuple::updateFifth, v), this::onUpdateError);
+    if (third != null) {
+      third.subscribe(v -> this.apply(SynchronizedTuple::updateThird, v), this::onUpdateError);
+    }
+    if (fourth != null) {
+      fourth.subscribe(v -> this.apply(SynchronizedTuple::updateFourth, v), this::onUpdateError);
+    }
+    if (fifth != null) {
+      fifth.subscribe(v -> this.apply(SynchronizedTuple::updateFifth, v), this::onUpdateError);
+    }
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
@@ -80,7 +94,12 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
     // atomic reference
     this.value =
         new AtomicReference<>(
-            Tuple.of(first.get(), second.get(), third.get(), fourth.get(), fifth.get()));
+            Tuple.of(
+                first.get(),
+                second.get(),
+                third != null ? third.get() : null,
+                fourth != null ? fourth.get() : null,
+                fifth != null ? fifth.get() : null));
   }
 
   /**
@@ -103,11 +122,11 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
    */
   @Override
   protected void onUpdatedValue() {
-    // apply the update ops
-    this.processUpdates();
-
     // check if any consumers are registered
     if (this.valueSubscribers.isEmpty()) {
+      // if there are no subscribers, ensure that the updates are applied before returning
+      this.processUpdates();
+
       // do not submit a ForkJoinTask if there are no subscribers to notify
       return;
     }
@@ -136,20 +155,13 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
   /**
    * Processes any operations on the associated value, applying the modifications before allowing
    * the encompassing logic to proceed.
-   *
-   * @return true if updates were processed
    */
-  private boolean processUpdates() {
-    boolean res = false;
-    UnaryOperator<Tuple<T, U, V, W, X>> op;
-
+  private void processUpdates() {
     // iterate over all ops and apply them
+    UnaryOperator<Tuple<T, U, V, W, X>> op;
     while ((op = this.ops.poll()) != null) {
       this.value.updateAndGet(op);
-      res = true;
     }
-
-    return res;
   }
 
   @Override

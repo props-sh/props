@@ -25,10 +25,13 @@
 
 package sh.props.tuples;
 
+import static java.lang.String.format;
+
+import java.util.Objects;
 import sh.props.annotations.Nullable;
 
 /**
- * Helper class that provides a fluent interface for creating tuples.
+ * Defines a tuple of values.
  *
  * @param <T> the type of the first object in the tuple
  * @param <U> the type of the second object in the tuple
@@ -57,6 +60,35 @@ public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> {
       @Nullable X fifth) {
     super(first, second, third, fourth);
     this.fifth = fifth;
+  }
+
+  /**
+   * Convert this tuple to a pair, using its first two values.
+   *
+   * @return a pair containing this object's first two values
+   */
+  @Override
+  public Pair<T, U> toPair() {
+    return Tuple.of(this.first, this.second);
+  }
+
+  /**
+   * Convert this tuple to a triple, using its first three values.
+   *
+   * @return a triple containing this object's first three values
+   */
+  @Override
+  public Triple<T, U, V> toTriple() {
+    return Tuple.of(this.first, this.second, this.third);
+  }
+
+  /**
+   * Convert this tuple to a quad, using its first four values.
+   *
+   * @return a quad containing this object's first four values
+   */
+  public Quad<T, U, V, W> toQuad() {
+    return Tuple.of(this.first, this.second, this.third, this.fourth);
   }
 
   /**
@@ -128,5 +160,49 @@ public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> {
       @Nullable W fourth,
       @Nullable X fifth) {
     return new Tuple<>(first, second, third, fourth, fifth);
+  }
+
+  /**
+   * Generated equals implementation.
+   *
+   * @param o the object to compare
+   * @return true if all five values are equal
+   */
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Tuple)) {
+      return false;
+    }
+
+    Tuple<?, ?, ?, ?, ?> tuple = (Tuple<?, ?, ?, ?, ?>) o;
+    return Objects.equals(this.first, tuple.first)
+        && Objects.equals(this.second, tuple.second)
+        && Objects.equals(this.third, tuple.third)
+        && Objects.equals(this.fourth, tuple.fourth)
+        && Objects.equals(this.fifth, tuple.fifth);
+  }
+
+  /**
+   * Generated hashcode implementation.
+   *
+   * @return this object's computed hashcode
+   */
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.first, this.second, this.third, this.fourth, this.fifth);
+  }
+
+  /**
+   * Renders this object as a string.
+   *
+   * @return this object's string representation
+   */
+  @Override
+  public String toString() {
+    return format(
+        "(%s, %s, %s, %s, %s)", this.first, this.second, this.third, this.fourth, this.fifth);
   }
 }
