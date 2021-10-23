@@ -39,7 +39,7 @@ import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
 /**
- * Quadruple supplier implementation
+ * Quadruple supplier implementation.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
