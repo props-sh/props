@@ -49,7 +49,7 @@ import sh.props.tuples.Tuple;
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 class CoordinatedAsyncTest {
 
-  private static Quad<Integer, Integer, Integer, Integer> getLast(SpyConsumer consumer) {
+  private static <T> T getLast(SpyConsumer<T> consumer) {
     return consumer.collector.get(consumer.collector.size() - 1);
   }
 
@@ -120,7 +120,7 @@ class CoordinatedAsyncTest {
     BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
     BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
-    SpyConsumer consumer = spy(new SpyConsumer());
+    SpyConsumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new SpyConsumer<>());
     var supplier = Synchronized.synchronize(prop1, prop2, prop3, prop4);
     supplier.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
@@ -135,7 +135,7 @@ class CoordinatedAsyncTest {
     // ASSERT
     verify(consumer, timeout(10_000).atLeastOnce()).accept(expected);
 
-    var quad = CoordinatedAsyncTest.getLast(consumer);
+    Quad<Integer, Integer, Integer, Integer> quad = CoordinatedAsyncTest.getLast(consumer);
     try {
       assertThat("Last notification should be a complete value", quad, equalTo(expected));
     } catch (AssertionError e) {
@@ -146,14 +146,54 @@ class CoordinatedAsyncTest {
     }
   }
 
-  private static class SpyConsumer implements Consumer<Quad<Integer, Integer, Integer, Integer>> {
+  @Test
+  void coordinateTupleOfProps() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    BaseProp<Integer> prop5 = registry.bind(new IntProp("key5", null));
+
+    SpyConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
+        spy(new SpyConsumer<>());
+    var supplier = Synchronized.synchronize(prop1, prop2, prop3, prop4, prop5);
+    supplier.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+
+    var expected = Tuple.of(1, 2, 3, 4, 5);
+
+    // ACT
+    source.put("key1", "1");
+    source.put("key2", "2");
+    source.put("key3", "3");
+    source.put("key4", "4");
+    source.put("key5", "5");
+
+    // ASSERT
+    verify(consumer, timeout(10_000).atLeastOnce()).accept(expected);
+
+    var quad = CoordinatedAsyncTest.getLast(consumer);
+    try {
+      assertThat("Last notification should be a complete value", quad, equalTo(expected));
+    } catch (AssertionError e) {
+      for (Tuple<Integer, Integer, Integer, Integer, Integer> el : consumer.collector) {
+        System.out.println(el);
+      }
+      throw e;
+    }
+  }
+
+  private static class SpyConsumer<T> implements Consumer<T> {
 
     @SuppressWarnings("JdkObsolete")
-    final List<Quad<Integer, Integer, Integer, Integer>> collector =
-        Collections.synchronizedList(new ArrayList<>());
+    final List<T> collector = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public void accept(Quad<Integer, Integer, Integer, Integer> quad) {
+    public void accept(T quad) {
       this.collector.add(quad);
     }
   }

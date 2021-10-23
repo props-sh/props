@@ -50,9 +50,10 @@ public class Synchronized {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> QuadSupplier<T, U, V, W> synchronize(
+  public static <T, U, V, W> Prop<Quad<T, U, V, W>> synchronize(
       BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
-    return new QuadSupplierImpl<>(first, second, third, fourth);
+    //    return new QuadSupplierImpl<>(first, second, third, fourth);
+    return toQuad(new SynchronizedTuple<>(first, second, third, fourth, null));
   }
 
   /**
