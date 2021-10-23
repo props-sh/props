@@ -56,6 +56,7 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
       new LinkedBlockingQueue<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   private final AtomicReference<Tuple<T, U, V, W, X>> value;
+  private final AtomicReference<Tuple<T, U, V, W, X>> lastSentValue = new AtomicReference<>();
 
   /**
    * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
@@ -101,24 +102,6 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
                 third != null ? third.get() : null,
                 fourth != null ? fourth.get() : null,
                 fifth != null ? fifth.get() : null));
-  }
-
-  /**
-   * Stores the op and asynchronously sends the update to subscribers, if any are registered.
-   *
-   * @param f a function that generates the op to apply, given the passed value
-   * @param v the value to apply
-   * @param <K> the type of the value
-   */
-  private <K> void apply(Function<K, UnaryOperator<Tuple<T, U, V, W, X>>> f, K v) {
-    this.ops.add(f.apply(v));
-    applyOpsAndNotifySubscribers(this.ops, this.value, this.updateHandlers, this.sendStage);
-  }
-
-  @Override
-  @Nullable
-  public Tuple<T, U, V, W, X> get() {
-    return this.value.get();
   }
 
   /**
@@ -180,6 +163,7 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFourth(W value) {
     return prev -> Tuple.of(prev.first, prev.second, prev.third, value, prev.fifth);
   }
+
   /**
    * Returns an operation that can be applied to the given object, modifying its fourth value.
    *
@@ -193,5 +177,24 @@ class SynchronizedTuple<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
     return prev -> Tuple.of(prev.first, prev.second, prev.third, prev.fourth, value);
+  }
+
+  /**
+   * Stores the op and asynchronously sends the update to subscribers, if any are registered.
+   *
+   * @param f a function that generates the op to apply, given the passed value
+   * @param v the value to apply
+   * @param <K> the type of the value
+   */
+  private <K> void apply(Function<K, UnaryOperator<Tuple<T, U, V, W, X>>> f, K v) {
+    this.ops.add(f.apply(v));
+    applyOpsAndNotifySubscribers(
+        this.ops, this.value, this.updateHandlers, this.sendStage, this.lastSentValue);
+  }
+
+  @Override
+  @Nullable
+  public Tuple<T, U, V, W, X> get() {
+    return this.value.get();
   }
 }
