@@ -21,5 +21,3 @@ git stash pop -q
 
 # return the './gradlew spotlessCheck' exit code
 exit $RESULT
-
-./gradlew check test

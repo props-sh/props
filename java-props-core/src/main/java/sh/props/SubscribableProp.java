@@ -33,21 +33,20 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /**
  * This class implements the base functionality required to notify subscribers asynchronously that a
- * {@link Prop} has updated its value, or that an update operation failed.
+ * {@link BaseProp} has updated its value, or that an update operation failed.
  *
  * <p>* It's important to note that this implementation will attempt to send a single event when the
  * value in concurrently updated, but it will send each error when one is encountered.
  *
  * @param <T> the type of the prop object
  */
-public abstract class SubscribableProp<T> implements Subscribable<T>, Supplier<T> {
+public abstract class SubscribableProp<T> implements Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
   protected final List<Consumer<T>> valueSubscribers = new ArrayList<>();
@@ -56,31 +55,20 @@ public abstract class SubscribableProp<T> implements Subscribable<T>, Supplier<T
   protected AtomicLong epoch = new AtomicLong();
 
   /**
-   * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
-   * Consumer#accept(Object)}, they will be logged. If <code>onError</code> is non-null, any
-   * exceptions thrown by the <code>consumer</code> will be sent to it.
+   * Subscribes the passed update/error consumers. This method is thread-safe, synchronizing any
+   * additions to update/error consumers.
    *
-   * @param consumer the consumer to wrap
-   * @param onError an error handler
-   * @param <T> the type of the consumer
-   * @return a wrapped, safe consumer that never throws exceptions
+   * @param onUpdate called when a new value is received (favoring the most recent value)
+   * @param onError called when an error occurs (a value cannot be received)
    */
-  static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
-    return value -> {
-      try {
-        consumer.accept(value);
-      } catch (Exception e) {
-        // do not allow any exceptions to permeate out of this consumer
-
-        // log exceptions so that developers are aware where they originated
-        log.log(Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
-
-        // and also pass them to the associated Throwable handler
-        if (onError != null) {
-          onError.accept(e);
-        }
-      }
-    };
+  @Override
+  public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
+    synchronized (this.valueSubscribers) {
+      this.valueSubscribers.add(safe(onUpdate, onError));
+    }
+    synchronized (this.errorHandlers) {
+      this.errorHandlers.add(safe(onError, null));
+    }
   }
 
   /**
@@ -104,12 +92,18 @@ public abstract class SubscribableProp<T> implements Subscribable<T>, Supplier<T
       return;
     }
 
+    // Mark the epoch at which this value was updated.
+    // This is important since, by submitting the update to be processed by the ForkJoinPool
+    // we have no guarantees regarding the order of execution.
+    // Without this mechanism, the subscribing code could end up receiving updates in the wrong
+    // order, e.g.: ('newer', 'older'), while the current value of the prop equals 'newer'
     long currentEpoch = this.epoch.incrementAndGet();
+
     ForkJoinPool.commonPool()
         .execute(
             () -> {
               if (Long.compareUnsigned(currentEpoch, this.epoch.get()) < 0) {
-                // another update already happened
+                // we know a more recent update took place
                 // skip this execution
                 return;
               }
@@ -142,19 +136,30 @@ public abstract class SubscribableProp<T> implements Subscribable<T>, Supplier<T
   }
 
   /**
-   * Subscribes the passed update/error consumers. This method is thread-safe, synchronizing any
-   * additions to update/error consumers.
+   * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
+   * Consumer#accept(Object)}, they will be logged. If <code>onError</code> is non-null, any
+   * exceptions thrown by the <code>consumer</code> will be sent to it.
    *
-   * @param onUpdate called when a new value is received (favoring the most recent value)
-   * @param onError called when an error occurs (a value cannot be received)
+   * @param consumer the consumer to wrap
+   * @param onError an error handler
+   * @param <T> the type of the consumer
+   * @return a wrapped, safe consumer that never throws exceptions
    */
-  @Override
-  public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
-    synchronized (this.valueSubscribers) {
-      this.valueSubscribers.add(safe(onUpdate, onError));
-    }
-    synchronized (this.errorHandlers) {
-      this.errorHandlers.add(safe(onError, null));
-    }
+  static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
+    return value -> {
+      try {
+        consumer.accept(value);
+      } catch (Exception e) {
+        // do not allow any exceptions to permeate out of this consumer
+
+        // log exceptions so that developers are aware where they originated
+        log.log(Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
+
+        // and also pass them to the associated Throwable handler
+        if (onError != null) {
+          onError.accept(e);
+        }
+      }
+    };
   }
 }

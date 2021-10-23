@@ -44,7 +44,7 @@ public class Registry implements Notifiable {
 
   final Datastore store;
   final List<Layer> layers = new ArrayList<>();
-  final ConcurrentHashMap<String, HashSet<Prop<?>>> notifications = new ConcurrentHashMap<>();
+  final ConcurrentHashMap<String, HashSet<BaseProp<?>>> notifications = new ConcurrentHashMap<>();
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry() {
@@ -60,8 +60,8 @@ public class Registry implements Notifiable {
    */
   //
   private static void updateProps(
-      Collection<Prop<?>> props, @Nullable String value, @Nullable Layer layer) {
-    for (Prop<?> prop : props) {
+      Collection<BaseProp<?>> props, @Nullable String value, @Nullable Layer layer) {
+    for (BaseProp<?> prop : props) {
       if (prop.setValue(value) && log.isLoggable(Level.FINE)) {
         log.fine(() -> format("%s received new value from %s", prop, layer));
       }
@@ -71,7 +71,7 @@ public class Registry implements Notifiable {
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
     // check if we have any props to notify
-    Collection<Prop<?>> props = this.notifications.get(key);
+    Collection<BaseProp<?>> props = this.notifications.get(key);
     if (props == null || props.isEmpty()) {
       // nothing to do if the key is not registered or there aren't any props to notify
       return;
@@ -84,17 +84,18 @@ public class Registry implements Notifiable {
   }
 
   /**
-   * Binds the specified {@link Prop} to this registry. If the registry already has a value for this
-   * prop, it will set it.
+   * Binds the specified {@link BaseProp} to this registry. If the registry already has a value for
+   * this prop, it will set it.
    *
    * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
    * Keep the implementation performant by reducing the number of Prop objects registered for the
    * same key.
    *
    * @param prop the prop object to bind
+   * @param <T> the prop's type
    * @return the bound prop
    */
-  public <T> Prop<T> bind(Prop<T> prop) {
+  public <T> BaseProp<T> bind(BaseProp<T> prop) {
     this.notifications.compute(
         prop.key(),
         (s, current) -> {

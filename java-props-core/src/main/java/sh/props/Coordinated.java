@@ -31,7 +31,7 @@ import sh.props.tuples.Pair;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
-/** Helper class used to coordinate retrieving groups of {@link Prop}s. */
+/** Helper class used to coordinate retrieving groups of {@link BaseProp}s. */
 @Deprecated
 public final class Coordinated {
 
@@ -50,7 +50,7 @@ public final class Coordinated {
    * @param <U> the type of the second prop
    * @return a coordinated pair of props, which can be retrieved together
    */
-  public static <T, U> PairSupplier<T, U> coordinate(Prop<T> first, Prop<U> second) {
+  public static <T, U> PairSupplier<T, U> coordinate(BaseProp<T> first, BaseProp<U> second) {
     return new PairSupplierImpl<>(first, second, new SubscriberProxy<>());
   }
 
@@ -69,7 +69,7 @@ public final class Coordinated {
    * @return a coordinated triple of props, which can be retrieved together
    */
   public static <T, U, V> TripleSupplier<T, U, V> coordinate(
-      Prop<T> first, Prop<U> second, Prop<V> third) {
+      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third) {
     return new TripleSupplierImpl<>(first, second, third, new SubscriberProxy<>());
   }
 
@@ -95,8 +95,8 @@ public final class Coordinated {
 
   private static class PairSupplierImpl<T, U> implements PairSupplier<T, U> {
 
-    private final Prop<T> first;
-    private final Prop<U> second;
+    private final BaseProp<T> first;
+    private final BaseProp<U> second;
     private final SubscriberProxy<Pair<T, U>> subscribers;
 
     /**
@@ -106,7 +106,8 @@ public final class Coordinated {
      * @param second the second prop
      * @param subscribers the subscribers that get notified when any of the values change
      */
-    PairSupplierImpl(Prop<T> first, Prop<U> second, SubscriberProxy<Pair<T, U>> subscribers) {
+    PairSupplierImpl(
+        BaseProp<T> first, BaseProp<U> second, SubscriberProxy<Pair<T, U>> subscribers) {
       // initialize
       this.subscribers = subscribers;
       this.first = first;
@@ -147,9 +148,9 @@ public final class Coordinated {
    */
   private static class TripleSupplierImpl<T, U, V> implements TripleSupplier<T, U, V> {
 
-    private final Prop<T> first;
-    private final Prop<U> second;
-    private final Prop<V> third;
+    private final BaseProp<T> first;
+    private final BaseProp<U> second;
+    private final BaseProp<V> third;
     private final SubscriberProxy<Triple<T, U, V>> subscribers;
 
     /**
@@ -161,9 +162,9 @@ public final class Coordinated {
      * @param subscribers the subscribers that get notified when any of the values change
      */
     TripleSupplierImpl(
-        Prop<T> first,
-        Prop<U> second,
-        Prop<V> third,
+        BaseProp<T> first,
+        BaseProp<U> second,
+        BaseProp<V> third,
         SubscriberProxy<Triple<T, U, V>> subscribers) {
       // initialize
       this.subscribers = subscribers;

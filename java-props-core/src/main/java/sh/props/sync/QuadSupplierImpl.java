@@ -30,15 +30,16 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import sh.props.Prop;
+import sh.props.BaseProp;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
 /**
- * Quadruple supplier implementation
+ * Quadruple supplier implementation.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
@@ -59,36 +60,32 @@ class QuadSupplierImpl<T, U, V, W> extends SubscribableProp<Quad<T, U, V, W>>
    * @param third the third prop
    * @param fourth the fourth prop
    */
-  QuadSupplierImpl(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
-    // subscribe to all updates and errors
-    first.subscribe(
-        v -> {
-          this.ops.add(Quad.applyFirst(v));
-          this.onUpdatedValue();
-        },
-        this::onUpdateError);
-    second.subscribe(
-        v -> {
-          this.ops.add(Quad.applySecond(v));
-          this.onUpdatedValue();
-        },
-        this::onUpdateError);
-    third.subscribe(
-        v -> {
-          this.ops.add(Quad.applyThird(v));
-          this.onUpdatedValue();
-        },
-        this::onUpdateError);
-    fourth.subscribe(
-        v -> {
-          this.ops.add(Quad.applyFourth(v));
-          this.onUpdatedValue();
-        },
-        this::onUpdateError);
+  QuadSupplierImpl(BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
 
-    // retrieve a current state of the underlying props
+    // subscribe to all updates and errors
+    first.subscribe(v -> this.apply(Quad::applyFirst, v), this::onUpdateError);
+    second.subscribe(v -> this.apply(Quad::applySecond, v), this::onUpdateError);
+    third.subscribe(v -> this.apply(Quad::applyThird, v), this::onUpdateError);
+    fourth.subscribe(v -> this.apply(Quad::applyFourth, v), this::onUpdateError);
+
+    // retrieve the current state of the underlying props
+    // it's important for this step to execute after we have subscribed to the underlying props
+    // since any change operations will have been captured and will be applied on the underlying
+    // atomic reference
     this.value =
         new AtomicReference<>(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
+  }
+
+  /**
+   * Stores the op and asynchronously send the update to subscribers, if any are registered.
+   *
+   * @param f a function that generates the op to apply, given the passed value
+   * @param v the value to apply
+   * @param <K> the type of the value
+   */
+  private <K> void apply(Function<K, UnaryOperator<Quad<T, U, V, W>>> f, K v) {
+    this.ops.add(f.apply(v));
+    this.onUpdatedValue();
   }
 
   /**
