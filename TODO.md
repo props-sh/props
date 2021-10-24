@@ -12,3 +12,4 @@ Async updates:
 Java:
 - module-info.java and exports
 - fix Gradle + git hook install
+- publish to Maven Central
