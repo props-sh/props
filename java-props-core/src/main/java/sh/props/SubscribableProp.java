@@ -38,8 +38,8 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /**
- * This class implements the base functionality required to notify subscribers asynchronously that a
- * {@link BaseProp} has updated its value, or that an update operation failed.
+ * This class implements the base functionality required to notify subscribers asynchronously that
+ * an {@link AbstractProp} has updated its value, or that an update operation failed.
  *
  * <p>* It's important to note that this implementation will attempt to send a single event when the
  * value in concurrently updated, but it will send each error when one is encountered.
