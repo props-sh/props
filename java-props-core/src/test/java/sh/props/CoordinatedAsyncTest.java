@@ -63,7 +63,7 @@ class CoordinatedAsyncTest {
   }
 
   @Test
-  void coordinatePairOfProps() {
+  void synchronizedPairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 
@@ -97,7 +97,7 @@ class CoordinatedAsyncTest {
   }
 
   @Test
-  void coordinateTripleOfProps() {
+  void synchronizedTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 
@@ -134,7 +134,7 @@ class CoordinatedAsyncTest {
   }
 
   @Test
-  void coordinateQuadOfProps() {
+  void synchronizedQuadOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 
@@ -173,7 +173,7 @@ class CoordinatedAsyncTest {
   }
 
   @Test
-  void coordinateTupleOfProps() {
+  void synchronizedTupleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 

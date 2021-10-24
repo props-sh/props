@@ -39,7 +39,7 @@ import sh.props.tuples.Tuple;
 class CoordinatedSyncTest {
 
   @Test
-  void coordinatePairOfProps() {
+  void synchronizedPairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 
@@ -48,7 +48,7 @@ class CoordinatedSyncTest {
     BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
     BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
-    var supplier = Coordinated.coordinate(prop1, prop2);
+    var supplier = Synchronize.props(prop1, prop2);
 
     // ACT
     source.put("key1", "1");
@@ -59,7 +59,7 @@ class CoordinatedSyncTest {
   }
 
   @Test
-  void coordinateTripleOfProps() {
+  void synchronizedTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 
@@ -70,7 +70,7 @@ class CoordinatedSyncTest {
     BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    var supplier = Coordinated.coordinate(prop1, prop2, prop3);
+    var supplier = Synchronize.props(prop1, prop2, prop3);
 
     // ACT
     source.put("key1", "1");
@@ -82,7 +82,7 @@ class CoordinatedSyncTest {
   }
 
   @Test
-  void coordinateQuadOfProps() {
+  void synchronizedQuadOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
 
@@ -104,6 +104,33 @@ class CoordinatedSyncTest {
 
     // ASSERT
     await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
+  }
+
+  @Test
+  void synchronizedTupleOfProps() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    BaseProp<Integer> prop5 = registry.bind(new IntProp("key5", null));
+
+    @SuppressWarnings("VariableDeclarationUsageDistance")
+    var supplier = Synchronize.props(prop1, prop2, prop3, prop4, prop5);
+
+    // ACT
+    source.put("key1", "1");
+    source.put("key2", "2");
+    source.put("key3", "3");
+    source.put("key4", "4");
+    source.put("key5", "5");
+
+    // ASSERT
+    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4, 5)));
   }
 
   private static class IntProp extends BaseProp<Integer> implements IntegerConverter {
