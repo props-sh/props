@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
-import sh.props.sync.Synchronized;
+import sh.props.sync.Synchronize;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
@@ -94,7 +94,7 @@ class CoordinatedSyncTest {
     BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    var supplier = Synchronized.synchronize(prop1, prop2, prop3, prop4);
+    var supplier = Synchronize.props(prop1, prop2, prop3, prop4);
 
     // ACT
     source.put("key1", "1");

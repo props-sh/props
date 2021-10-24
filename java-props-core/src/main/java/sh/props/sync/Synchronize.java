@@ -25,15 +25,47 @@
 
 package sh.props.sync;
 
-import java.util.function.Consumer;
-import sh.props.BaseProp;
 import sh.props.Prop;
 import sh.props.Subscribable;
-import sh.props.annotations.Nullable;
+import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
+import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
-public class Synchronized {
+public class Synchronize {
+
+  /**
+   * Synchronizes four Props, allowing the user to retrieve all four values concurrently. The
+   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
+   * the values are updated.
+   *
+   * @param first the first prop
+   * @param second the second prop
+   * @param <T> the type of the first prop
+   * @param <U> the type of the second prop
+   * @return a synchronized Quad of props, which can be retrieved together
+   */
+  public static <T, U> Prop<Pair<T, U>> props(Prop<T> first, Prop<U> second) {
+    return new SynchronizedPair<>(first, second);
+  }
+
+  /**
+   * Synchronizes four Props, allowing the user to retrieve all four values concurrently. The
+   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
+   * the values are updated.
+   *
+   * @param first the first prop
+   * @param second the second prop
+   * @param third the third prop
+   * @param <T> the type of the first prop
+   * @param <U> the type of the second prop
+   * @param <V> the type of the third prop
+   * @return a synchronized Quad of props, which can be retrieved together
+   */
+  public static <T, U, V> Prop<Triple<T, U, V>> props(
+      Prop<T> first, Prop<U> second, Prop<V> third) {
+    return new SynchronizedTriple<>(first, second, third);
+  }
 
   /**
    * Synchronizes four Props, allowing the user to retrieve all four values concurrently. The
@@ -50,8 +82,8 @@ public class Synchronized {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> Prop<Quad<T, U, V, W>> synchronize(
-      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
+  public static <T, U, V, W> Prop<Quad<T, U, V, W>> props(
+      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     return new SynchronizedQuad<>(first, second, third, fourth);
   }
 
@@ -72,44 +104,8 @@ public class Synchronized {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> Prop<Tuple<T, U, V, W, X>> synchronize(
-      BaseProp<T> first,
-      BaseProp<U> second,
-      BaseProp<V> third,
-      BaseProp<W> fourth,
-      BaseProp<X> fifth) {
+  public static <T, U, V, W, X> Prop<Tuple<T, U, V, W, X>> props(
+      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
     return new SynchronizedTuple<>(first, second, third, fourth, fifth);
-  }
-
-  private static <T, U, V, W, X> Prop<Quad<T, U, V, W>> toQuad(Prop<Tuple<T, U, V, W, X>> tuple) {
-    return new Prop<>() {
-      @Override
-      @Nullable
-      public Quad<T, U, V, W> get() {
-        return Synchronized.tupleToQuad(tuple.get());
-      }
-
-      @Override
-      public void subscribe(Consumer<Quad<T, U, V, W>> onUpdate, Consumer<Throwable> onError) {
-        tuple.subscribe(value -> onUpdate.accept(Synchronized.tupleToQuad(value)), onError);
-      }
-    };
-  }
-
-  /**
-   * Safely converts a tuple to a quad, accounting for null tuples
-   *
-   * @param tuple the initial tuple
-   * @param <T> the type of the first prop
-   * @param <U> the type of the second prop
-   * @param <V> the type of the third prop
-   * @param <W> the type of the fourth prop
-   * @param <X> the type of the fifth prop
-   * @return a quad containing the result of {@link Tuple#toQuad()}, or null
-   */
-  @Nullable
-  private static <T, U, V, W, X> Quad<T, U, V, W> tupleToQuad(
-      @Nullable Tuple<T, U, V, W, X> tuple) {
-    return tuple != null ? tuple.toQuad() : null;
   }
 }

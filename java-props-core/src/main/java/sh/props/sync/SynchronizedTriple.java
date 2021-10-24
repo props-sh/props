@@ -27,21 +27,20 @@ package sh.props.sync;
 
 import java.util.function.UnaryOperator;
 import sh.props.Prop;
-import sh.props.tuples.Quad;
+import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 /**
- * Synchronizes four Props, retrieving them all at once. If any of the underlying Props fails to
+ * Synchronizes three Props, retrieving them all at once. If any of the underlying Props fails to
  * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
  * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
  * @param <V> the type of the third prop
- * @param <W> the type of the fourth prop
  */
-class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, V, W>>
-    implements Prop<Quad<T, U, V, W>> {
+class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U, V>>
+    implements Prop<Triple<T, U, V>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -49,20 +48,18 @@ class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, 
    * @param first the first prop
    * @param second the second prop
    * @param third the third prop
-   * @param fourth the fourth prop
    */
-  SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
+  SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
     // subscribe to all updates and errors
-    first.subscribe(v -> this.apply(SynchronizedQuad::updateFirst, v), this::onUpdateError);
-    second.subscribe(v -> this.apply(SynchronizedQuad::updateSecond, v), this::onUpdateError);
-    third.subscribe(v -> this.apply(SynchronizedQuad::updateThird, v), this::onUpdateError);
-    fourth.subscribe(v -> this.apply(SynchronizedQuad::updateFourth, v), this::onUpdateError);
+    first.subscribe(v -> this.apply(SynchronizedTriple::updateFirst, v), this::onUpdateError);
+    second.subscribe(v -> this.apply(SynchronizedTriple::updateSecond, v), this::onUpdateError);
+    third.subscribe(v -> this.apply(SynchronizedTriple::updateThird, v), this::onUpdateError);
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
+    this.value.set(Tuple.of(first.get(), second.get(), third.get()));
   }
 
   /**
@@ -72,11 +69,10 @@ class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, 
    * @param <T> the type of the first object in the value
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second, prev.third, prev.fourth);
+  private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateFirst(T value) {
+    return prev -> Tuple.of(value, prev.second, prev.third);
   }
 
   /**
@@ -86,11 +82,10 @@ class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, 
    * @param <T> the type of the first object in the value
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value, prev.third, prev.fourth);
+  private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateSecond(U value) {
+    return prev -> Tuple.of(prev.first, value, prev.third);
   }
 
   /**
@@ -100,24 +95,9 @@ class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, 
    * @param <T> the type of the first object in the value
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateThird(V value) {
-    return prev -> Tuple.of(prev.first, prev.second, value, prev.fourth);
-  }
-
-  /**
-   * Returns an operation that can be applied to the given object, modifying its fourth value.
-   *
-   * @param value the new value to set
-   * @param <T> the type of the first object in the value
-   * @param <U> the type of the second object in the value
-   * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
-   * @return a new object with the value updated
-   */
-  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFourth(W value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, value);
+  private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateThird(V value) {
+    return prev -> Tuple.of(prev.first, prev.second, value);
   }
 }

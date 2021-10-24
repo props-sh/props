@@ -25,10 +25,8 @@
 
 package sh.props.sync;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import sh.props.Prop;
-import sh.props.annotations.Nullable;
 import sh.props.tuples.Tuple;
 
 /**
@@ -48,38 +46,25 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
    *
-   * <p>The third, fourth, and fifth values are optional.
-   *
    * @param first the first prop
    * @param second the second prop
    * @param third the third prop
    * @param fourth the fourth prop
    * @param fifth the fifth prop
    */
-  SynchronizedTuple(
-      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, @Nullable Prop<X> fifth) {
-    super(new AtomicReference<>(Tuple.of(null, null, null, null, null)));
-
+  SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTuple::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedTuple::updateSecond, v), this::onUpdateError);
     third.subscribe(v -> this.apply(SynchronizedTuple::updateThird, v), this::onUpdateError);
     fourth.subscribe(v -> this.apply(SynchronizedTuple::updateFourth, v), this::onUpdateError);
-    if (fifth != null) {
-      fifth.subscribe(v -> this.apply(SynchronizedTuple::updateFifth, v), this::onUpdateError);
-    }
+    fifth.subscribe(v -> this.apply(SynchronizedTuple::updateFifth, v), this::onUpdateError);
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(
-        Tuple.of(
-            first.get(),
-            second.get(),
-            third.get(),
-            fourth.get(),
-            fifth != null ? fifth.get() : null));
+    this.value.set(Tuple.of(first.get(), second.get(), third.get(), fourth.get(), fifth.get()));
   }
 
   /**

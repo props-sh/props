@@ -36,16 +36,12 @@ import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 
-public class BaseSynchronizedPropGroup<TUPLE> extends SubscribableProp<TUPLE> {
+class BaseSynchronizedPropGroup<TUPLE> extends SubscribableProp<TUPLE> {
 
-  protected final AtomicReference<TUPLE> value;
+  protected final AtomicReference<TUPLE> value = new AtomicReference<>();
   private final BlockingQueue<UnaryOperator<TUPLE>> ops = new LinkedBlockingQueue<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   private final AtomicReference<TUPLE> lastSentValue = new AtomicReference<>();
-
-  public BaseSynchronizedPropGroup(AtomicReference<TUPLE> value) {
-    this.value = value;
-  }
 
   /**
    * Applies all ops on the specified value and then updates any subscribers, while locking to

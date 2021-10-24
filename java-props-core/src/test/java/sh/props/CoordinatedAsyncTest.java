@@ -35,15 +35,15 @@ import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
-import sh.props.sync.Synchronized;
+import sh.props.sync.Synchronize;
+import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
+import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
@@ -63,8 +63,6 @@ class CoordinatedAsyncTest {
   }
 
   @Test
-  @Disabled
-  // TODO: fix the impl.
   void coordinatePairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -74,21 +72,31 @@ class CoordinatedAsyncTest {
     BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
     BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
-    var result = new AtomicReference<>();
-    var supplier = Coordinated.coordinate(prop1, prop2);
-    supplier.subscribe(result::set, CoordinatedAsyncTest::ignoreErrors);
+    Consumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    var prop = Synchronize.props(prop1, prop2);
+    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+
+    var expected = Tuple.of(1, 2);
 
     // ACT
     source.put("key1", "1");
     source.put("key2", "2");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(result::get, equalTo(Tuple.of(1, 2)));
+    await()
+        .pollInterval(Duration.ofNanos(1000))
+        .atMost(5, SECONDS)
+        .until(prop::get, equalTo(expected));
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<Pair<Integer, Integer>> captor = ArgumentCaptor.forClass(Pair.class);
+    verify(consumer, atLeastOnce()).accept(captor.capture());
+
+    var result = CoordinatedAsyncTest.getLast(captor.getAllValues());
+    assertThat("Last notification should be a complete value", result, equalTo(expected));
   }
 
   @Test
-  @Disabled
-  // TODO: fix the impl.
   void coordinateTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -99,9 +107,11 @@ class CoordinatedAsyncTest {
     BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
     BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
-    var result = new AtomicReference<>();
-    var supplier = Coordinated.coordinate(prop1, prop2, prop3);
-    supplier.subscribe(result::set, CoordinatedAsyncTest::ignoreErrors);
+    Consumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    var prop = Synchronize.props(prop1, prop2, prop3);
+    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+
+    var expected = Tuple.of(1, 2, 3);
 
     // ACT
     source.put("key1", "1");
@@ -109,7 +119,18 @@ class CoordinatedAsyncTest {
     source.put("key3", "3");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(result::get, equalTo(Tuple.of(1, 2, 3)));
+    await()
+        .pollInterval(Duration.ofNanos(1000))
+        .atMost(5, SECONDS)
+        .until(prop::get, equalTo(expected));
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<Triple<Integer, Integer, Integer>> captor =
+        ArgumentCaptor.forClass(Triple.class);
+    verify(consumer, atLeastOnce()).accept(captor.capture());
+
+    var result = CoordinatedAsyncTest.getLast(captor.getAllValues());
+    assertThat("Last notification should be a complete value", result, equalTo(expected));
   }
 
   @Test
@@ -125,7 +146,7 @@ class CoordinatedAsyncTest {
     BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     Consumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Synchronized.synchronize(prop1, prop2, prop3, prop4);
+    var prop = Synchronize.props(prop1, prop2, prop3, prop4);
     prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3, 4);
@@ -166,7 +187,7 @@ class CoordinatedAsyncTest {
 
     Consumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new DummyConsumer<>());
-    var prop = Synchronized.synchronize(prop1, prop2, prop3, prop4, prop5);
+    var prop = Synchronize.props(prop1, prop2, prop3, prop4, prop5);
     prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3, 4, 5);
