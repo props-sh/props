@@ -23,37 +23,46 @@
  *
  */
 
-package sh.props.tuples;
+package sh.props.sync;
 
-import static java.lang.String.format;
-
-import java.util.Objects;
 import java.util.function.UnaryOperator;
-import sh.props.annotations.Nullable;
+import sh.props.Prop;
+import sh.props.tuples.Quad;
+import sh.props.tuples.Tuple;
 
 /**
- * Represents a quadruple of objects.
+ * Synchronizes four Props, retrieving them all at once. If any of the underlying Props fails to
+ * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
+ * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
- * @param <T> the type of the first object
- * @param <U> the type of the second object
- * @param <V> the type of the third object
- * @param <W> the type of the fourth object
+ * @param <T> the type of the first prop
+ * @param <U> the type of the second prop
+ * @param <V> the type of the third prop
+ * @param <W> the type of the fourth prop
  */
-public class Quad<T, U, V, W> extends Triple<T, U, V> {
-
-  @Nullable public final W fourth;
-
+class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, V, W>>
+    implements Prop<Quad<T, U, V, W>> {
   /**
-   * Constructs the quad.
+   * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
+   * nullable), otherwise using this implementation makes no sense.
    *
-   * @param first the first object
-   * @param second the second object
-   * @param third the third object
-   * @param fourth the fourth object
+   * @param first the first prop
+   * @param second the second prop
+   * @param third the third prop
+   * @param fourth the fourth prop
    */
-  Quad(@Nullable T first, @Nullable U second, @Nullable V third, @Nullable W fourth) {
-    super(first, second, third);
-    this.fourth = fourth;
+  SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
+    // subscribe to all updates and errors
+    first.subscribe(v -> this.apply(SynchronizedQuad::updateFirst, v), this::onUpdateError);
+    second.subscribe(v -> this.apply(SynchronizedQuad::updateSecond, v), this::onUpdateError);
+    third.subscribe(v -> this.apply(SynchronizedQuad::updateThird, v), this::onUpdateError);
+    fourth.subscribe(v -> this.apply(SynchronizedQuad::updateFourth, v), this::onUpdateError);
+
+    // retrieve the current state of the underlying props
+    // it's important for this step to execute after we have subscribed to the underlying props
+    // since any change operations will have been captured and will be applied on the underlying
+    // atomic reference
+    this.value.set(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
   }
 
   /**
@@ -66,8 +75,8 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFirst(T value) {
-    return prev -> new Quad<>(value, prev.second, prev.third, prev.fourth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFirst(T value) {
+    return prev -> Tuple.of(value, prev.second, prev.third, prev.fourth);
   }
 
   /**
@@ -80,8 +89,8 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applySecond(U value) {
-    return prev -> new Quad<>(prev.first, value, prev.third, prev.fourth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateSecond(U value) {
+    return prev -> Tuple.of(prev.first, value, prev.third, prev.fourth);
   }
 
   /**
@@ -94,8 +103,8 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyThird(V value) {
-    return prev -> new Quad<>(prev.first, prev.second, value, prev.fourth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateThird(V value) {
+    return prev -> Tuple.of(prev.first, prev.second, value, prev.fourth);
   }
 
   /**
@@ -108,68 +117,7 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * @param <W> the type of the fourth object in the value
    * @return a new object with the value updated
    */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFourth(W value) {
-    return prev -> new Quad<>(prev.first, prev.second, prev.third, value);
-  }
-
-  /**
-   * Convert this quad to a pair, using its first two values.
-   *
-   * @return a pair containing this object's first two values
-   */
-  @Override
-  public Pair<T, U> toPair() {
-    return Tuple.of(this.first, this.second);
-  }
-
-  /**
-   * Convert this quad to a triple, using its first three values.
-   *
-   * @return a triple containing this object's first three values
-   */
-  public Triple<T, U, V> toTriple() {
-    return Tuple.of(this.first, this.second, this.third);
-  }
-
-  /**
-   * Generated equals implementation.
-   *
-   * @param o the object to compare
-   * @return true if all four values are equal
-   */
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof Quad)) {
-      return false;
-    }
-
-    Quad<?, ?, ?, ?> quad = (Quad<?, ?, ?, ?>) o;
-    return Objects.equals(this.first, quad.first)
-        && Objects.equals(this.second, quad.second)
-        && Objects.equals(this.third, quad.third)
-        && Objects.equals(this.fourth, quad.fourth);
-  }
-
-  /**
-   * Generated hashcode implementation.
-   *
-   * @return this object's computed hashcode
-   */
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.first, this.second, this.third, this.fourth);
-  }
-
-  /**
-   * Renders this object as a string.
-   *
-   * @return this object's string representation
-   */
-  @Override
-  public String toString() {
-    return format("(%s, %s, %s, %s)", this.first, this.second, this.third, this.fourth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFourth(W value) {
+    return prev -> Tuple.of(prev.first, prev.second, prev.third, value);
   }
 }

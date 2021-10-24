@@ -4,7 +4,8 @@
 echo "==> Running the pre-commit git hook..."
 
 # stash any unstaged changes
-git stash -q --keep-index --include-untracked
+git stash --keep-index --include-untracked | grep -vi "No local changes to save"
+stashed=$?
 
 # format and add any modifications
 ./gradlew spotlessApply --daemon
@@ -17,7 +18,9 @@ git add .
 RESULT=$?
 
 # unstash the unstashed changes
-git stash pop -q
+if [ "$stashed" -eq 0 ]; then
+  git stash pop -q
+fi
 
 # return the './gradlew spotlessCheck' exit code
 exit $RESULT

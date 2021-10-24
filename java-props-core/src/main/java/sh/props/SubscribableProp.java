@@ -27,8 +27,8 @@ package sh.props;
 
 import static java.lang.String.format;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,26 +49,27 @@ import sh.props.annotations.Nullable;
 public abstract class SubscribableProp<T> implements Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
-  protected final List<Consumer<T>> valueSubscribers = new ArrayList<>();
-  protected final List<Consumer<Throwable>> errorHandlers = new ArrayList<>();
+  protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
+  protected final List<Consumer<Throwable>> errorHandlers = new CopyOnWriteArrayList<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   protected AtomicLong epoch = new AtomicLong();
 
   /**
-   * Subscribes the passed update/error consumers. This method is thread-safe, synchronizing any
-   * additions to update/error consumers.
+   * Subscribes the passed update/error consumers. This method is thread-safe, due to relying on
+   * {@link CopyOnWriteArrayList} as a backing data structure for the two lists holding update/error
+   * handlers.
+   *
+   * <p>The expected usage pattern for this class is that one or a few subscribers will be
+   * registered initially, after which the implementation will iterate over these collections when
+   * notifying subscribers of updates. The read ops will vastly outnumber the writes.
    *
    * @param onUpdate called when a new value is received (favoring the most recent value)
    * @param onError called when an error occurs (a value cannot be received)
    */
   @Override
   public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
-    synchronized (this.valueSubscribers) {
-      this.valueSubscribers.add(safe(onUpdate, onError));
-    }
-    synchronized (this.errorHandlers) {
-      this.errorHandlers.add(safe(onError, null));
-    }
+    this.updateHandlers.add(safe(onUpdate, onError));
+    this.errorHandlers.add(safe(onError, null));
   }
 
   /**
@@ -87,7 +88,7 @@ public abstract class SubscribableProp<T> implements Prop<T> {
    * single update event for a group of concurrent changes.
    */
   protected void onUpdatedValue() {
-    if (this.valueSubscribers.isEmpty()) {
+    if (this.updateHandlers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
     }
@@ -117,7 +118,7 @@ public abstract class SubscribableProp<T> implements Prop<T> {
               try {
                 // send the same value to all consumers
                 T value = this.get();
-                this.valueSubscribers.forEach(c -> c.accept(value));
+                this.updateHandlers.forEach(c -> c.accept(value));
               } finally {
                 // ensure the updated value was received by all consumers
                 // before allowing a new update to be processed
