@@ -23,14 +23,15 @@
  *
  */
 
-package sh.props;
+package sh.props.interfaces;
 
 import java.util.function.Consumer;
 
 /**
- * Designates an object that sends updates when its underlying value is changed.
+ * Represents an object that sends update events, or notifies the downstream of any encountered
+ * errors.
  *
- * @param <T> the type of the value
+ * @param <T> the type of value that the downstream consumer should accept
  */
 @FunctionalInterface
 public interface Subscribable<T> {

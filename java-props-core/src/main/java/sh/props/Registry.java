@@ -36,7 +36,10 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.converter.Cast;
 import sh.props.converter.Converter;
+import sh.props.interfaces.Prop;
+import sh.props.tuples.Pair;
 
 public class Registry implements Notifiable {
 
@@ -44,7 +47,8 @@ public class Registry implements Notifiable {
 
   final Datastore store;
   final List<Layer> layers = new ArrayList<>();
-  final ConcurrentHashMap<String, HashSet<BaseProp<?>>> notifications = new ConcurrentHashMap<>();
+  final ConcurrentHashMap<String, HashSet<AbstractProp<?>>> notifications =
+      new ConcurrentHashMap<>();
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry() {
@@ -59,8 +63,8 @@ public class Registry implements Notifiable {
    * @param layer the originating layer
    */
   private static void updateProps(
-      Collection<BaseProp<?>> props, @Nullable String value, @Nullable Layer layer) {
-    for (BaseProp<?> prop : props) {
+      Collection<AbstractProp<?>> props, @Nullable String value, @Nullable Layer layer) {
+    for (AbstractProp<?> prop : props) {
       if (prop.setValue(value) && log.isLoggable(Level.FINE)) {
         log.fine(() -> format("%s received new value from %s", prop, layer));
       }
@@ -70,7 +74,7 @@ public class Registry implements Notifiable {
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
     // check if we have any props to notify
-    Collection<BaseProp<?>> props = this.notifications.get(key);
+    Collection<AbstractProp<?>> props = this.notifications.get(key);
     if (props == null || props.isEmpty()) {
       // nothing to do if the key is not registered or there aren't any props to notify
       return;
@@ -82,19 +86,24 @@ public class Registry implements Notifiable {
   }
 
   /**
-   * Binds the specified {@link BaseProp} to this registry. If the registry already has a value for
-   * this prop, it will set it.
+   * Binds the specified {@link AbstractProp} to this registry. If the registry already contains a
+   * value for this prop, it will call {@link AbstractProp#setValue(String)} to set it.
+   *
+   * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
+   * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
+   * multiple props with the same {@link Prop#key()} to be bound to the same Registry.
    *
    * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
    * Keep the implementation performant by reducing the number of Prop objects registered for the
-   * same key.
+   * same key!
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
-   * @param <P> the class of the {@link Prop} with its upper bound ({@link BaseProp})
+   * @param <PropT> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
    * @return the bound prop
+   * @throws IllegalArgumentException if a previously bound prop is passed
    */
-  public <T, P extends BaseProp<T>> P bind(P prop) {
+  public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
     this.notifications.compute(
         prop.key(),
         (s, current) -> {
@@ -104,17 +113,22 @@ public class Registry implements Notifiable {
           }
 
           // bind the property and return the holder object
-          if (current.add(prop)) {
-            // if the prop was bound now attempt to set its value from the registry
-            ValueLayerTuple vl = this.store.get(prop.key());
-            if (vl != null) {
-              // we currently have a value; set it
-              prop.setValue(vl.value());
-            }
+          if (!current.add(prop)) {
+            throw new IllegalArgumentException(
+                "Props can only be bound once to the same Registry object!");
+          }
+
+          // after the prop was bound, attempt to set its value from the registry
+          Pair<String, Layer> vl = this.store.get(prop.key());
+          if (vl != null) {
+            // we currently have a value; set it
+            prop.setValue(vl.first);
           }
 
           return current;
         });
+
+    // return the prop back to the caller
     return prop;
   }
 
@@ -123,20 +137,39 @@ public class Registry implements Notifiable {
    *
    * @param key the key to retrieve
    * @param converter the type converter used to cast the value to its appropriate type
-   * @param <T> a type that we'll cast the return to
+   * @param <T> the return object's type
    * @return the effective value, or <code>null</code> if not found
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
     // finds the value and owning layer
-    ValueLayerTuple valueLayer = this.store.get(key);
+    Pair<String, Layer> valueLayer = this.store.get(key);
 
     // no value found, the key does not exist in the registry
-    if (valueLayer == null) {
+    // or the value is null
+    if (valueLayer == null || valueLayer.first == null) {
       return null;
     }
 
     // casts the effective value
-    return converter.decode(valueLayer.value());
+    return converter.decode(valueLayer.first);
+  }
+
+  /**
+   * Convenience method that retrieves the serialized value for the specified key.
+   *
+   * <p>This method is mostly useful in the following two cases:
+   *
+   * <ul>
+   *   <li>- the property represented by the specified key is a <code>String</code>
+   *   <li>- the calling code wants to deserialize the value using a different mechanism
+   * </ul>
+   *
+   * @param key the key to retrieve
+   * @return the effective value, or <code>null</code> if not found
+   */
+  @Nullable
+  public String get(String key) {
+    return this.get(key, Cast.asString());
   }
 }

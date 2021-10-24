@@ -23,16 +23,16 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import java.util.function.UnaryOperator;
-import sh.props.Prop;
+import sh.props.interfaces.Prop;
 import sh.props.tuples.Tuple;
 
 /**
- * Synchronizes five Props, retrieving them all at once. If any of the underlying Props fails to
- * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
- * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
+ * Groups five Props, retrieving them all at once. If any of the underlying Props fails to update
+ * its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
@@ -40,7 +40,7 @@ import sh.props.tuples.Tuple;
  * @param <W> the type of the fourth prop
  * @param <X> the type of the fifth prop
  */
-class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T, U, V, W, X>>
+class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, W, X>>
     implements Prop<Tuple<T, U, V, W, X>> {
   /**
    * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
@@ -53,6 +53,11 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @param fifth the fifth prop
    */
   SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
+    // generate a key represented by each prop
+    super(
+        AbstractPropGroup.multiKey(
+            first.key(), second.key(), third.key(), fourth.key(), fifth.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTuple::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedTuple::updateSecond, v), this::onUpdateError);
@@ -79,7 +84,7 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second, prev.third, prev.fourth, prev.fifth);
+    return prev -> prev.updateFirst(value);
   }
 
   /**
@@ -94,7 +99,7 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value, prev.third, prev.fourth, prev.fifth);
+    return prev -> prev.updateSecond(value);
   }
 
   /**
@@ -109,7 +114,7 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateThird(V value) {
-    return prev -> Tuple.of(prev.first, prev.second, value, prev.fourth, prev.fifth);
+    return prev -> prev.updateThird(value);
   }
 
   /**
@@ -124,7 +129,7 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFourth(W value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, value, prev.fifth);
+    return prev -> prev.updateFourth(value);
   }
 
   /**
@@ -139,6 +144,6 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, prev.fourth, value);
+    return prev -> prev.updateFifth(value);
   }
 }

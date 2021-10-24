@@ -36,105 +36,24 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Prop;
 
 /**
- * This class implements the base functionality required to notify subscribers asynchronously that a
- * {@link BaseProp} has updated its value, or that an update operation failed.
+ * This class implements the base functionality required to notify subscribers asynchronously that
+ * an {@link AbstractProp} has updated its value, or that an update operation failed.
  *
  * <p>* It's important to note that this implementation will attempt to send a single event when the
  * value in concurrently updated, but it will send each error when one is encountered.
  *
  * @param <T> the type of the prop object
  */
-public abstract class SubscribableProp<T> implements Prop<T> {
+public abstract class SubscribableProp<T> extends AbstractProp<T> implements Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
   protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
   protected final List<Consumer<Throwable>> errorHandlers = new CopyOnWriteArrayList<>();
   private final ReentrantLock sendStage = new ReentrantLock();
-  protected AtomicLong epoch = new AtomicLong();
-
-  /**
-   * Subscribes the passed update/error consumers. This method is thread-safe, due to relying on
-   * {@link CopyOnWriteArrayList} as a backing data structure for the two lists holding update/error
-   * handlers.
-   *
-   * <p>The expected usage pattern for this class is that one or a few subscribers will be
-   * registered initially, after which the implementation will iterate over these collections when
-   * notifying subscribers of updates. The read ops will vastly outnumber the writes.
-   *
-   * @param onUpdate called when a new value is received (favoring the most recent value)
-   * @param onError called when an error occurs (a value cannot be received)
-   */
-  @Override
-  public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
-    this.updateHandlers.add(safe(onUpdate, onError));
-    this.errorHandlers.add(safe(onError, null));
-  }
-
-  /**
-   * Retrieves the current value of the prop.
-   *
-   * @return the current value of this object
-   */
-  @Override
-  @Nullable
-  public abstract T get();
-
-  /**
-   * Notifies all subscribers of the newest value of this prop. This method does not accept a value
-   * but instead retrieves the latest value at the time of execution (the update is processed using
-   * the default {@link ForkJoinPool}, only if another update is not in-progress and also ensuring a
-   * single update event for a group of concurrent changes.
-   */
-  protected void onUpdatedValue() {
-    if (this.updateHandlers.isEmpty()) {
-      // nothing to do if we have no consumers
-      return;
-    }
-
-    // Mark the epoch at which this value was updated.
-    // This is important since, by submitting the update to be processed by the ForkJoinPool
-    // we have no guarantees regarding the order of execution.
-    // Without this mechanism, the subscribing code could end up receiving updates in the wrong
-    // order, e.g.: ('newer', 'older'), while the current value of the prop equals 'newer'
-    long currentEpoch = this.epoch.incrementAndGet();
-
-    ForkJoinPool.commonPool()
-        .execute(
-            () -> {
-              if (Long.compareUnsigned(currentEpoch, this.epoch.get()) < 0) {
-                // we know a more recent update took place
-                // skip this execution
-                return;
-              }
-
-              if (!this.sendStage.tryLock()) {
-                // another thread is already sending
-                // skip this execution
-                return;
-              }
-
-              try {
-                // send the same value to all consumers
-                T value = this.get();
-                this.updateHandlers.forEach(c -> c.accept(value));
-              } finally {
-                // ensure the updated value was received by all consumers
-                // before allowing a new update to be processed
-                this.sendStage.unlock();
-              }
-            });
-  }
-
-  /**
-   * Notifies subscribers of any errors that occurred while updating this object's value.
-   *
-   * @param t the error that prevented the update
-   */
-  protected void onUpdateError(Throwable t) {
-    this.errorHandlers.forEach(c -> c.accept(t));
-  }
+  protected AtomicLong lastProcessedEpoch = new AtomicLong();
 
   /**
    * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
@@ -162,5 +81,93 @@ public abstract class SubscribableProp<T> implements Prop<T> {
         }
       }
     };
+  }
+
+  /**
+   * Subscribes the passed update/error consumers. This method is thread-safe, due to relying on
+   * {@link CopyOnWriteArrayList} as a backing data structure for the two lists holding update/error
+   * handlers.
+   *
+   * <p>The expected usage pattern for this class is that one or a few subscribers will be
+   * registered initially, after which the implementation will iterate over these collections when
+   * notifying subscribers of updates. The read ops will vastly outnumber the writes.
+   *
+   * @param onUpdate called when a new value is received (favoring the most recent value)
+   * @param onError called when an error occurs (a value cannot be received)
+   */
+  @Override
+  public void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError) {
+    this.updateHandlers.add(safe(onUpdate, onError));
+    this.errorHandlers.add(safe(onError, null));
+  }
+
+  /**
+   * Accepts a value and an epoch. Since this method offloads the actual work of sending the
+   * notification to the {@link ForkJoinPool}, the value is accompanied by an ever increasing epoch.
+   * The epoch is used to determine if the event should still be propagated, thus ensuring that only
+   * the most recent updates are propagated.
+   *
+   * <p>For example, since the ForkJoinPool could be busy with other work, the value could be
+   * updated to A and then quickly to B, before the task has a chance to run. In that case, only B
+   * should be sent to subscribers, and A should be discarded.
+   *
+   * @param value the value to set
+   * @param epoch the epoch at which this value was recorded
+   */
+  protected void onUpdatedValue(@Nullable T value, long epoch) {
+    if (this.updateHandlers.isEmpty()) {
+      // nothing to do if we have no consumers
+      return;
+    }
+
+    ForkJoinPool.commonPool()
+        .execute(
+            () -> {
+              // attempt to store the 'current' epoch
+              long current =
+                  this.lastProcessedEpoch.updateAndGet(
+                      last -> {
+                        if (Long.compareUnsigned(epoch, last) > 0) {
+                          // update the epoch if it is more recent than the last processed epoch
+                          return epoch;
+                        }
+
+                        // otherwise, keep the last processed epoch, since it is more current
+                        return last;
+                      });
+
+              // the epoch was not updated, which means that the current update event should be
+              // discarded
+              if (current != epoch) {
+                return;
+              }
+
+              // lock to ensure that the updated value was received by all consumers
+              // before allowing a new update to be processed
+              this.sendStage.lock();
+
+              try {
+                // since some time may have passed, recheck that this epoch is still valid
+                if (this.lastProcessedEpoch.get() != epoch) {
+                  // if not, discard the update
+                  return;
+                }
+
+                // send the same value to all consumers
+                this.updateHandlers.forEach(c -> c.accept(value));
+              } finally {
+                // allow the next update to be sent
+                this.sendStage.unlock();
+              }
+            });
+  }
+
+  /**
+   * Notifies subscribers of any errors that occurred while updating this object's value.
+   *
+   * @param t the error that prevented the update
+   */
+  protected void onUpdateError(Throwable t) {
+    this.errorHandlers.forEach(c -> c.accept(t));
   }
 }

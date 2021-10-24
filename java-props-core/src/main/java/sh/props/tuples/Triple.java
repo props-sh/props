@@ -69,7 +69,7 @@ public class Triple<T, U, V> extends Pair<T, U> {
    * @return a new object with the value updated
    */
   @Override
-  public Triple<T, U, V> updateFirst(T value) {
+  public Triple<T, U, V> updateFirst(@Nullable T value) {
     return new Triple<>(value, this.second, this.third);
   }
 
@@ -80,7 +80,7 @@ public class Triple<T, U, V> extends Pair<T, U> {
    * @return a new object with the value updated
    */
   @Override
-  public Triple<T, U, V> updateSecond(U value) {
+  public Triple<T, U, V> updateSecond(@Nullable U value) {
     return new Triple<>(this.first, value, this.third);
   }
 
@@ -90,7 +90,7 @@ public class Triple<T, U, V> extends Pair<T, U> {
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  public Triple<T, U, V> updateThird(V value) {
+  public Triple<T, U, V> updateThird(@Nullable V value) {
     return new Triple<>(this.first, this.second, value);
   }
 
@@ -113,6 +113,20 @@ public class Triple<T, U, V> extends Pair<T, U> {
     return Objects.equals(this.first, triple.first)
         && Objects.equals(this.second, triple.second)
         && Objects.equals(this.third, triple.third);
+  }
+
+  /**
+   * Determines if the specified deconstructed arguments are the same as this tuple.
+   *
+   * @param first the first object to compare
+   * @param second the second object to compare
+   * @param third the third object to compare
+   * @return true if all objects match the current tuple's underlying value
+   */
+  public boolean equalTo(T first, U second, V third) {
+    return Objects.equals(this.first, first)
+        && Objects.equals(this.second, second)
+        && Objects.equals(this.third, third);
   }
 
   /**

@@ -26,41 +26,20 @@
 package sh.props;
 
 import sh.props.annotations.Nullable;
-import sh.props.tuples.Pair;
+import sh.props.interfaces.Prop;
 
 /**
- * Common interface for datastore implementations.
+ * Abstract {@link Prop} class which encompasses all the methods needed by the {@link Registry} to
+ * reason about a prop.
  *
- * <p>Currently, this interface is not ready to be made public and only a single (internal)
- * implementation is provided.
+ * @param <T> the property's type
  */
-interface Datastore {
-
+public abstract class AbstractProp<T> implements Prop<T> {
   /**
-   * Retrieves a value,layer pair for the specified key.
+   * Setter method that should update the underlying implementation's value.
    *
-   * @param key the key to retrieve
-   * @return a value,layer pair, or null if not found
+   * @param value the new value to set
+   * @return true if the update succeeded
    */
-  @Nullable
-  Pair<String, Layer> get(String key);
-
-  /**
-   * Updates a value and its originating layer, for the specified key.
-   *
-   * @param key the key to update
-   * @param value the value to set
-   * @param layer the originating layer
-   * @return a value,layer pair if the key is defined in any layer, or null if this operation
-   *     results in a deletion of the key
-   */
-  @Nullable
-  Pair<String, Layer> put(String key, @Nullable String value, Layer layer);
-
-  /**
-   * Notifies any subscribers of updates.
-   *
-   * @return a functional interface that accepts updates
-   */
-  Notifiable notifier();
+  protected abstract boolean setValue(@Nullable String value);
 }

@@ -23,23 +23,22 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import java.util.function.UnaryOperator;
-import sh.props.Prop;
+import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
 /**
- * Synchronizes three Props, retrieving them all at once. If any of the underlying Props fails to
- * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
- * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
+ * Groups two Props, retrieving them all at once. If any of the underlying Props fails to update its
+ * value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
  */
-class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
-    implements Prop<Pair<T, U>> {
+class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Prop<Pair<T, U>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -48,6 +47,9 @@ class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
    * @param second the second prop
    */
   SynchronizedPair(Prop<T> first, Prop<U> second) {
+    // generate a key represented by each prop
+    super(AbstractPropGroup.multiKey(first.key(), second.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedPair::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedPair::updateSecond, v), this::onUpdateError);
@@ -68,7 +70,7 @@ class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
    * @return a new object with the value updated
    */
   private static <T, U> UnaryOperator<Pair<T, U>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second);
+    return prev -> prev.updateFirst(value);
   }
 
   /**
@@ -80,6 +82,6 @@ class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
    * @return a new object with the value updated
    */
   private static <T, U> UnaryOperator<Pair<T, U>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value);
+    return prev -> prev.updateSecond(value);
   }
 }

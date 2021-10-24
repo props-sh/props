@@ -28,6 +28,8 @@ package sh.props;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
+import sh.props.tuples.Pair;
+import sh.props.tuples.Tuple;
 
 /**
  * Internal implementation for holding the effective values coming from all layers.
@@ -37,7 +39,7 @@ import sh.props.annotations.Nullable;
  */
 class SyncStore implements Datastore {
 
-  protected final ConcurrentHashMap<String, ValueLayerTuple> effectiveValues =
+  protected final ConcurrentHashMap<String, Pair<String, Layer>> effectiveValues =
       new ConcurrentHashMap<>();
   protected final Notifiable notifiable;
 
@@ -45,8 +47,8 @@ class SyncStore implements Datastore {
     this.notifiable = notifiable;
   }
 
-  private static void assertLayerIsValid(Layer search, ValueLayerTuple vl) {
-    if (!Objects.equals(search.registry(), vl.layer().registry())) {
+  private static void assertLayerIsValid(Layer search, Pair<String, Layer> vl) {
+    if (!Objects.equals(search.registry(), nonNullLayer(vl.second).registry())) {
       throw new IllegalArgumentException(
           "Invalid layer passed (does not belong to current registry)");
     }
@@ -57,17 +59,18 @@ class SyncStore implements Datastore {
    *
    * @param key the key we're searching for
    * @param vl the starting value/layer pair
-   * @return a {@link ValueLayerTuple} if found, or <code>null</code> if no layer defines the key
+   * @return a {@link Pair} if found, or <code>null</code> if no layer defines the key
    */
   @Nullable
-  private static ValueLayerTuple findNextPotentialOwner(String key, ValueLayerTuple vl) {
-    Layer l = vl.layer();
+  private static Pair<String, Layer> findNextPotentialOwner(String key, Pair<String, Layer> vl) {
+    Layer l = nonNullLayer(vl.second);
+
     // search all layers with lower priority for the key
     while (l.prev() != null) {
       l = l.prev();
       String value = l.get(key);
       if (value != null) {
-        return new ValueLayerTuple(value, l);
+        return Tuple.of(value, l);
       }
     }
 
@@ -76,16 +79,30 @@ class SyncStore implements Datastore {
   }
 
   /**
+   * Convenience method to check the correctness of the specified layer object.
+   *
+   * @param layer a reference that could be null
+   * @return a non-null reference
+   */
+  private static Layer nonNullLayer(@Nullable Layer layer) {
+    if (layer == null) {
+      throw new NullPointerException("Invalid state, layer should not be null!");
+    }
+    return layer;
+  }
+
+  /**
    * Find a specific layer that defines the key.
    *
    * @param key the key to search for
    * @param vl the effective value/layer pair
    * @param search the layer to search for
-   * @return a {@link ValueLayerTuple} if a layer defines the key, or <code>null</code> otherwise
+   * @return a {@link Pair}, containing the value and the defining layer, or <code>null</code>
+   *     otherwise
    */
   @Nullable
-  private static ValueLayerTuple findLayer(String key, ValueLayerTuple vl, Layer search) {
-    Layer l = vl.layer();
+  private static Pair<String, Layer> findLayer(String key, Pair<String, Layer> vl, Layer search) {
+    Layer l = nonNullLayer(vl.second);
 
     SyncStore.assertLayerIsValid(search, vl);
 
@@ -100,7 +117,7 @@ class SyncStore implements Datastore {
       String value = l.get(key);
       if (value != null) {
         // return it
-        return new ValueLayerTuple(value, l);
+        return Tuple.of(value, l);
       }
 
       if (l.priority() < search.priority()) {
@@ -116,6 +133,18 @@ class SyncStore implements Datastore {
     return null;
   }
 
+  /**
+   * Checks if the specified pair's value equals the deconstructed value, but NOT the layer.
+   *
+   * @param value the value to compare
+   * @param layer the owning layer to compare
+   * @return true if only the value is equal
+   */
+  private static boolean equalInValueButNotLayer(
+      Pair<String, Layer> pair, String value, Layer layer) {
+    return Objects.equals(value, pair.first) && layer != pair.second;
+  }
+
   @Override
   public Notifiable notifier() {
     return this.notifiable;
@@ -125,11 +154,12 @@ class SyncStore implements Datastore {
    * Retrieves a value for the specified key.
    *
    * @param key the key to look for
-   * @return a {@link ValueLayerTuple} if found, or <code>null</code>
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
+   *     </code>
    */
   @Override
   @Nullable
-  public ValueLayerTuple get(String key) {
+  public Pair<String, Layer> get(String key) {
     return this.effectiveValues.get(key);
   }
 
@@ -138,11 +168,12 @@ class SyncStore implements Datastore {
    *
    * @param key the key to look for
    * @param layer the layer to retrieve the value from
-   * @return a {@link ValueLayerTuple} if found, or <code>null</code>
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
+   *     </code>
    */
   @Nullable
-  public ValueLayerTuple get(String key, Layer layer) {
-    ValueLayerTuple effective = this.effectiveValues.get(key);
+  public Pair<String, Layer> get(String key, Layer layer) {
+    Pair<String, Layer> effective = this.effectiveValues.get(key);
     if (effective == null) {
       // no mapping exists in any layer
       return null;
@@ -157,12 +188,12 @@ class SyncStore implements Datastore {
    * @param key the key to update
    * @param value the value to set (<code>null</code> unmaps the key)
    * @param layer the originating layer
-   * @return a {@link ValueLayerTuple} representing the new owner, or <code>null</code> if no other
-   *     layer defines the key
+   * @return a {@link Pair} containing the value and new owning layer, or <code>null</code> if no
+   *     other layer defines the key
    */
   @Override
   @Nullable
-  public ValueLayerTuple put(String key, @Nullable String value, Layer layer) {
+  public Pair<String, Layer> put(String key, @Nullable String value, Layer layer) {
     return this.effectiveValues.compute(
         key,
         (k, current) -> {
@@ -176,13 +207,13 @@ class SyncStore implements Datastore {
             }
 
             // otherwise, map the effective value and its owning layer
-            return this.onValueChanged(key, new ValueLayerTuple(value, layer));
+            return this.onValueChanged(key, Tuple.of(value, layer));
           }
 
           // if we already defined a mapping for this key
 
           // first check the attempted mapping's priority
-          int oldPriority = current.layer().priority();
+          int oldPriority = nonNullLayer(current.second).priority();
           int priority = layer.priority();
           // if the layer's priority is lower than the current owner
           if (priority < oldPriority) {
@@ -208,10 +239,10 @@ class SyncStore implements Datastore {
           }
 
           // if the layer mapping is updated but the value did not change
-          if (value != null && current.equalInValueOnly(value, layer)) {
+          if (value != null && equalInValueButNotLayer(current, value, layer)) {
             // we need to modify the layer/value mapping
             // but avoid sending an update to any objects following this key
-            return new ValueLayerTuple(value, layer);
+            return Tuple.of(value, layer);
           }
 
           // if the owning layer unsets the value
@@ -220,7 +251,7 @@ class SyncStore implements Datastore {
             return this.onValueChanged(key, findNextPotentialOwner(key, current));
           } else {
             // otherwise update the layer/value mapping
-            return this.onValueChanged(key, new ValueLayerTuple(value, layer));
+            return this.onValueChanged(key, Tuple.of(value, layer));
           }
         });
   }
@@ -233,13 +264,13 @@ class SyncStore implements Datastore {
    * @return the same value,layer pair
    */
   @Nullable
-  private ValueLayerTuple onValueChanged(String key, @Nullable ValueLayerTuple vl) {
+  private Pair<String, Layer> onValueChanged(String key, @Nullable Pair<String, Layer> vl) {
     if (vl == null) {
       this.notifier().sendUpdate(key, null, null);
       return null;
     }
 
-    this.notifier().sendUpdate(key, vl.value(), vl.layer());
+    this.notifier().sendUpdate(key, vl.first, vl.second);
     return vl;
   }
 }

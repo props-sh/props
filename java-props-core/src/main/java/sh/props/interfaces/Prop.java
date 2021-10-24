@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props;
+package sh.props.interfaces;
 
 import java.util.function.Supplier;
 
@@ -31,6 +31,13 @@ import java.util.function.Supplier;
  * Interface that is returned to the caller to explicitly call out the public contract exported by
  * this library.
  *
- * @param <T> the type of the property
+ * @param <T> the property's type
  */
-public interface Prop<T> extends Supplier<T>, Subscribable<T> {}
+public interface Prop<T> extends Supplier<T>, Subscribable<T> {
+  /**
+   * Designates this {@link Prop}'s key identifier.
+   *
+   * @return a string id
+   */
+  String key();
+}

@@ -23,23 +23,23 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import java.util.function.UnaryOperator;
-import sh.props.Prop;
+import sh.props.interfaces.Prop;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 /**
- * Synchronizes three Props, retrieving them all at once. If any of the underlying Props fails to
- * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
- * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
+ * Groups three Props, retrieving them all at once. If any of the underlying Props fails to update
+ * its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
  * @param <V> the type of the third prop
  */
-class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U, V>>
+class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     implements Prop<Triple<T, U, V>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
@@ -50,6 +50,9 @@ class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U,
    * @param third the third prop
    */
   SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
+    // generate a key represented by each prop
+    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTriple::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedTriple::updateSecond, v), this::onUpdateError);
@@ -72,7 +75,7 @@ class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U,
    * @return a new object with the value updated
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second, prev.third);
+    return prev -> prev.updateFirst(value);
   }
 
   /**
@@ -85,7 +88,7 @@ class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U,
    * @return a new object with the value updated
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value, prev.third);
+    return prev -> prev.updateSecond(value);
   }
 
   /**
@@ -98,6 +101,6 @@ class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U,
    * @return a new object with the value updated
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateThird(V value) {
-    return prev -> Tuple.of(prev.first, prev.second, value);
+    return prev -> prev.updateThird(value);
   }
 }

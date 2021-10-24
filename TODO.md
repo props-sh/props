@@ -1,10 +1,15 @@
-- multi-prop Provider
-    - finish all 2/3/4 prop provider impl. classes
-    - use the same executor to run all Coordinated thread update/error handlers (avoid system
-      running out of threads)
-- define AbstractBaseProps
-- RefactoredProp
+General:
 - TemplateStringUtils / renderTemplate
-- module-info
+- RefactoredProp
+- define AbstractBaseProps
 - prop builder or multi constructors
-- log.isLoggable(FINER)
+- read Resolver config from JVM arg or property file (see SourceUtils)
+
+Async updates:
+- Refactor AbstractPropGroup to override onValueUpdate (attempt to pass the epoch and ensure only the most recent value is sent)
+- think of same Prop being bound to multiple Registries
+
+Java:
+- module-info.java and exports
+- fix Gradle + git hook install
+- publish to Maven Central
