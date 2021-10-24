@@ -132,7 +132,7 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
                           return epoch;
                         }
 
-                        // otherwise keep the last processed epoch, since it is more current
+                        // otherwise, keep the last processed epoch, since it is more current
                         return last;
                       });
 

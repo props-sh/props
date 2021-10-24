@@ -86,17 +86,22 @@ public class Registry implements Notifiable {
   }
 
   /**
-   * Binds the specified {@link AbstractProp} to this registry. If the registry already has a value
-   * for this prop, it will set it.
+   * Binds the specified {@link AbstractProp} to this registry. If the registry already contains a
+   * value for this prop, it will call {@link AbstractProp#setValue(String)} to set it.
+   *
+   * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
+   * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
+   * multiple props with the same {@link Prop#key()} to be bound to the same Registry.
    *
    * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
    * Keep the implementation performant by reducing the number of Prop objects registered for the
-   * same key.
+   * same key!
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
    * @param <PropT> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
    * @return the bound prop
+   * @throws IllegalArgumentException if a previously bound prop is passed
    */
   public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
     this.notifications.compute(
@@ -108,17 +113,22 @@ public class Registry implements Notifiable {
           }
 
           // bind the property and return the holder object
-          if (current.add(prop)) {
-            // if the prop was bound now attempt to set its value from the registry
-            Pair<String, Layer> vl = this.store.get(prop.key());
-            if (vl != null) {
-              // we currently have a value; set it
-              prop.setValue(vl.first);
-            }
+          if (!current.add(prop)) {
+            throw new IllegalArgumentException(
+                "Props can only be bound once to the same Registry object!");
+          }
+
+          // after the prop was bound, attempt to set its value from the registry
+          Pair<String, Layer> vl = this.store.get(prop.key());
+          if (vl != null) {
+            // we currently have a value; set it
+            prop.setValue(vl.first);
           }
 
           return current;
         });
+
+    // return the prop back to the caller
     return prop;
   }
 
