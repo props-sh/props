@@ -5,4 +5,3 @@
 - define AbstractBaseProps
 - module-info
 - read Resolver config from JVM arg or property file (see SourceUtils)
-- convert WholePair usages to Pair and handle the NPE checks
