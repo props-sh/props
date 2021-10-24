@@ -27,6 +27,8 @@ package sh.props;
 
 import java.util.Objects;
 
+// TODO: Refactor the usage of this holder and use Pair
+@Deprecated
 public class ValueLayerTuple {
 
   final String value;

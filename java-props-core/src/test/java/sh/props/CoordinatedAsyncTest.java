@@ -69,8 +69,8 @@ class CoordinatedAsyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
     Consumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Synchronize.props(prop1, prop2);
@@ -103,9 +103,9 @@ class CoordinatedAsyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
     Consumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Synchronize.props(prop1, prop2, prop3);
@@ -140,10 +140,10 @@ class CoordinatedAsyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
-    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     Consumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Synchronize.props(prop1, prop2, prop3, prop4);
@@ -179,11 +179,11 @@ class CoordinatedAsyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
-    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
-    BaseProp<Integer> prop5 = registry.bind(new IntProp("key5", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    Prop<Integer> prop5 = registry.bind(new IntProp("key5", null));
 
     Consumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new DummyConsumer<>());

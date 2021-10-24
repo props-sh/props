@@ -33,10 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.converter.Converter;
 
 public class Registry implements Notifiable {
 
@@ -58,7 +58,6 @@ public class Registry implements Notifiable {
    * @param value the value to set
    * @param layer the originating layer
    */
-  //
   private static void updateProps(
       Collection<BaseProp<?>> props, @Nullable String value, @Nullable Layer layer) {
     for (BaseProp<?> prop : props) {
@@ -79,8 +78,7 @@ public class Registry implements Notifiable {
 
     // alleviate the risk of blocking the main (update) thread
     // by offloading to an executor pool, since we don't control Prop subscribers
-    ForkJoinTask<?> task = ForkJoinTask.adapt(() -> Registry.updateProps(props, value, layer));
-    ForkJoinPool.commonPool().execute(task);
+    ForkJoinPool.commonPool().execute(() -> Registry.updateProps(props, value, layer));
   }
 
   /**
@@ -93,9 +91,10 @@ public class Registry implements Notifiable {
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
+   * @param <P> the class of the {@link Prop} with its upper bound ({@link BaseProp})
    * @return the bound prop
    */
-  public <T> BaseProp<T> bind(BaseProp<T> prop) {
+  public <T, P extends BaseProp<T>> P bind(P prop) {
     this.notifications.compute(
         prop.key(),
         (s, current) -> {
@@ -123,12 +122,12 @@ public class Registry implements Notifiable {
    * Retrieves the value for the specified key.
    *
    * @param key the key to retrieve
-   * @param clz a class object used to pass a type reference
+   * @param converter the type converter used to cast the value to its appropriate type
    * @param <T> a type that we'll cast the return to
    * @return the effective value, or <code>null</code> if not found
    */
   @Nullable
-  public <T> T get(String key, Class<T> clz) {
+  public <T> T get(String key, Converter<T> converter) {
     // finds the value and owning layer
     ValueLayerTuple valueLayer = this.store.get(key);
 
@@ -138,8 +137,6 @@ public class Registry implements Notifiable {
     }
 
     // casts the effective value
-    // TODO: this won't work in production due to effectiveValue always being a string
-    //       and will require props v1's implementation
-    return clz.cast(valueLayer.value());
+    return converter.decode(valueLayer.value());
   }
 }

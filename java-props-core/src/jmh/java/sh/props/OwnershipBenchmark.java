@@ -38,6 +38,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
+import sh.props.converter.Cast;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings({"NullAway", "checkstyle:MissingJavadocMethod"})
@@ -84,7 +85,7 @@ public class OwnershipBenchmark {
 
   @Benchmark
   public static void get(ExecutionPlan plan, Blackhole blackhole) {
-    blackhole.consume(plan.registry.get("preset", String.class));
+    blackhole.consume(plan.registry.get("preset", Cast.asString()));
   }
 
   @Benchmark

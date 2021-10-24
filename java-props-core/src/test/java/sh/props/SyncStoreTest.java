@@ -33,6 +33,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import sh.props.converter.Cast;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
@@ -65,41 +66,41 @@ class SyncStoreTest {
     // ACT/ASSERT
 
     // the value is not defined yet
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), null);
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), null);
 
     // Layer 1 defines v1
     source1.put("key", "v1");
     source1.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v1");
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), "v1");
 
     // Layer 2 defines v2
     source2.put("key", "v2");
     source2.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), "v2");
 
     // Layer 1 unsets v1
     source1.remove("key");
     source1.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), "v2");
 
     // Layer 1 defines v3
     source1.put("key", "v3");
     source1.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v2");
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), "v2");
 
     // Layer 2 updates v4
     source2.put("key", "v4");
     source2.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v4");
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), "v4");
 
     // Layer 2 unsets v4
     source2.remove("key");
     source2.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), "v3");
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), "v3");
 
     // Layer 1 unsets v3
     source1.remove("key");
     source1.updateSubscribers();
-    SyncStoreTest.assertValueIs(registry.get("key", String.class), null);
+    SyncStoreTest.assertValueIs(registry.get("key", Cast.asString()), null);
   }
 }

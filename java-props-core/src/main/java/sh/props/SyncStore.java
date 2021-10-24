@@ -29,6 +29,12 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 
+/**
+ * Internal implementation for holding the effective values coming from all layers.
+ *
+ * <p>This class is subject to future change, if for example we decide to add a different algorithm
+ * for deciding the effective value from a set of layers.
+ */
 class SyncStore implements Datastore {
 
   protected final ConcurrentHashMap<String, ValueLayerTuple> effectiveValues =
