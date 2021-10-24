@@ -36,6 +36,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.converter.Cast;
 import sh.props.converter.Converter;
 
 public class Registry implements Notifiable {
@@ -92,10 +93,10 @@ public class Registry implements Notifiable {
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
-   * @param <P> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
+   * @param <PropT> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
    * @return the bound prop
    */
-  public <T, P extends AbstractProp<T>> P bind(P prop) {
+  public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
     this.notifications.compute(
         prop.key(),
         (s, current) -> {
@@ -124,7 +125,7 @@ public class Registry implements Notifiable {
    *
    * @param key the key to retrieve
    * @param converter the type converter used to cast the value to its appropriate type
-   * @param <T> a type that we'll cast the return to
+   * @param <T> the return object's type
    * @return the effective value, or <code>null</code> if not found
    */
   @Nullable
@@ -139,5 +140,23 @@ public class Registry implements Notifiable {
 
     // casts the effective value
     return converter.decode(valueLayer.value());
+  }
+
+  /**
+   * Convenience method that retrieves the serialized value for the specified key.
+   *
+   * <p>This method is mostly useful in the following two cases:
+   *
+   * <ul>
+   *   <li>- the property represented by the specified key is a <code>String</code>
+   *   <li>- the calling code wants to deserialize the value using a different mechanism
+   * </ul>
+   *
+   * @param key the key to retrieve
+   * @return the effective value, or <code>null</code> if not found
+   */
+  @Nullable
+  public String get(String key) {
+    return this.get(key, Cast.asString());
   }
 }
