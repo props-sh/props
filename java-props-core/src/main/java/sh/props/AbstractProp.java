@@ -25,19 +25,20 @@
 
 package sh.props;
 
-import java.util.function.Supplier;
+import sh.props.annotations.Nullable;
 
 /**
- * Interface that is returned to the caller to explicitly call out the public contract exported by
- * this library.
+ * Abstract {@link Prop} class which encompasses all the methods needed by the {@link Registry} to
+ * reason about a prop.
  *
  * @param <T> the property's type
  */
-public interface Prop<T> extends Supplier<T>, Subscribable<T> {
+public abstract class AbstractProp<T> implements Prop<T> {
   /**
-   * Designates this {@link Prop}'s key identifier.
+   * Setter method that should update the underlying implementation's value.
    *
-   * @return a string id
+   * @param value the new value to set
+   * @return true if the update succeeded
    */
-  String key();
+  abstract boolean setValue(@Nullable String value);
 }

@@ -174,6 +174,7 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
    *
    * @return a string id
    */
+  @Override
   public String key() {
     return this.key;
   }

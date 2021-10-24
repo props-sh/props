@@ -48,6 +48,9 @@ class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
    * @param second the second prop
    */
   SynchronizedPair(Prop<T> first, Prop<U> second) {
+    // generate a key represented by each prop
+    super(BaseSynchronizedPropGroup.multiKey(first.key(), second.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedPair::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedPair::updateSecond, v), this::onUpdateError);

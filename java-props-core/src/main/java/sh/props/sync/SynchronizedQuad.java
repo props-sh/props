@@ -52,6 +52,9 @@ class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, 
    * @param fourth the fourth prop
    */
   SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
+    // generate a key represented by each prop
+    super(BaseSynchronizedPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedQuad::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedQuad::updateSecond, v), this::onUpdateError);

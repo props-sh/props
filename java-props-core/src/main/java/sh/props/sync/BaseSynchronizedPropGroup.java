@@ -33,15 +33,57 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import sh.props.Prop;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 
 class BaseSynchronizedPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
   protected final AtomicReference<TupleT> value = new AtomicReference<>();
+  private final String key;
   private final BlockingQueue<UnaryOperator<TupleT>> ops = new LinkedBlockingQueue<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   private final AtomicReference<TupleT> lastSentValue = new AtomicReference<>();
+
+  /**
+   * Class constructor that accept this prop group's key.
+   *
+   * @param key the key representing this prop group
+   */
+  BaseSynchronizedPropGroup(String key) {
+    this.key = key;
+  }
+
+  /**
+   * Helper function that concatenates the passed strings to generate a composite key. Each key part
+   * is separated by the '∪' (union / U+222A) character.
+   *
+   * @param first a string representing the key's prefix
+   * @param other optionally, any other keys to add to the key
+   * @return a composite key made up by concatenating all the parts
+   */
+  protected static String multiKey(String first, @Nullable String... other) {
+    if (other == null || other.length == 0) {
+      // return only the first key, if no other parts were specified
+      return first;
+    }
+
+    StringBuilder sb = new StringBuilder(first);
+    for (String part : other) {
+      sb.append("∪").append(part);
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Designates this {@link Prop}'s key identifier.
+   *
+   * @return a string id
+   */
+  @Override
+  public String key() {
+    return this.key;
+  }
 
   /**
    * Applies all ops on the specified value and then updates any subscribers, while locking to

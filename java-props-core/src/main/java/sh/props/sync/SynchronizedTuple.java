@@ -53,6 +53,11 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
    * @param fifth the fifth prop
    */
   SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
+    // generate a key represented by each prop
+    super(
+        BaseSynchronizedPropGroup.multiKey(
+            first.key(), second.key(), third.key(), fourth.key(), fifth.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTuple::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedTuple::updateSecond, v), this::onUpdateError);

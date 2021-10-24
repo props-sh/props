@@ -50,6 +50,9 @@ class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U,
    * @param third the third prop
    */
   SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
+    // generate a key represented by each prop
+    super(BaseSynchronizedPropGroup.multiKey(first.key(), second.key(), third.key()));
+
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTriple::updateFirst, v), this::onUpdateError);
     second.subscribe(v -> this.apply(SynchronizedTriple::updateSecond, v), this::onUpdateError);
