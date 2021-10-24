@@ -36,12 +36,12 @@ import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 
-class BaseSynchronizedPropGroup<TUPLE> extends SubscribableProp<TUPLE> {
+class BaseSynchronizedPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
-  protected final AtomicReference<TUPLE> value = new AtomicReference<>();
-  private final BlockingQueue<UnaryOperator<TUPLE>> ops = new LinkedBlockingQueue<>();
+  protected final AtomicReference<TupleT> value = new AtomicReference<>();
+  private final BlockingQueue<UnaryOperator<TupleT>> ops = new LinkedBlockingQueue<>();
   private final ReentrantLock sendStage = new ReentrantLock();
-  private final AtomicReference<TUPLE> lastSentValue = new AtomicReference<>();
+  private final AtomicReference<TupleT> lastSentValue = new AtomicReference<>();
 
   /**
    * Applies all ops on the specified value and then updates any subscribers, while locking to
@@ -73,7 +73,7 @@ class BaseSynchronizedPropGroup<TUPLE> extends SubscribableProp<TUPLE> {
 
               try {
                 // apply the update ops
-                TUPLE val = this.applyUpdatesOnValue();
+                TupleT val = this.applyUpdatesOnValue();
 
                 // check if the last value we sent is different to the one we're trying to send
                 if (Objects.equals(this.lastSentValue.get(), val)) {
@@ -100,12 +100,12 @@ class BaseSynchronizedPropGroup<TUPLE> extends SubscribableProp<TUPLE> {
    * @return the final value after applying all/any of the updates
    */
   @Nullable
-  private TUPLE applyUpdatesOnValue() {
+  private TupleT applyUpdatesOnValue() {
     // get the initial value
-    TUPLE result = this.value.get();
+    TupleT result = this.value.get();
 
     // iterate over all ops and apply them
-    UnaryOperator<TUPLE> op;
+    UnaryOperator<TupleT> op;
     while ((op = this.ops.poll()) != null) {
       result = this.value.updateAndGet(op);
     }
@@ -119,14 +119,14 @@ class BaseSynchronizedPropGroup<TUPLE> extends SubscribableProp<TUPLE> {
    * @param transformation a function that generates the op to apply, given the passed value
    * @param onValue the value to apply via a transformation
    */
-  protected <V> void apply(Function<V, UnaryOperator<TUPLE>> transformation, V onValue) {
+  protected <V> void apply(Function<V, UnaryOperator<TupleT>> transformation, V onValue) {
     this.ops.add(transformation.apply(onValue));
     this.applyOpsAndNotifySubscribers();
   }
 
   @Override
   @Nullable
-  public TUPLE get() {
+  public TupleT get() {
     return this.value.get();
   }
 }
