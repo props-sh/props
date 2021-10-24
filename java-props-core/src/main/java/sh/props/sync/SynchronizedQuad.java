@@ -40,7 +40,7 @@ import sh.props.tuples.Tuple;
  * @param <V> the type of the third prop
  * @param <W> the type of the fourth prop
  */
-class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, V, W>>
+class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
     implements Prop<Quad<T, U, V, W>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
@@ -53,7 +53,7 @@ class SynchronizedQuad<T, U, V, W> extends BaseSynchronizedPropGroup<Quad<T, U, 
    */
   SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     // generate a key represented by each prop
-    super(BaseSynchronizedPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
+    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedQuad::updateFirst, v), this::onUpdateError);

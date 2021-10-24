@@ -40,7 +40,7 @@ import sh.props.tuples.Tuple;
  * @param <W> the type of the fourth prop
  * @param <X> the type of the fifth prop
  */
-class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T, U, V, W, X>>
+class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, W, X>>
     implements Prop<Tuple<T, U, V, W, X>> {
   /**
    * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
@@ -55,7 +55,7 @@ class SynchronizedTuple<T, U, V, W, X> extends BaseSynchronizedPropGroup<Tuple<T
   SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
     // generate a key represented by each prop
     super(
-        BaseSynchronizedPropGroup.multiKey(
+        AbstractPropGroup.multiKey(
             first.key(), second.key(), third.key(), fourth.key(), fifth.key()));
 
     // subscribe to all updates and errors

@@ -1,4 +1,5 @@
-- Allows ObservableProp (subscribableprop now) to reason about setValue and possibly move the epoch and sync stage at the syncProp level.
+- Allows SubscribableProp to reason about setValue and possibly move the epoch and sync stage at the syncProp level.
+- Refactor GroupProp to override onValueUpdate
 - TemplateStringUtils / renderTemplate
 - RefactoredProp
 - prop builder or multi constructors

@@ -39,7 +39,7 @@ import sh.props.tuples.Tuple;
  * @param <U> the type of the second prop
  * @param <V> the type of the third prop
  */
-class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U, V>>
+class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     implements Prop<Triple<T, U, V>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
@@ -51,7 +51,7 @@ class SynchronizedTriple<T, U, V> extends BaseSynchronizedPropGroup<Triple<T, U,
    */
   SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
     // generate a key represented by each prop
-    super(BaseSynchronizedPropGroup.multiKey(first.key(), second.key(), third.key()));
+    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTriple::updateFirst, v), this::onUpdateError);

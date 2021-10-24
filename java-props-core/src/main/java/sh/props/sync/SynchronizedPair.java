@@ -38,8 +38,7 @@ import sh.props.tuples.Tuple;
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
  */
-class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
-    implements Prop<Pair<T, U>> {
+class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Prop<Pair<T, U>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -49,7 +48,7 @@ class SynchronizedPair<T, U> extends BaseSynchronizedPropGroup<Pair<T, U>>
    */
   SynchronizedPair(Prop<T> first, Prop<U> second) {
     // generate a key represented by each prop
-    super(BaseSynchronizedPropGroup.multiKey(first.key(), second.key()));
+    super(AbstractPropGroup.multiKey(first.key(), second.key()));
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedPair::updateFirst, v), this::onUpdateError);

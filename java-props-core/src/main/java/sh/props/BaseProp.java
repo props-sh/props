@@ -28,6 +28,7 @@ package sh.props;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
@@ -52,6 +53,7 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
   private final boolean isSecret;
 
   private final AtomicReference<T> currentValue = new AtomicReference<>();
+  private final AtomicLong epoch = new AtomicLong();
 
   /**
    * Constructs a new property class.
@@ -132,24 +134,21 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
       // validate the value before updating it
       this.validateBeforeSet(value);
 
+      // store the epoch, reserving a 'point-in-time' for this value update
+      long epoch = this.epoch.incrementAndGet();
+
       // update the value
       this.currentValue.set(value);
-
-      // TODO: rethink this flow - we are executing two atomic ops, which taken together are not
-      //       atomic; potentially move the epoch in this class and increment it while
-      //       updating currentValue
-      // notify subscribers of an accepted value
-      this.onUpdatedValue();
+      this.onUpdatedValue(value, epoch);
 
       return true;
 
     } catch (InvalidUpdateOpException | RuntimeException e) {
       // logs the exception and signals any subscribers
       this.onUpdateError(e);
-    }
 
-    // the update failed
-    return false;
+      return false;
+    }
   }
 
   /**

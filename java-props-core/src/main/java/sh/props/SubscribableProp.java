@@ -52,7 +52,7 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
   protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
   protected final List<Consumer<Throwable>> errorHandlers = new CopyOnWriteArrayList<>();
   private final ReentrantLock sendStage = new ReentrantLock();
-  protected AtomicLong epoch = new AtomicLong();
+  protected AtomicLong lastProcessedEpoch = new AtomicLong();
 
   /**
    * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
@@ -110,46 +110,61 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
   public abstract T get();
 
   /**
-   * Notifies all subscribers of the newest value of this prop. This method does not accept a value
-   * but instead retrieves the latest value at the time of execution (the update is processed using
-   * the default {@link ForkJoinPool}, only if another update is not in-progress and also ensuring a
-   * single update event for a group of concurrent changes.
+   * Accepts a value and an epoch. Since this method offloads the actual work of sending the
+   * notification to the {@link ForkJoinPool}, the value is accompanied by an ever increasing epoch.
+   * The epoch is used to determine if the event should still be propagated, thus ensuring that only
+   * the most recent updates are propagated.
+   *
+   * <p>For example, since the ForkJoinPool could be busy with other work, the value could be
+   * updated to A and then quickly to B, before the task has a chance to run. In that case, only B
+   * should be sent to subscribers, and A should be discarded.
+   *
+   * @param value the value to set
+   * @param epoch the epoch at which this value was recorded
    */
-  protected void onUpdatedValue() {
+  protected void onUpdatedValue(@Nullable T value, long epoch) {
     if (this.updateHandlers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
     }
 
-    // Mark the epoch at which this value was updated.
-    // This is important since, by submitting the update to be processed by the ForkJoinPool
-    // we have no guarantees regarding the order of execution.
-    // Without this mechanism, the subscribing code could end up receiving updates in the wrong
-    // order, e.g.: ('newer', 'older'), while the current value of the prop equals 'newer'
-    long currentEpoch = this.epoch.incrementAndGet();
-
     ForkJoinPool.commonPool()
         .execute(
             () -> {
-              if (Long.compareUnsigned(currentEpoch, this.epoch.get()) < 0) {
-                // we know a more recent update took place
-                // skip this execution
+              // attempt to store the 'current' epoch
+              long current =
+                  this.lastProcessedEpoch.updateAndGet(
+                      last -> {
+                        if (Long.compareUnsigned(epoch, last) > 0) {
+                          // update the epoch if it is more recent than the last processed epoch
+                          return epoch;
+                        }
+
+                        // otherwise keep the last processed epoch, since it is more current
+                        return last;
+                      });
+
+              // the epoch was not updated, which means that the current update event should be
+              // discarded
+              if (current != epoch) {
                 return;
               }
 
-              if (!this.sendStage.tryLock()) {
-                // another thread is already sending
-                // skip this execution
-                return;
-              }
+              // lock to ensure that the updated value was received by all consumers
+              // before allowing a new update to be processed
+              this.sendStage.lock();
 
               try {
+                // since some time may have passed, recheck that this epoch is still valid
+                if (this.lastProcessedEpoch.get() != epoch) {
+                  // if not, discard the update
+                  return;
+                }
+
                 // send the same value to all consumers
-                T value = this.get();
                 this.updateHandlers.forEach(c -> c.accept(value));
               } finally {
-                // ensure the updated value was received by all consumers
-                // before allowing a new update to be processed
+                // allow the next update to be sent
                 this.sendStage.unlock();
               }
             });

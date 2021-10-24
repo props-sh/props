@@ -37,7 +37,7 @@ import sh.props.Prop;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 
-class BaseSynchronizedPropGroup<TupleT> extends SubscribableProp<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
   protected final AtomicReference<TupleT> value = new AtomicReference<>();
   private final String key;
@@ -50,7 +50,7 @@ class BaseSynchronizedPropGroup<TupleT> extends SubscribableProp<TupleT> {
    *
    * @param key the key representing this prop group
    */
-  BaseSynchronizedPropGroup(String key) {
+  AbstractPropGroup(String key) {
     this.key = key;
   }
 
@@ -167,7 +167,7 @@ class BaseSynchronizedPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
-   * Retrieve this prop group's value
+   * Retrieve this prop group's value.
    *
    * @return the tuple of values represented by this prop group
    */
