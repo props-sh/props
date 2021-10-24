@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 import sh.props.tuples.Pair;
-import sh.props.tuples.WholePair;
+import sh.props.tuples.Tuple;
 
 /**
  * Internal implementation for holding the effective values coming from all layers.
@@ -39,7 +39,7 @@ import sh.props.tuples.WholePair;
  */
 class SyncStore implements Datastore {
 
-  protected final ConcurrentHashMap<String, WholePair<String, Layer>> effectiveValues =
+  protected final ConcurrentHashMap<String, Pair<String, Layer>> effectiveValues =
       new ConcurrentHashMap<>();
   protected final Notifiable notifiable;
 
@@ -47,8 +47,8 @@ class SyncStore implements Datastore {
     this.notifiable = notifiable;
   }
 
-  private static void assertLayerIsValid(Layer search, WholePair<String, Layer> vl) {
-    if (!Objects.equals(search.registry(), vl.second.registry())) {
+  private static void assertLayerIsValid(Layer search, Pair<String, Layer> vl) {
+    if (!Objects.equals(search.registry(), nonNullLayer(vl.second).registry())) {
       throw new IllegalArgumentException(
           "Invalid layer passed (does not belong to current registry)");
     }
@@ -62,15 +62,15 @@ class SyncStore implements Datastore {
    * @return a {@link Pair} if found, or <code>null</code> if no layer defines the key
    */
   @Nullable
-  private static WholePair<String, Layer> findNextPotentialOwner(
-      String key, WholePair<String, Layer> vl) {
-    Layer l = vl.second;
+  private static Pair<String, Layer> findNextPotentialOwner(String key, Pair<String, Layer> vl) {
+    Layer l = nonNullLayer(vl.second);
+
     // search all layers with lower priority for the key
     while (l.prev() != null) {
       l = l.prev();
       String value = l.get(key);
       if (value != null) {
-        return pair(value, l);
+        return Tuple.of(value, l);
       }
     }
 
@@ -79,14 +79,16 @@ class SyncStore implements Datastore {
   }
 
   /**
-   * Convenience method that constructs a {@link WholePair} tuple given a value and a {@link Layer}.
+   * Convenience method to check the correctness of the specified layer object.
    *
-   * @param value the value to store
-   * @param layer the owning layer
-   * @return a (value, layer) pair
+   * @param layer a reference that could be null
+   * @return a non-null reference
    */
-  private static WholePair<String, Layer> pair(String value, Layer layer) {
-    return new WholePair<>(value, layer);
+  private static Layer nonNullLayer(@Nullable Layer layer) {
+    if (layer == null) {
+      throw new NullPointerException("Invalid state, layer should not be null!");
+    }
+    return layer;
   }
 
   /**
@@ -95,13 +97,12 @@ class SyncStore implements Datastore {
    * @param key the key to search for
    * @param vl the effective value/layer pair
    * @param search the layer to search for
-   * @return a {@link WholePair}, containing the value and the defining layer, or <code>null</code>
+   * @return a {@link Pair}, containing the value and the defining layer, or <code>null</code>
    *     otherwise
    */
   @Nullable
-  private static WholePair<String, Layer> findLayer(
-      String key, WholePair<String, Layer> vl, Layer search) {
-    Layer l = vl.second;
+  private static Pair<String, Layer> findLayer(String key, Pair<String, Layer> vl, Layer search) {
+    Layer l = nonNullLayer(vl.second);
 
     SyncStore.assertLayerIsValid(search, vl);
 
@@ -116,7 +117,7 @@ class SyncStore implements Datastore {
       String value = l.get(key);
       if (value != null) {
         // return it
-        return pair(value, l);
+        return Tuple.of(value, l);
       }
 
       if (l.priority() < search.priority()) {
@@ -140,7 +141,7 @@ class SyncStore implements Datastore {
    * @return true if only the value is equal
    */
   private static boolean equalInValueButNotLayer(
-      WholePair<String, Layer> pair, String value, Layer layer) {
+      Pair<String, Layer> pair, String value, Layer layer) {
     return Objects.equals(value, pair.first) && layer != pair.second;
   }
 
@@ -153,12 +154,12 @@ class SyncStore implements Datastore {
    * Retrieves a value for the specified key.
    *
    * @param key the key to look for
-   * @return a {@link WholePair} containing the value and defining layer if found, or <code>null
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
    *     </code>
    */
   @Override
   @Nullable
-  public WholePair<String, Layer> get(String key) {
+  public Pair<String, Layer> get(String key) {
     return this.effectiveValues.get(key);
   }
 
@@ -167,12 +168,12 @@ class SyncStore implements Datastore {
    *
    * @param key the key to look for
    * @param layer the layer to retrieve the value from
-   * @return a {@link WholePair} containing the value and defining layer if found, or <code>null
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
    *     </code>
    */
   @Nullable
-  public WholePair<String, Layer> get(String key, Layer layer) {
-    WholePair<String, Layer> effective = this.effectiveValues.get(key);
+  public Pair<String, Layer> get(String key, Layer layer) {
+    Pair<String, Layer> effective = this.effectiveValues.get(key);
     if (effective == null) {
       // no mapping exists in any layer
       return null;
@@ -187,12 +188,12 @@ class SyncStore implements Datastore {
    * @param key the key to update
    * @param value the value to set (<code>null</code> unmaps the key)
    * @param layer the originating layer
-   * @return a {@link WholePair} containing the value and new owning layer, or <code>null</code> if
-   *     no other layer defines the key
+   * @return a {@link Pair} containing the value and new owning layer, or <code>null</code> if no
+   *     other layer defines the key
    */
   @Override
   @Nullable
-  public WholePair<String, Layer> put(String key, @Nullable String value, Layer layer) {
+  public Pair<String, Layer> put(String key, @Nullable String value, Layer layer) {
     return this.effectiveValues.compute(
         key,
         (k, current) -> {
@@ -206,13 +207,13 @@ class SyncStore implements Datastore {
             }
 
             // otherwise, map the effective value and its owning layer
-            return this.onValueChanged(key, pair(value, layer));
+            return this.onValueChanged(key, Tuple.of(value, layer));
           }
 
           // if we already defined a mapping for this key
 
           // first check the attempted mapping's priority
-          int oldPriority = current.second.priority();
+          int oldPriority = nonNullLayer(current.second).priority();
           int priority = layer.priority();
           // if the layer's priority is lower than the current owner
           if (priority < oldPriority) {
@@ -241,7 +242,7 @@ class SyncStore implements Datastore {
           if (value != null && equalInValueButNotLayer(current, value, layer)) {
             // we need to modify the layer/value mapping
             // but avoid sending an update to any objects following this key
-            return pair(value, layer);
+            return Tuple.of(value, layer);
           }
 
           // if the owning layer unsets the value
@@ -250,7 +251,7 @@ class SyncStore implements Datastore {
             return this.onValueChanged(key, findNextPotentialOwner(key, current));
           } else {
             // otherwise update the layer/value mapping
-            return this.onValueChanged(key, pair(value, layer));
+            return this.onValueChanged(key, Tuple.of(value, layer));
           }
         });
   }
@@ -263,8 +264,7 @@ class SyncStore implements Datastore {
    * @return the same value,layer pair
    */
   @Nullable
-  private WholePair<String, Layer> onValueChanged(
-      String key, @Nullable WholePair<String, Layer> vl) {
+  private Pair<String, Layer> onValueChanged(String key, @Nullable Pair<String, Layer> vl) {
     if (vl == null) {
       this.notifier().sendUpdate(key, null, null);
       return null;

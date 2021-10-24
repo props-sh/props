@@ -39,7 +39,7 @@ import sh.props.annotations.Nullable;
 import sh.props.converter.Cast;
 import sh.props.converter.Converter;
 import sh.props.interfaces.Prop;
-import sh.props.tuples.WholePair;
+import sh.props.tuples.Pair;
 
 public class Registry implements Notifiable {
 
@@ -110,7 +110,7 @@ public class Registry implements Notifiable {
           // bind the property and return the holder object
           if (current.add(prop)) {
             // if the prop was bound now attempt to set its value from the registry
-            WholePair<String, Layer> vl = this.store.get(prop.key());
+            Pair<String, Layer> vl = this.store.get(prop.key());
             if (vl != null) {
               // we currently have a value; set it
               prop.setValue(vl.first);
@@ -133,10 +133,11 @@ public class Registry implements Notifiable {
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
     // finds the value and owning layer
-    WholePair<String, Layer> valueLayer = this.store.get(key);
+    Pair<String, Layer> valueLayer = this.store.get(key);
 
     // no value found, the key does not exist in the registry
-    if (valueLayer == null) {
+    // or the value is null
+    if (valueLayer == null || valueLayer.first == null) {
       return null;
     }
 
