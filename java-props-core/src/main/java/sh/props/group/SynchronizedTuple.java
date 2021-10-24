@@ -84,7 +84,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second, prev.third, prev.fourth, prev.fifth);
+    return prev -> prev.updateFirst(value);
   }
 
   /**
@@ -99,7 +99,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value, prev.third, prev.fourth, prev.fifth);
+    return prev -> prev.updateSecond(value);
   }
 
   /**
@@ -114,7 +114,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateThird(V value) {
-    return prev -> Tuple.of(prev.first, prev.second, value, prev.fourth, prev.fifth);
+    return prev -> prev.updateThird(value);
   }
 
   /**
@@ -129,7 +129,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFourth(W value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, value, prev.fifth);
+    return prev -> prev.updateFourth(value);
   }
 
   /**
@@ -144,6 +144,6 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, prev.fourth, value);
+    return prev -> prev.updateFifth(value);
   }
 }

@@ -28,91 +28,71 @@ package sh.props.tuples;
 import static java.lang.String.format;
 
 import java.util.Objects;
-import sh.props.annotations.Nullable;
 
 /**
- * Represents a triple of objects.
+ * Represents a pair of objects, which are not allowed to be null.
+ *
+ * <p>This is a convenience implementation, currently only used by the Registry's store. The
+ * non-nullable value implementation might be expanded to other tuple-types, if a need will be
+ * identified in the future.
+ *
+ * <p>For now, this class should be considered internal and not be used for other use-cases.
  *
  * @param <T> the type of the first object
  * @param <U> the type of the second object
- * @param <V> the type of the third object
  */
-public class Triple<T, U, V> extends Pair<T, U> {
+public class WholePair<T, U> {
 
-  @Nullable public final V third;
+  public final T first;
+  public final U second;
 
   /**
-   * Constructs the triple.
+   * Constructs the pair.
    *
    * @param first the first object
    * @param second the second object
-   * @param third the third object
    */
-  Triple(@Nullable T first, @Nullable U second, @Nullable V third) {
-    super(first, second);
-    this.third = third;
+  public WholePair(T first, U second) {
+    this.first = first;
+    this.second = second;
   }
 
   /**
-   * Convert this triple to a pair, using its first two values.
-   *
-   * @return a pair containing this object's first two values
-   */
-  public Pair<T, U> toPair() {
-    return Tuple.of(this.first, this.second);
-  }
-
-  /**
-   * Constructs a new {@link Pair} with the updated value.
+   * Constructs a new {@link WholePair} with the updated value.
    *
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  @Override
-  public Triple<T, U, V> updateFirst(@Nullable T value) {
-    return new Triple<>(value, this.second, this.third);
+  public WholePair<T, U> updateFirst(T value) {
+    return new WholePair<>(value, this.second);
   }
 
   /**
-   * Constructs a new {@link Pair} with the updated value.
+   * Constructs a new {@link WholePair} with the updated value.
    *
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  @Override
-  public Triple<T, U, V> updateSecond(@Nullable U value) {
-    return new Triple<>(this.first, value, this.third);
-  }
-
-  /**
-   * Constructs a new {@link Triple} with the updated value.
-   *
-   * @param value the new value to set
-   * @return a new object with the value updated
-   */
-  public Triple<T, U, V> updateThird(@Nullable V value) {
-    return new Triple<>(this.first, this.second, value);
+  public WholePair<T, U> updateSecond(U value) {
+    return new WholePair<>(this.first, value);
   }
 
   /**
    * Generated equals implementation.
    *
    * @param o the object to compare
-   * @return true if all three values are equal
+   * @return true if both values are equal
    */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Triple)) {
+    if (!(o instanceof WholePair)) {
       return false;
     }
-
-    Triple<?, ?, ?> triple = (Triple<?, ?, ?>) o;
-    return Objects.equals(this.first, triple.first)
-        && Objects.equals(this.second, triple.second)
-        && Objects.equals(this.third, triple.third);
+    WholePair<?, ?> pair = (WholePair<?, ?>) o;
+    return Objects.equals(this.first, pair.first) && Objects.equals(this.second, pair.second);
   }
 
   /**
@@ -120,13 +100,10 @@ public class Triple<T, U, V> extends Pair<T, U> {
    *
    * @param first the first object to compare
    * @param second the second object to compare
-   * @param third the third object to compare
    * @return true if all objects match the current tuple's underlying value
    */
-  public boolean equalTo(T first, U second, V third) {
-    return Objects.equals(this.first, first)
-        && Objects.equals(this.second, second)
-        && Objects.equals(this.third, third);
+  public boolean equalTo(T first, U second) {
+    return Objects.equals(this.first, first) && Objects.equals(this.second, second);
   }
 
   /**
@@ -136,7 +113,7 @@ public class Triple<T, U, V> extends Pair<T, U> {
    */
   @Override
   public int hashCode() {
-    return Objects.hash(this.first, this.second, this.third);
+    return Objects.hash(this.first, this.second);
   }
 
   /**
@@ -146,6 +123,6 @@ public class Triple<T, U, V> extends Pair<T, U> {
    */
   @Override
   public String toString() {
-    return format("(%s, %s, %s)", this.first, this.second, this.third);
+    return format("(%s, %s)", this.first, this.second);
   }
 }

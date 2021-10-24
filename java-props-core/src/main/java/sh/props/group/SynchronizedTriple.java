@@ -75,7 +75,7 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    * @return a new object with the value updated
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second, prev.third);
+    return prev -> prev.updateFirst(value);
   }
 
   /**
@@ -88,7 +88,7 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    * @return a new object with the value updated
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value, prev.third);
+    return prev -> prev.updateSecond(value);
   }
 
   /**
@@ -101,6 +101,6 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    * @return a new object with the value updated
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateThird(V value) {
-    return prev -> Tuple.of(prev.first, prev.second, value);
+    return prev -> prev.updateThird(value);
   }
 }

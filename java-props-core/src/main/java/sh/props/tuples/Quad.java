@@ -28,7 +28,6 @@ package sh.props.tuples;
 import static java.lang.String.format;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 import sh.props.annotations.Nullable;
 
 /**
@@ -57,62 +56,6 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   }
 
   /**
-   * Returns an operation that can be applied to the given object, modifying its first value.
-   *
-   * @param value the new value to set
-   * @param <T> the type of the first object in the value
-   * @param <U> the type of the second object in the value
-   * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
-   * @return a new object with the value updated
-   */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFirst(T value) {
-    return prev -> new Quad<>(value, prev.second, prev.third, prev.fourth);
-  }
-
-  /**
-   * Returns an operation that can be applied to the given object, modifying its second value.
-   *
-   * @param value the new value to set
-   * @param <T> the type of the first object in the value
-   * @param <U> the type of the second object in the value
-   * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
-   * @return a new object with the value updated
-   */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applySecond(U value) {
-    return prev -> new Quad<>(prev.first, value, prev.third, prev.fourth);
-  }
-
-  /**
-   * Returns an operation that can be applied to the given object, modifying its third value.
-   *
-   * @param value the new value to set
-   * @param <T> the type of the first object in the value
-   * @param <U> the type of the second object in the value
-   * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
-   * @return a new object with the value updated
-   */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyThird(V value) {
-    return prev -> new Quad<>(prev.first, prev.second, value, prev.fourth);
-  }
-
-  /**
-   * Returns an operation that can be applied to the given object, modifying its fourth value.
-   *
-   * @param value the new value to set
-   * @param <T> the type of the first object in the value
-   * @param <U> the type of the second object in the value
-   * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
-   * @return a new object with the value updated
-   */
-  public static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> applyFourth(W value) {
-    return prev -> new Quad<>(prev.first, prev.second, prev.third, value);
-  }
-
-  /**
    * Convert this quad to a pair, using its first two values.
    *
    * @return a pair containing this object's first two values
@@ -129,6 +72,49 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    */
   public Triple<T, U, V> toTriple() {
     return Tuple.of(this.first, this.second, this.third);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Quad<T, U, V, W> updateFirst(@Nullable T value) {
+    return new Quad<>(value, this.second, this.third, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Quad<T, U, V, W> updateSecond(@Nullable U value) {
+    return new Quad<>(this.first, value, this.third, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Quad<T, U, V, W> updateThird(@Nullable V value) {
+    return new Quad<>(this.first, this.second, value, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  public Quad<T, U, V, W> updateFourth(@Nullable W value) {
+    return new Quad<>(this.first, this.second, this.third, value);
   }
 
   /**
@@ -151,6 +137,22 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
         && Objects.equals(this.second, quad.second)
         && Objects.equals(this.third, quad.third)
         && Objects.equals(this.fourth, quad.fourth);
+  }
+
+  /**
+   * Determines if the specified deconstructed arguments are the same as this tuple.
+   *
+   * @param first the first object to compare
+   * @param second the second object to compare
+   * @param third the third object to compare
+   * @param fourth the fourth object to compare
+   * @return true if all objects match the current tuple's underlying value
+   */
+  public boolean equalTo(T first, U second, V third, W fourth) {
+    return Objects.equals(this.first, first)
+        && Objects.equals(this.second, second)
+        && Objects.equals(this.third, third)
+        && Objects.equals(this.fourth, fourth);
   }
 
   /**

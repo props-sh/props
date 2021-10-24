@@ -58,7 +58,7 @@ public class Pair<T, U> {
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  public Pair<T, U> updateFirst(T value) {
+  public Pair<T, U> updateFirst(@Nullable T value) {
     return new Pair<>(value, this.second);
   }
 
@@ -68,7 +68,7 @@ public class Pair<T, U> {
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  public Pair<T, U> updateSecond(U value) {
+  public Pair<T, U> updateSecond(@Nullable U value) {
     return new Pair<>(this.first, value);
   }
 
@@ -88,6 +88,17 @@ public class Pair<T, U> {
     }
     Pair<?, ?> pair = (Pair<?, ?>) o;
     return Objects.equals(this.first, pair.first) && Objects.equals(this.second, pair.second);
+  }
+
+  /**
+   * Determines if the specified deconstructed arguments are the same as this tuple.
+   *
+   * @param first the first object to compare
+   * @param second the second object to compare
+   * @return true if all objects match the current tuple's underlying value
+   */
+  public boolean equalTo(T first, U second) {
+    return Objects.equals(first, this.first) && Objects.equals(second, this.second);
   }
 
   /**

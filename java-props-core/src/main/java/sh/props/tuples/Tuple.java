@@ -63,35 +63,6 @@ public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> {
   }
 
   /**
-   * Convert this tuple to a pair, using its first two values.
-   *
-   * @return a pair containing this object's first two values
-   */
-  @Override
-  public Pair<T, U> toPair() {
-    return Tuple.of(this.first, this.second);
-  }
-
-  /**
-   * Convert this tuple to a triple, using its first three values.
-   *
-   * @return a triple containing this object's first three values
-   */
-  @Override
-  public Triple<T, U, V> toTriple() {
-    return Tuple.of(this.first, this.second, this.third);
-  }
-
-  /**
-   * Convert this tuple to a quad, using its first four values.
-   *
-   * @return a quad containing this object's first four values
-   */
-  public Quad<T, U, V, W> toQuad() {
-    return Tuple.of(this.first, this.second, this.third, this.fourth);
-  }
-
-  /**
    * Convenience method for constructing a pair of objects.
    *
    * @param first the first object
@@ -163,6 +134,89 @@ public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> {
   }
 
   /**
+   * Convert this tuple to a pair, using its first two values.
+   *
+   * @return a pair containing this object's first two values
+   */
+  @Override
+  public Pair<T, U> toPair() {
+    return Tuple.of(this.first, this.second);
+  }
+
+  /**
+   * Convert this tuple to a triple, using its first three values.
+   *
+   * @return a triple containing this object's first three values
+   */
+  @Override
+  public Triple<T, U, V> toTriple() {
+    return Tuple.of(this.first, this.second, this.third);
+  }
+
+  /**
+   * Convert this tuple to a quad, using its first four values.
+   *
+   * @return a quad containing this object's first four values
+   */
+  public Quad<T, U, V, W> toQuad() {
+    return Tuple.of(this.first, this.second, this.third, this.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Tuple} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Tuple<T, U, V, W, X> updateFirst(@Nullable T value) {
+    return new Tuple<>(value, this.second, this.third, this.fourth, this.fifth);
+  }
+
+  /**
+   * Constructs a new {@link Tuple} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Tuple<T, U, V, W, X> updateSecond(@Nullable U value) {
+    return new Tuple<>(this.first, value, this.third, this.fourth, this.fifth);
+  }
+
+  /**
+   * Constructs a new {@link Tuple} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Tuple<T, U, V, W, X> updateThird(@Nullable V value) {
+    return new Tuple<>(this.first, this.second, value, this.fourth, this.fifth);
+  }
+
+  /**
+   * Constructs a new {@link Tuple} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  @Override
+  public Tuple<T, U, V, W, X> updateFourth(@Nullable W value) {
+    return new Tuple<>(this.first, this.second, this.third, value, this.fifth);
+  }
+
+  /**
+   * Constructs a new {@link Tuple} with the updated value.
+   *
+   * @param value the new value to set
+   * @return a new object with the value updated
+   */
+  public Tuple<T, U, V, W, X> updateFifth(@Nullable X value) {
+    return new Tuple<>(this.first, this.second, this.third, this.fourth, value);
+  }
+
+  /**
    * Generated equals implementation.
    *
    * @param o the object to compare
@@ -183,6 +237,24 @@ public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> {
         && Objects.equals(this.third, tuple.third)
         && Objects.equals(this.fourth, tuple.fourth)
         && Objects.equals(this.fifth, tuple.fifth);
+  }
+
+  /**
+   * Determines if the specified deconstructed arguments are the same as this tuple.
+   *
+   * @param first the first object to compare
+   * @param second the second object to compare
+   * @param third the third object to compare
+   * @param fourth the fourth object to compare
+   * @param fifth the fifth object to compare
+   * @return true if all objects match the current tuple's underlying value
+   */
+  public boolean equalTo(T first, U second, V third, W fourth, X fifth) {
+    return Objects.equals(this.first, first)
+        && Objects.equals(this.second, second)
+        && Objects.equals(this.third, third)
+        && Objects.equals(this.fourth, fourth)
+        && Objects.equals(this.fifth, fifth);
   }
 
   /**

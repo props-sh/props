@@ -70,7 +70,7 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @return a new object with the value updated
    */
   private static <T, U> UnaryOperator<Pair<T, U>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second);
+    return prev -> prev.updateFirst(value);
   }
 
   /**
@@ -82,6 +82,6 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @return a new object with the value updated
    */
   private static <T, U> UnaryOperator<Pair<T, U>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value);
+    return prev -> prev.updateSecond(value);
   }
 }

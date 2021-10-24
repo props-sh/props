@@ -26,6 +26,7 @@
 package sh.props;
 
 import sh.props.annotations.Nullable;
+import sh.props.tuples.WholePair;
 
 /**
  * Common interface for datastore implementations.
@@ -42,7 +43,7 @@ interface Datastore {
    * @return a value,layer pair, or null if not found
    */
   @Nullable
-  ValueLayerTuple get(String key);
+  WholePair<String, Layer> get(String key);
 
   /**
    * Updates a value and its originating layer, for the specified key.
@@ -54,7 +55,7 @@ interface Datastore {
    *     results in a deletion of the key
    */
   @Nullable
-  ValueLayerTuple put(String key, @Nullable String value, Layer layer);
+  WholePair<String, Layer> put(String key, @Nullable String value, Layer layer);
 
   /**
    * Notifies any subscribers of updates.
