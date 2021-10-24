@@ -23,53 +23,49 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import java.util.function.UnaryOperator;
 import sh.props.Prop;
+import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
 /**
- * Synchronizes five Props, retrieving them all at once. If any of the underlying Props fails to
- * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
- * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
+ * Groups four Props, retrieving them all at once. If any of the underlying Props fails to update
+ * its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
  * @param <V> the type of the third prop
  * @param <W> the type of the fourth prop
- * @param <X> the type of the fifth prop
  */
-class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, W, X>>
-    implements Prop<Tuple<T, U, V, W, X>> {
+class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
+    implements Prop<Quad<T, U, V, W>> {
   /**
-   * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
+   * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
    *
    * @param first the first prop
    * @param second the second prop
    * @param third the third prop
    * @param fourth the fourth prop
-   * @param fifth the fifth prop
    */
-  SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
+  SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     // generate a key represented by each prop
-    super(
-        AbstractPropGroup.multiKey(
-            first.key(), second.key(), third.key(), fourth.key(), fifth.key()));
+    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
 
     // subscribe to all updates and errors
-    first.subscribe(v -> this.apply(SynchronizedTuple::updateFirst, v), this::onUpdateError);
-    second.subscribe(v -> this.apply(SynchronizedTuple::updateSecond, v), this::onUpdateError);
-    third.subscribe(v -> this.apply(SynchronizedTuple::updateThird, v), this::onUpdateError);
-    fourth.subscribe(v -> this.apply(SynchronizedTuple::updateFourth, v), this::onUpdateError);
-    fifth.subscribe(v -> this.apply(SynchronizedTuple::updateFifth, v), this::onUpdateError);
+    first.subscribe(v -> this.apply(SynchronizedQuad::updateFirst, v), this::onUpdateError);
+    second.subscribe(v -> this.apply(SynchronizedQuad::updateSecond, v), this::onUpdateError);
+    third.subscribe(v -> this.apply(SynchronizedQuad::updateThird, v), this::onUpdateError);
+    fourth.subscribe(v -> this.apply(SynchronizedQuad::updateFourth, v), this::onUpdateError);
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(Tuple.of(first.get(), second.get(), third.get(), fourth.get(), fifth.get()));
+    this.value.set(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
   }
 
   /**
@@ -80,11 +76,10 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
    * @param <W> the type of the fourth object in the value
-   * @param <X> the type of the fifth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second, prev.third, prev.fourth, prev.fifth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFirst(T value) {
+    return prev -> Tuple.of(value, prev.second, prev.third, prev.fourth);
   }
 
   /**
@@ -95,11 +90,10 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
    * @param <W> the type of the fourth object in the value
-   * @param <X> the type of the fifth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value, prev.third, prev.fourth, prev.fifth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateSecond(U value) {
+    return prev -> Tuple.of(prev.first, value, prev.third, prev.fourth);
   }
 
   /**
@@ -110,11 +104,10 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
    * @param <W> the type of the fourth object in the value
-   * @param <X> the type of the fifth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateThird(V value) {
-    return prev -> Tuple.of(prev.first, prev.second, value, prev.fourth, prev.fifth);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateThird(V value) {
+    return prev -> Tuple.of(prev.first, prev.second, value, prev.fourth);
   }
 
   /**
@@ -125,25 +118,9 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @param <U> the type of the second object in the value
    * @param <V> the type of the third object in the value
    * @param <W> the type of the fourth object in the value
-   * @param <X> the type of the fifth object in the value
    * @return a new object with the value updated
    */
-  private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFourth(W value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, value, prev.fifth);
-  }
-
-  /**
-   * Returns an operation that can be applied to the given object, modifying its fourth value.
-   *
-   * @param value the new value to set
-   * @param <T> the type of the first object in the value
-   * @param <U> the type of the second object in the value
-   * @param <V> the type of the third object in the value
-   * @param <W> the type of the fourth object in the value
-   * @param <X> the type of the fifth object in the value
-   * @return a new object with the value updated
-   */
-  private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
-    return prev -> Tuple.of(prev.first, prev.second, prev.third, prev.fourth, value);
+  private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFourth(W value) {
+    return prev -> Tuple.of(prev.first, prev.second, prev.third, value);
   }
 }

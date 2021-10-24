@@ -23,42 +23,46 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import java.util.function.UnaryOperator;
 import sh.props.Prop;
-import sh.props.tuples.Pair;
+import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 /**
- * Synchronizes three Props, retrieving them all at once. If any of the underlying Props fails to
- * update its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down
- * to any subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
+ * Groups three Props, retrieving them all at once. If any of the underlying Props fails to update
+ * its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
  * @param <U> the type of the second prop
+ * @param <V> the type of the third prop
  */
-class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Prop<Pair<T, U>> {
+class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
+    implements Prop<Triple<T, U, V>> {
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
    *
    * @param first the first prop
    * @param second the second prop
+   * @param third the third prop
    */
-  SynchronizedPair(Prop<T> first, Prop<U> second) {
+  SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
     // generate a key represented by each prop
-    super(AbstractPropGroup.multiKey(first.key(), second.key()));
+    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
 
     // subscribe to all updates and errors
-    first.subscribe(v -> this.apply(SynchronizedPair::updateFirst, v), this::onUpdateError);
-    second.subscribe(v -> this.apply(SynchronizedPair::updateSecond, v), this::onUpdateError);
+    first.subscribe(v -> this.apply(SynchronizedTriple::updateFirst, v), this::onUpdateError);
+    second.subscribe(v -> this.apply(SynchronizedTriple::updateSecond, v), this::onUpdateError);
+    third.subscribe(v -> this.apply(SynchronizedTriple::updateThird, v), this::onUpdateError);
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(Tuple.of(first.get(), second.get()));
+    this.value.set(Tuple.of(first.get(), second.get(), third.get()));
   }
 
   /**
@@ -67,10 +71,11 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @param value the new value to set
    * @param <T> the type of the first object in the value
    * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
    * @return a new object with the value updated
    */
-  private static <T, U> UnaryOperator<Pair<T, U>> updateFirst(T value) {
-    return prev -> Tuple.of(value, prev.second);
+  private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateFirst(T value) {
+    return prev -> Tuple.of(value, prev.second, prev.third);
   }
 
   /**
@@ -79,9 +84,23 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @param value the new value to set
    * @param <T> the type of the first object in the value
    * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
    * @return a new object with the value updated
    */
-  private static <T, U> UnaryOperator<Pair<T, U>> updateSecond(U value) {
-    return prev -> Tuple.of(prev.first, value);
+  private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateSecond(U value) {
+    return prev -> Tuple.of(prev.first, value, prev.third);
+  }
+
+  /**
+   * Returns an operation that can be applied to the given object, modifying its third value.
+   *
+   * @param value the new value to set
+   * @param <T> the type of the first object in the value
+   * @param <U> the type of the second object in the value
+   * @param <V> the type of the third object in the value
+   * @return a new object with the value updated
+   */
+  private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateThird(V value) {
+    return prev -> Tuple.of(prev.first, prev.second, value);
   }
 }

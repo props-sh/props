@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import sh.props.Prop;
 import sh.props.Subscribable;
@@ -32,12 +32,12 @@ import sh.props.tuples.Quad;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
-public class Synchronize {
+public class Group {
 
   /**
-   * Synchronizes four Props, allowing the user to retrieve all four values concurrently. The
-   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
-   * the values are updated.
+   * Groups two Props, allowing the user to retrieve all four values concurrently. The returned type
+   * implements {@link Subscribable}, allowing the user to receive events when any of the values are
+   * updated.
    *
    * @param first the first prop
    * @param second the second prop
@@ -45,14 +45,14 @@ public class Synchronize {
    * @param <U> the type of the second prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U> Prop<Pair<T, U>> props(Prop<T> first, Prop<U> second) {
+  public static <T, U> Prop<Pair<T, U>> of(Prop<T> first, Prop<U> second) {
     return new SynchronizedPair<>(first, second);
   }
 
   /**
-   * Synchronizes four Props, allowing the user to retrieve all four values concurrently. The
-   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
-   * the values are updated.
+   * Groups three Props, allowing the user to retrieve all four values concurrently. The returned
+   * type implements {@link Subscribable}, allowing the user to receive events when any of the
+   * values are updated.
    *
    * @param first the first prop
    * @param second the second prop
@@ -62,15 +62,14 @@ public class Synchronize {
    * @param <V> the type of the third prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V> Prop<Triple<T, U, V>> props(
-      Prop<T> first, Prop<U> second, Prop<V> third) {
+  public static <T, U, V> Prop<Triple<T, U, V>> of(Prop<T> first, Prop<U> second, Prop<V> third) {
     return new SynchronizedTriple<>(first, second, third);
   }
 
   /**
-   * Synchronizes four Props, allowing the user to retrieve all four values concurrently. The
-   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
-   * the values are updated.
+   * Groups four Props, allowing the user to retrieve all four values concurrently. The returned
+   * type implements {@link Subscribable}, allowing the user to receive events when any of the
+   * values are updated.
    *
    * @param first the first prop
    * @param second the second prop
@@ -82,15 +81,15 @@ public class Synchronize {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> Prop<Quad<T, U, V, W>> props(
+  public static <T, U, V, W> Prop<Quad<T, U, V, W>> of(
       Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     return new SynchronizedQuad<>(first, second, third, fourth);
   }
 
   /**
-   * Synchronizes five Props, allowing the user to retrieve all four values concurrently. The
-   * returned type implements {@link Subscribable}, allowing the user to receive events when any of
-   * the values are updated.
+   * Groups five Props, allowing the user to retrieve all four values concurrently. The returned
+   * type implements {@link Subscribable}, allowing the user to receive events when any of the
+   * values are updated.
    *
    * @param first the first prop
    * @param second the second prop
@@ -104,7 +103,7 @@ public class Synchronize {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> Prop<Tuple<T, U, V, W, X>> props(
+  public static <T, U, V, W, X> Prop<Tuple<T, U, V, W, X>> of(
       Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
     return new SynchronizedTuple<>(first, second, third, fourth, fifth);
   }

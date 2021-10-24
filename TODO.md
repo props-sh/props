@@ -5,3 +5,4 @@
 - prop builder or multi constructors
 - define AbstractBaseProps
 - module-info
+- read Resolver config from JVM arg or property file (see SourceUtils)

@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.sync;
+package sh.props.group;
 
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;

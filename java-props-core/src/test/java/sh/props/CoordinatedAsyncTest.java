@@ -39,8 +39,8 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import sh.props.converter.IntegerConverter;
+import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
-import sh.props.sync.Synchronize;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Triple;
@@ -73,7 +73,7 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
     Consumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Synchronize.props(prop1, prop2);
+    var prop = Group.of(prop1, prop2);
     prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2);
@@ -108,7 +108,7 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
     Consumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Synchronize.props(prop1, prop2, prop3);
+    var prop = Group.of(prop1, prop2, prop3);
     prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3);
@@ -146,7 +146,7 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     Consumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Synchronize.props(prop1, prop2, prop3, prop4);
+    var prop = Group.of(prop1, prop2, prop3, prop4);
     prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3, 4);
@@ -187,7 +187,7 @@ class CoordinatedAsyncTest {
 
     Consumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new DummyConsumer<>());
-    var prop = Synchronize.props(prop1, prop2, prop3, prop4, prop5);
+    var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
     prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
 
     var expected = Tuple.of(1, 2, 3, 4, 5);
