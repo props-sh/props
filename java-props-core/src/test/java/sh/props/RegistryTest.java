@@ -33,6 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import sh.props.converter.Cast;
 import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
 
@@ -56,7 +57,7 @@ class RegistryTest {
     source.updateSubscribers();
 
     // ASSERT
-    assertThat(registry.get("key", String.class), equalTo("value2"));
+    assertThat(registry.get("key", Cast.asString()), equalTo("value2"));
   }
 
   @Test
@@ -71,7 +72,7 @@ class RegistryTest {
     source.put("key", "value2");
 
     // ASSERT
-    assertThat(registry.get("key", String.class), equalTo("value"));
+    assertThat(registry.get("key", Cast.asString()), equalTo("value"));
   }
 
   @Test
@@ -132,7 +133,7 @@ class RegistryTest {
     source.put("key", "value2");
 
     // ASSERT
-    assertThat(registry.get("key", String.class), equalTo("value2"));
+    assertThat(registry.get("key", Cast.asString()), equalTo("value2"));
   }
 
   @Test
@@ -147,7 +148,7 @@ class RegistryTest {
     source.put("key", "value2");
 
     // ASSERT
-    assertThat(registry.get("key", String.class), equalTo("value"));
+    assertThat(registry.get("key", Cast.asString()), equalTo("value"));
   }
 
   @Test

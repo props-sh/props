@@ -45,8 +45,8 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
     var supplier = Synchronize.props(prop1, prop2);
 
@@ -65,9 +65,9 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Synchronize.props(prop1, prop2, prop3);
@@ -88,10 +88,10 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
-    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Synchronize.props(prop1, prop2, prop3, prop4);
@@ -113,11 +113,11 @@ class CoordinatedSyncTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    BaseProp<Integer> prop1 = registry.bind(new IntProp("key1", null));
-    BaseProp<Integer> prop2 = registry.bind(new IntProp("key2", null));
-    BaseProp<Integer> prop3 = registry.bind(new IntProp("key3", null));
-    BaseProp<Integer> prop4 = registry.bind(new IntProp("key4", null));
-    BaseProp<Integer> prop5 = registry.bind(new IntProp("key5", null));
+    Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
+    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
+    Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
+    Prop<Integer> prop5 = registry.bind(new IntProp("key5", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Synchronize.props(prop1, prop2, prop3, prop4, prop5);
