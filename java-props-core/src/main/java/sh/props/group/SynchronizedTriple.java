@@ -26,7 +26,7 @@
 package sh.props.group;
 
 import java.util.function.UnaryOperator;
-import sh.props.Prop;
+import sh.props.interfaces.Prop;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 

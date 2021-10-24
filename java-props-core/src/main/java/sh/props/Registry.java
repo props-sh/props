@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Cast;
 import sh.props.converter.Converter;
+import sh.props.interfaces.Prop;
 
 public class Registry implements Notifiable {
 

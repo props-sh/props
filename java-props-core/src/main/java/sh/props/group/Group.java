@@ -25,8 +25,8 @@
 
 package sh.props.group;
 
-import sh.props.Prop;
-import sh.props.Subscribable;
+import sh.props.interfaces.Prop;
+import sh.props.interfaces.Subscribable;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Triple;

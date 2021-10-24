@@ -198,7 +198,7 @@ class RegistryTest {
   }
 
   /** Test-only prop implementation. TODO: refactor out after adding Abstract[Type]Props */
-  private static class IntProp extends BaseProp<Integer> implements IntegerConverter {
+  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
 
     protected IntProp(String key, Integer defaultValue) {
       super(key, defaultValue, null, false, false);

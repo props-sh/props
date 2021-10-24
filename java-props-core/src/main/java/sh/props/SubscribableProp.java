@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Prop;
 
 /**
  * This class implements the base functionality required to notify subscribers asynchronously that
@@ -99,15 +100,6 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
     this.updateHandlers.add(safe(onUpdate, onError));
     this.errorHandlers.add(safe(onError, null));
   }
-
-  /**
-   * Retrieves the current value of the prop.
-   *
-   * @return the current value of this object
-   */
-  @Override
-  @Nullable
-  public abstract T get();
 
   /**
    * Accepts a value and an epoch. Since this method offloads the actual work of sending the

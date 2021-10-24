@@ -36,11 +36,14 @@ import sh.props.exceptions.InvalidReadOpException;
 import sh.props.exceptions.InvalidUpdateOpException;
 
 /**
- * The base property object.
+ * An almost complete implementation of property objects, containing additional metadata that may be
+ * useful to callers. To complete this class, the user most combine it with a type {@link
+ * Converter}, either by using one of the converters provided by this library, or by writing a
+ * custom converter.
  *
  * @param <T> the property's type
  */
-public abstract class BaseProp<T> extends SubscribableProp<T> implements Converter<T> {
+public abstract class CustomProp<T> extends SubscribableProp<T> implements Converter<T> {
 
   public final String key;
 
@@ -67,7 +70,7 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
    *     exposed
    * @throws NullPointerException if the constructed object is in an invalid state
    */
-  protected BaseProp(
+  protected CustomProp(
       String key,
       @Nullable T defaultValue,
       @Nullable String description,
@@ -154,7 +157,7 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
   /**
    * Returns the property's current value.
    *
-   * @return the {@link BaseProp}'s current value, or <code>null</code>.
+   * @return the {@link CustomProp}'s current value, or <code>null</code>.
    * @throws InvalidReadOpException if the value could not be validated
    */
   @Override
@@ -170,7 +173,7 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
   }
 
   /**
-   * Identifies the {@link BaseProp}.
+   * Identifies the {@link CustomProp}.
    *
    * @return a string id
    */
@@ -190,7 +193,7 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
   }
 
   /**
-   * Returns <code>true</code> if this {@link BaseProp} requires a value.
+   * Returns <code>true</code> if this {@link CustomProp} requires a value.
    *
    * @return true if the property should have a value or a default
    */
@@ -199,8 +202,8 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
   }
 
   /**
-   * Returns <code>true</code> if this {@link BaseProp} represents a secret and its value should be
-   * redacted when printed.
+   * Returns <code>true</code> if this {@link CustomProp} represents a secret and its value should
+   * be redacted when printed.
    *
    * @return true if the property is a 'secret'
    */

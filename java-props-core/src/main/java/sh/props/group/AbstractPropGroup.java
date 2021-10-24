@@ -33,9 +33,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import sh.props.Prop;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Prop;
 
 abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 

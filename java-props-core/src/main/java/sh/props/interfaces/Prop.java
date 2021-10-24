@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props;
+package sh.props.interfaces;
 
 import java.util.function.Supplier;
 

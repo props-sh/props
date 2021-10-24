@@ -26,6 +26,7 @@
 package sh.props;
 
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Prop;
 
 /**
  * Abstract {@link Prop} class which encompasses all the methods needed by the {@link Registry} to

@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
+import sh.props.interfaces.Prop;
 import sh.props.source.impl.InMemory;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
@@ -221,7 +222,7 @@ class CoordinatedAsyncTest {
     }
   }
 
-  private static class IntProp extends BaseProp<Integer> implements IntegerConverter {
+  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
 
     protected IntProp(String key, Integer defaultValue) {
       super(key, defaultValue, null, false, false);
