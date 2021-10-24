@@ -46,13 +46,41 @@ import sh.props.annotations.Nullable;
  *
  * @param <T> the type of the prop object
  */
-public abstract class SubscribableProp<T> implements Prop<T> {
+public abstract class SubscribableProp<T> extends AbstractProp<T> implements Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
   protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
   protected final List<Consumer<Throwable>> errorHandlers = new CopyOnWriteArrayList<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   protected AtomicLong epoch = new AtomicLong();
+
+  /**
+   * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
+   * Consumer#accept(Object)}, they will be logged. If <code>onError</code> is non-null, any
+   * exceptions thrown by the <code>consumer</code> will be sent to it.
+   *
+   * @param consumer the consumer to wrap
+   * @param onError an error handler
+   * @param <T> the type of the consumer
+   * @return a wrapped, safe consumer that never throws exceptions
+   */
+  static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
+    return value -> {
+      try {
+        consumer.accept(value);
+      } catch (Exception e) {
+        // do not allow any exceptions to permeate out of this consumer
+
+        // log exceptions so that developers are aware where they originated
+        log.log(Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
+
+        // and also pass them to the associated Throwable handler
+        if (onError != null) {
+          onError.accept(e);
+        }
+      }
+    };
+  }
 
   /**
    * Subscribes the passed update/error consumers. This method is thread-safe, due to relying on
@@ -134,33 +162,5 @@ public abstract class SubscribableProp<T> implements Prop<T> {
    */
   protected void onUpdateError(Throwable t) {
     this.errorHandlers.forEach(c -> c.accept(t));
-  }
-
-  /**
-   * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
-   * Consumer#accept(Object)}, they will be logged. If <code>onError</code> is non-null, any
-   * exceptions thrown by the <code>consumer</code> will be sent to it.
-   *
-   * @param consumer the consumer to wrap
-   * @param onError an error handler
-   * @param <T> the type of the consumer
-   * @return a wrapped, safe consumer that never throws exceptions
-   */
-  static <T> Consumer<T> safe(Consumer<T> consumer, @Nullable Consumer<Throwable> onError) {
-    return value -> {
-      try {
-        consumer.accept(value);
-      } catch (Exception e) {
-        // do not allow any exceptions to permeate out of this consumer
-
-        // log exceptions so that developers are aware where they originated
-        log.log(Level.WARNING, e, () -> format("Unexpected exception in consumer %s", consumer));
-
-        // and also pass them to the associated Throwable handler
-        if (onError != null) {
-          onError.accept(e);
-        }
-      }
-    };
   }
 }

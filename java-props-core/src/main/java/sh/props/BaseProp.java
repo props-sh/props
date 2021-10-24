@@ -123,7 +123,8 @@ public abstract class BaseProp<T> extends SubscribableProp<T> implements Convert
    * @param updateValue the new value to set
    * @return true if the update operation succeeded
    */
-  boolean setValue(@Nullable String updateValue) {
+  @Override
+  protected boolean setValue(@Nullable String updateValue) {
     // decode the value, if non null
     T value = updateValue != null ? this.decode(updateValue) : null;
 

@@ -166,9 +166,20 @@ class BaseSynchronizedPropGroup<TupleT> extends SubscribableProp<TupleT> {
     this.applyOpsAndNotifySubscribers();
   }
 
+  /**
+   * Retrieve this prop group's value
+   *
+   * @return the tuple of values represented by this prop group
+   */
   @Override
   @Nullable
   public TupleT get() {
     return this.value.get();
+  }
+
+  @Override
+  protected boolean setValue(@Nullable String value) {
+    throw new IllegalStateException(
+        "A prop group cannot be bound to the Registry, nor can its value be updated directly.");
   }
 }

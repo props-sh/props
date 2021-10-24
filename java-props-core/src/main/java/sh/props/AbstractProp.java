@@ -40,5 +40,5 @@ public abstract class AbstractProp<T> implements Prop<T> {
    * @param value the new value to set
    * @return true if the update succeeded
    */
-  abstract boolean setValue(@Nullable String value);
+  protected abstract boolean setValue(@Nullable String value);
 }
