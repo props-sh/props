@@ -32,11 +32,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Helper class that makes the API a little bit nicer, e.g.: <code> Prop&lt;Boolean&gt; booleanProp
- * = Props.factory().build().prop("key", Converters.bool());
- * </code>
- */
+/** Helper class that makes specifying a helper sound more natural. */
 public class Cast {
 
   /**
