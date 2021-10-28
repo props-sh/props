@@ -130,18 +130,21 @@ public abstract class CustomProp<T> extends SubscribableProp<T> implements Conve
    */
   @Override
   protected boolean setValue(@Nullable String updateValue) {
-    // decode the value, if non null
-    T value = updateValue != null ? this.decode(updateValue) : null;
+    // store the epoch, reserving a 'point-in-time' for this value update
+    long epoch = this.epoch.incrementAndGet();
 
     try {
+      // decode the value, if non null
+      T value = updateValue != null ? this.decode(updateValue) : null;
+
       // validate the value before updating it
       this.validateBeforeSet(value);
 
-      // store the epoch, reserving a 'point-in-time' for this value update
-      long epoch = this.epoch.incrementAndGet();
-
       // update the value
       this.currentValue.set(value);
+
+      // ensure the value is valid before sending it to subscribers
+      this.validateBeforeGet(value);
       this.onUpdatedValue(value, epoch);
 
       return true;
