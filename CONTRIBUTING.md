@@ -19,8 +19,15 @@ Thank you for your interest in contributing to this library!
 
 ## Install the Git Hooks
 
-Before writing any code, install the project's git hooks with `gradle gitHooks`, ensuring that any
-code you contribute is properly formatted and checked for any errors.
+Before writing any code, install the project's git hooks:
+
+```shell
+git config core.hooksPath .githooks
+```
+
+Doing so will ensure that the code you contribute is properly formatted and checked for any errors.
+
+NOTE: Code style and format are automatically checked on PRs.
 
 ## Usual actions
 
