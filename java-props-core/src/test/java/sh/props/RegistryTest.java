@@ -40,10 +40,6 @@ import sh.props.source.impl.InMemory;
 @SuppressWarnings("NullAway")
 class RegistryTest {
 
-  private static void ignoreErrors(Throwable t) {
-    // do nothing
-  }
-
   @Test
   void updateValue() {
     // ARRANGE
@@ -163,7 +159,7 @@ class RegistryTest {
     var prop = new IntProp("key", null);
     registry.bind(prop);
 
-    prop.subscribe(localValue::set, RegistryTest::ignoreErrors);
+    prop.subscribe(localValue::set, (ignored) -> {});
 
     // ACT
     source.put("key", "2");
@@ -182,12 +178,12 @@ class RegistryTest {
     AtomicInteger localValue1 = new AtomicInteger(0);
     var prop1 = new IntProp("key", null);
     registry.bind(prop1);
-    prop1.subscribe(localValue1::set, RegistryTest::ignoreErrors);
+    prop1.subscribe(localValue1::set, (ignored) -> {});
 
     AtomicInteger localValue2 = new AtomicInteger(0);
     var prop2 = new IntProp("key", null);
     registry.bind(prop2);
-    prop2.subscribe(localValue2::set, RegistryTest::ignoreErrors);
+    prop2.subscribe(localValue2::set, (ignored) -> {});
 
     // ACT
     source.put("key", "2");

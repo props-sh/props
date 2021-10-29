@@ -25,13 +25,7 @@
 
 package sh.props.group;
 
-import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
@@ -39,11 +33,8 @@ import sh.props.interfaces.Prop;
 
 abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
-  protected final AtomicReference<TupleT> value = new AtomicReference<>();
+  protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
   private final String key;
-  private final BlockingQueue<UnaryOperator<TupleT>> ops = new LinkedBlockingQueue<>();
-  private final ReentrantLock sendStage = new ReentrantLock();
-  private final AtomicReference<TupleT> lastSentValue = new AtomicReference<>();
 
   /**
    * Class constructor that accept this prop group's key.
@@ -76,6 +67,15 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
+   * Initializes the holder with a valid value for the tuple.
+   *
+   * @param value the value to set
+   */
+  protected final void initialize(TupleT value) {
+    this.value.updateAndGet(t -> t.value(value));
+  }
+
+  /**
    * Designates this {@link Prop}'s key identifier.
    *
    * @return a string id
@@ -86,84 +86,23 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
-   * Applies all ops on the specified value and then updates any subscribers, while locking to
-   * ensure that all subscribers receive the same value, during a run.
+   * Applies the specified transformation and signals the update to any subscribers.
    *
-   * <p>The method locks since the update is processed asynchronously using the default {@link
-   * ForkJoinPool}. This removes the risk that a subset of the specified subscribers (consumers)
-   * might receive one value, while the others might be receiving a different value.
-   *
-   * <p>Since the underlying Props are also updated asynchronously, this implementation might send
-   * more than one event, eventually converging to the final value representing all of the
-   * underlying props.
+   * @param op the transformation to apply
    */
-  private void applyOpsAndNotifySubscribers() {
-    // check if any consumers are registered
-    if (this.updateHandlers.isEmpty()) {
-      // if there are no subscribers, ensure that the updates are applied before returning
-      this.applyUpdatesOnValue();
-
-      // do not submit a ForkJoinTask if there are no subscribers to notify
-      return;
-    }
-
-    ForkJoinPool.commonPool()
-        .execute(
-            () -> {
-              // ensure we execute a single update concurrently
-              this.sendStage.lock();
-
-              try {
-                // apply the update ops
-                TupleT val = this.applyUpdatesOnValue();
-
-                // check if the last value we sent is different to the one we're trying to send
-                if (Objects.equals(this.lastSentValue.get(), val)) {
-                  // avoid sending duplicate events
-                  return;
-                }
-
-                // send the same value to all consumers
-                this.updateHandlers.forEach(c -> c.accept(val));
-
-                // update the last sent value
-                this.lastSentValue.set(val);
-              } finally {
-                // ensure the updated value was received by all consumers
-                // before allowing a new update to be processed
-                this.sendStage.unlock();
-              }
-            });
+  protected void apply(UnaryOperator<TupleT> op) {
+    Holder<TupleT> updated = this.value.updateAndGet(holder -> holder.value(op));
+    this.onUpdatedValue(updated.value, updated.epoch);
   }
 
   /**
-   * Processes any operations, applying them to the associated value.
+   * Sends any errors to subscribing error handlers.
    *
-   * @return the final value after applying all/any of the updates
+   * @param throwable the error to send
    */
-  @Nullable
-  private TupleT applyUpdatesOnValue() {
-    // get the initial value
-    TupleT result = this.value.get();
-
-    // iterate over all ops and apply them
-    UnaryOperator<TupleT> op;
-    while ((op = this.ops.poll()) != null) {
-      result = this.value.updateAndGet(op);
-    }
-
-    return result;
-  }
-
-  /**
-   * Stores the op and asynchronously sends the update to subscribers, if any are registered.
-   *
-   * @param transformation a function that generates the op to apply, given the passed value
-   * @param onValue the value to apply via a transformation
-   */
-  protected <V> void apply(Function<V, UnaryOperator<TupleT>> transformation, V onValue) {
-    this.ops.add(transformation.apply(onValue));
-    this.applyOpsAndNotifySubscribers();
+  protected void error(Throwable throwable) {
+    Holder<TupleT> result = this.value.updateAndGet(holder -> holder.error(throwable));
+    this.onUpdateError(throwable, result.epoch);
   }
 
   /**
@@ -174,12 +113,66 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   @Override
   @Nullable
   public TupleT get() {
-    return this.value.get();
+    Holder<TupleT> result = this.value.get();
+
+    // skip the check since value is initialized to a non-null value
+    @SuppressWarnings("NullAway")
+    boolean isError = result.error != null;
+    if (isError) {
+      // we are only expecting RuntimeExceptions to be thrown by this implementation
+      throw (RuntimeException) result.error;
+    }
+
+    return result.value;
   }
 
   @Override
   protected boolean setValue(@Nullable String value) {
     throw new IllegalStateException(
         "A prop group cannot be bound to the Registry, nor can its value be updated directly.");
+  }
+
+  /**
+   * Holder class that keep references to a value/error, as well as an epoch that can be used to
+   * determine the most current value in a series of concurrent operations.
+   *
+   * @param <TupleT> the type of the value held by this class
+   */
+  protected static class Holder<TupleT> {
+    private final long epoch;
+    private final @Nullable TupleT value;
+    private final @Nullable Throwable error;
+
+    /** Default constructor that initializes with empty values, starting from epoch 0. */
+    public Holder() {
+      this.epoch = 0;
+      this.value = null;
+      this.error = null;
+    }
+
+    /**
+     * Class constructor used to create a new complete Holder.
+     *
+     * @param epoch the epoch to set
+     * @param value a value
+     * @param error or an error
+     */
+    private Holder(long epoch, @Nullable TupleT value, @Nullable Throwable error) {
+      this.epoch = epoch;
+      this.value = value;
+      this.error = error;
+    }
+
+    public Holder<TupleT> value(TupleT value) {
+      return new Holder<>(this.epoch + 1, value, null);
+    }
+
+    public Holder<TupleT> value(UnaryOperator<TupleT> op) {
+      return new Holder<>(this.epoch + 1, op.apply(this.value), null);
+    }
+
+    public Holder<TupleT> error(Throwable throwable) {
+      return new Holder<>(this.epoch + 1, null, throwable);
+    }
   }
 }

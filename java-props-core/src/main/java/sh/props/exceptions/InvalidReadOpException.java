@@ -30,7 +30,15 @@ public class InvalidReadOpException extends RuntimeException {
 
   private static final long serialVersionUID = -1203249458144372108L;
 
+  public InvalidReadOpException() {
+    super();
+  }
+
   public InvalidReadOpException(String message) {
     super(message);
+  }
+
+  public InvalidReadOpException(Throwable cause) {
+    super(cause);
   }
 }

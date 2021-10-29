@@ -32,7 +32,7 @@ import sh.props.tuples.Tuple;
 
 /**
  * Groups three Props, retrieving them all at once. If any of the underlying Props fails to update
- * its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * its value and calls {@link #error(Throwable)}, the exception will be passed down to any
  * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
@@ -54,15 +54,15 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
 
     // subscribe to all updates and errors
-    first.subscribe(v -> this.apply(SynchronizedTriple::updateFirst, v), this::onUpdateError);
-    second.subscribe(v -> this.apply(SynchronizedTriple::updateSecond, v), this::onUpdateError);
-    third.subscribe(v -> this.apply(SynchronizedTriple::updateThird, v), this::onUpdateError);
+    first.subscribe(v -> this.apply(SynchronizedTriple.updateFirst(v)), this::error);
+    second.subscribe(v -> this.apply(SynchronizedTriple.updateSecond(v)), this::error);
+    third.subscribe(v -> this.apply(SynchronizedTriple.updateThird(v)), this::error);
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(Tuple.of(first.get(), second.get(), third.get()));
+    this.initialize(Tuple.of(first.get(), second.get(), third.get()));
   }
 
   /**

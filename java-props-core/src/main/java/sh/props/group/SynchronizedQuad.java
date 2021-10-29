@@ -32,7 +32,7 @@ import sh.props.tuples.Tuple;
 
 /**
  * Groups four Props, retrieving them all at once. If any of the underlying Props fails to update
- * its value and calls {@link #onUpdateError(Throwable)}, the exception will be passed down to any
+ * its value and calls {@link #error(Throwable)}, the exception will be passed down to any
  * subscribers and the corresponding Prop will not be updated in the resulting {@link Tuple}.
  *
  * @param <T> the type of the first prop
@@ -56,16 +56,16 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
     super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
 
     // subscribe to all updates and errors
-    first.subscribe(v -> this.apply(SynchronizedQuad::updateFirst, v), this::onUpdateError);
-    second.subscribe(v -> this.apply(SynchronizedQuad::updateSecond, v), this::onUpdateError);
-    third.subscribe(v -> this.apply(SynchronizedQuad::updateThird, v), this::onUpdateError);
-    fourth.subscribe(v -> this.apply(SynchronizedQuad::updateFourth, v), this::onUpdateError);
+    first.subscribe(v -> this.apply(SynchronizedQuad.updateFirst(v)), this::error);
+    second.subscribe(v -> this.apply(SynchronizedQuad.updateSecond(v)), this::error);
+    third.subscribe(v -> this.apply(SynchronizedQuad.updateThird(v)), this::error);
+    fourth.subscribe(v -> this.apply(SynchronizedQuad.updateFourth(v)), this::error);
 
     // retrieve the current state of the underlying props
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
+    this.initialize(Tuple.of(first.get(), second.get(), third.get(), fourth.get()));
   }
 
   /**

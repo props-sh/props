@@ -28,16 +28,16 @@ package sh.props;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.function.Consumer;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.RepeatedTest;
 import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
 import sh.props.interfaces.Prop;
@@ -48,22 +48,10 @@ import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
-class CoordinatedAsyncTest {
+public class CoordinatedAsyncTest {
+  public static final int HOW_MANY_TIMES = 1000;
 
-  private static <T> T getLast(List<T> lst) {
-    if (lst.isEmpty()) {
-      return null;
-    }
-
-    return lst.get(lst.size() - 1);
-  }
-
-  private static void ignoreErrors(Throwable t) {
-    // do nothing
-    t.printStackTrace();
-  }
-
-  @Test
+  @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedPairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -73,9 +61,9 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop1 = registry.bind(new IntProp("key1", null));
     Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
 
-    Consumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    DummyConsumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2);
 
@@ -87,17 +75,13 @@ class CoordinatedAsyncTest {
     await()
         .pollInterval(Duration.ofNanos(1000))
         .atMost(5, SECONDS)
-        .until(prop::get, equalTo(expected));
+        .until(consumer::get, hasItem(expected));
 
-    @SuppressWarnings("unchecked")
-    ArgumentCaptor<Pair<Integer, Integer>> captor = ArgumentCaptor.forClass(Pair.class);
-    verify(consumer, atLeastOnce()).accept(captor.capture());
-
-    var result = CoordinatedAsyncTest.getLast(captor.getAllValues());
-    assertThat("Last notification should be a complete value", result, equalTo(expected));
+    var last = consumer.getLast();
+    assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
-  @Test
+  @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -108,9 +92,9 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
     Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
 
-    Consumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    DummyConsumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2, prop3);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2, 3);
 
@@ -123,18 +107,13 @@ class CoordinatedAsyncTest {
     await()
         .pollInterval(Duration.ofNanos(1000))
         .atMost(5, SECONDS)
-        .until(prop::get, equalTo(expected));
+        .until(consumer::get, hasItem(expected));
 
-    @SuppressWarnings("unchecked")
-    ArgumentCaptor<Triple<Integer, Integer, Integer>> captor =
-        ArgumentCaptor.forClass(Triple.class);
-    verify(consumer, atLeastOnce()).accept(captor.capture());
-
-    var result = CoordinatedAsyncTest.getLast(captor.getAllValues());
-    assertThat("Last notification should be a complete value", result, equalTo(expected));
+    var last = consumer.getLast();
+    assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
-  @Test
+  @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedQuadOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -146,9 +125,9 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop3 = registry.bind(new IntProp("key3", null));
     Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
 
-    Consumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    DummyConsumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2, 3, 4);
 
@@ -162,18 +141,13 @@ class CoordinatedAsyncTest {
     await()
         .pollInterval(Duration.ofNanos(1000))
         .atMost(5, SECONDS)
-        .until(prop::get, equalTo(expected));
+        .until(consumer::get, hasItem(expected));
 
-    @SuppressWarnings("unchecked")
-    ArgumentCaptor<Quad<Integer, Integer, Integer, Integer>> captor =
-        ArgumentCaptor.forClass(Quad.class);
-    verify(consumer, atLeastOnce()).accept(captor.capture());
-
-    var result = CoordinatedAsyncTest.getLast(captor.getAllValues());
-    assertThat("Last notification should be a complete value", result, equalTo(expected));
+    var last = consumer.getLast();
+    assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
-  @Test
+  @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedTupleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -186,10 +160,10 @@ class CoordinatedAsyncTest {
     Prop<Integer> prop4 = registry.bind(new IntProp("key4", null));
     Prop<Integer> prop5 = registry.bind(new IntProp("key5", null));
 
-    Consumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
+    DummyConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2, 3, 4, 5);
 
@@ -204,21 +178,31 @@ class CoordinatedAsyncTest {
     await()
         .pollInterval(Duration.ofNanos(1000))
         .atMost(5, SECONDS)
-        .until(prop::get, equalTo(expected));
+        .until(consumer::get, hasItem(expected));
 
-    @SuppressWarnings("unchecked")
-    ArgumentCaptor<Tuple<Integer, Integer, Integer, Integer, Integer>> captor =
-        ArgumentCaptor.forClass(Tuple.class);
-    verify(consumer, atLeastOnce()).accept(captor.capture());
-
-    var result = CoordinatedAsyncTest.getLast(captor.getAllValues());
-    assertThat("Last notification should be a complete value", result, equalTo(expected));
+    var last = consumer.getLast();
+    assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
   private static class DummyConsumer<T> implements Consumer<T> {
+    private final LinkedHashSet<T> store = new LinkedHashSet<>();
+
     @Override
-    public void accept(T t) {
-      // no-op
+    public synchronized void accept(T t) {
+      this.store.add(t);
+    }
+
+    public synchronized ArrayDeque<T> get() {
+      return new ArrayDeque<>(this.store);
+    }
+
+    public synchronized T getLast() {
+      T val = null;
+      Iterator<T> it = this.store.iterator();
+      while (it.hasNext()) {
+        val = it.next();
+      }
+      return val;
     }
   }
 
