@@ -62,7 +62,7 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(new EpochTuple<>(Tuple.of(first.get(), second.get(), third.get())));
+    this.initialize(Tuple.of(first.get(), second.get(), third.get()));
   }
 
   /**

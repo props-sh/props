@@ -69,9 +69,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
     // it's important for this step to execute after we have subscribed to the underlying props
     // since any change operations will have been captured and will be applied on the underlying
     // atomic reference
-    this.value.set(
-        new EpochTuple<>(
-            Tuple.of(first.get(), second.get(), third.get(), fourth.get(), fifth.get())));
+    this.initialize(Tuple.of(first.get(), second.get(), third.get(), fourth.get(), fifth.get()));
   }
 
   /**

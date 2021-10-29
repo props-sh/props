@@ -142,7 +142,6 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
               // the epoch was not updated, which means that the current update event should be
               // discarded
               if (current != epoch) {
-                //                System.out.printf("%s: discarded %s\n", epoch, value);
                 return;
               }
 
@@ -154,10 +153,8 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
                 // since some time may have passed, recheck that this epoch is still valid
                 if (this.lastProcessedEpoch.get() != epoch) {
                   // if not, discard the update
-                  //                  System.out.printf("%s: discarded %s\n", epoch, value);
                   return;
                 }
-                //                System.out.printf("%s: %s\n", epoch, value);
 
                 // send the same value to all consumers
                 this.updateHandlers.forEach(c -> c.accept(value));

@@ -37,8 +37,6 @@ import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
@@ -59,7 +57,6 @@ public class CoordinatedAsyncTest {
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
-  //  @Test
   void synchronizedPairOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -86,20 +83,10 @@ public class CoordinatedAsyncTest {
         .until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-
-    Assertions.assertEquals(expected.first, last.first, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.second, last.second, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
     assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
-  //  @Test
   void synchronizedTripleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -128,23 +115,10 @@ public class CoordinatedAsyncTest {
         .until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-
-    Assertions.assertEquals(expected.first, last.first, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.second, last.second, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.third, last.third, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
     assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
-  //  @Test
   void synchronizedQuadOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -175,26 +149,10 @@ public class CoordinatedAsyncTest {
         .until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-
-    Assertions.assertEquals(expected.first, last.first, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.second, last.second, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.third, last.third, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.fourth, last.fourth, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
     assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
-  //  @Test
   void synchronizedTupleOfProps() {
     // ARRANGE
     InMemory source = new InMemory(true);
@@ -228,24 +186,6 @@ public class CoordinatedAsyncTest {
         .until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-
-    Assertions.assertEquals(expected.first, last.first, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.second, last.second, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.third, last.third, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.fourth, last.fourth, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
-    Assertions.assertEquals(expected.fifth, last.fifth, () -> "Expected complete: " + last);
-    System.out.println("compare: " + last + " " + System.identityHashCode(last));
-    System.out.println("expected: " + expected + " " + System.identityHashCode(expected));
     assertThat("Last notification should be a complete value", last, equalTo(expected));
   }
 
@@ -262,25 +202,12 @@ public class CoordinatedAsyncTest {
     }
 
     public synchronized T getLast() {
-      System.out.println("before " + this.store.size());
-      System.out.println(this.store);
-
       T val = null;
-      try {
-        Iterator<T> it = this.store.iterator();
-        while (it.hasNext()) {
-          val = it.next();
-        }
-        return val;
-
-      } finally {
-        System.out.println("after " + this.store.size());
-        System.out.println(
-            this.store.stream()
-                .map(v -> v.toString() + " " + System.identityHashCode(v))
-                .collect(Collectors.toList()));
-        System.out.println("chosen: " + val + " " + System.identityHashCode(val));
+      Iterator<T> it = this.store.iterator();
+      while (it.hasNext()) {
+        val = it.next();
       }
+      return val;
     }
   }
 

@@ -33,8 +33,7 @@ import sh.props.interfaces.Prop;
 
 abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
-  protected final AtomicReference<EpochTuple<TupleT>> value =
-      new AtomicReference<>(new EpochTuple<>(null));
+  protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
   private final String key;
 
   /**
@@ -68,6 +67,15 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
+   * Initializes the holder with a valid value for the tuple
+   *
+   * @param value the value to set
+   */
+  protected final void initialize(TupleT value) {
+    this.value.updateAndGet(t -> t.value(value));
+  }
+
+  /**
    * Designates this {@link Prop}'s key identifier.
    *
    * @return a string id
@@ -83,21 +91,8 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @param op the transformation to apply
    */
   protected void apply(UnaryOperator<TupleT> op) {
-    EpochTuple<TupleT> updated = this.value.updateAndGet(t -> t.value(op));
+    Holder<TupleT> updated = this.value.updateAndGet(t -> t.value(op));
     this.onUpdatedValue(updated.value, updated.epoch);
-  }
-
-  /**
-   * Convenience method to check the correctness of the specified value.
-   *
-   * @param value a reference that could be null
-   * @return a non-null reference
-   */
-  private EpochTuple<TupleT> nonNullValue(@Nullable EpochTuple<TupleT> value) {
-    if (value == null) {
-      throw new NullPointerException("Invalid state, EpochTuple should not be null!");
-    }
-    return value;
   }
 
   /**
@@ -106,7 +101,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @param throwable the error to send
    */
   protected void error(Throwable throwable) {
-    EpochTuple<TupleT> result = this.value.updateAndGet(eT -> eT.error(throwable));
+    Holder<TupleT> result = this.value.updateAndGet(eT -> eT.error(throwable));
     this.onUpdateError(throwable, result.epoch);
   }
 
@@ -118,9 +113,13 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   @Override
   @Nullable
   public TupleT get() {
-    EpochTuple<TupleT> result = this.nonNullValue(this.value.get());
-    if (result.error != null) {
-      // we are only expending RuntimeExceptions to be thrown by this implementation
+    Holder<TupleT> result = this.value.get();
+
+    // skip the check since value is initialized to a non-null value
+    @SuppressWarnings("NullAway")
+    boolean isError = result.error != null;
+    if (isError) {
+      // we are only expecting RuntimeExceptions to be thrown by this implementation
       throw (RuntimeException) result.error;
     }
 
@@ -133,33 +132,47 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
         "A prop group cannot be bound to the Registry, nor can its value be updated directly.");
   }
 
-  protected static class EpochTuple<TupleT> {
+  /**
+   * Holder class that keep references to a value/error, as well as an epoch that can be used to
+   * determine the most current value in a series of concurrent operations.
+   *
+   * @param <TupleT> the type of the value held by this class
+   */
+  protected static class Holder<TupleT> {
     private final long epoch;
     private final @Nullable TupleT value;
     private final @Nullable Throwable error;
 
-    public EpochTuple(@Nullable TupleT value) {
-      this.epoch = 1;
-      this.value = value;
+    /** Default constructor that initializes with empty values, starting from epoch 0. */
+    public Holder() {
+      this.epoch = 0;
+      this.value = null;
       this.error = null;
     }
 
-    public EpochTuple(long epoch, @Nullable TupleT value, @Nullable Throwable error) {
+    /**
+     * Class constructor used to create a new complete Holder
+     *
+     * @param epoch the epoch to set
+     * @param value a value
+     * @param error or an error
+     */
+    private Holder(long epoch, @Nullable TupleT value, @Nullable Throwable error) {
       this.epoch = epoch;
       this.value = value;
       this.error = error;
     }
 
-    public EpochTuple<TupleT> value(TupleT value) {
-      return new EpochTuple<>(this.epoch + 1, value, null);
+    public Holder<TupleT> value(TupleT value) {
+      return new Holder<>(this.epoch + 1, value, null);
     }
 
-    public EpochTuple<TupleT> value(UnaryOperator<TupleT> op) {
-      return new EpochTuple<>(this.epoch + 1, op.apply(this.value), null);
+    public Holder<TupleT> value(UnaryOperator<TupleT> op) {
+      return new Holder<>(this.epoch + 1, op.apply(this.value), null);
     }
 
-    public EpochTuple<TupleT> error(Throwable throwable) {
-      return new EpochTuple<>(this.epoch + 1, null, throwable);
+    public Holder<TupleT> error(Throwable throwable) {
+      return new Holder<>(this.epoch + 1, null, throwable);
     }
   }
 }
