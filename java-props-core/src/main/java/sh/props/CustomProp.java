@@ -151,7 +151,7 @@ public abstract class CustomProp<T> extends SubscribableProp<T> implements Conve
 
     } catch (InvalidUpdateOpException | RuntimeException e) {
       // logs the exception and signals any subscribers
-      this.onUpdateError(e);
+      this.onUpdateError(e, epoch);
 
       return false;
     }

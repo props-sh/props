@@ -33,6 +33,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.LongUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
@@ -83,6 +84,18 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
     };
   }
 
+  private static LongUnaryOperator setIfMoreRecent(long epoch) {
+    return last -> {
+      if (Long.compareUnsigned(epoch, last) > 0) {
+        // update the epoch if it is more recent than the last processed epoch
+        return epoch;
+      }
+
+      // otherwise, keep the last processed epoch, since it is more current
+      return last;
+    };
+  }
+
   /**
    * Subscribes the passed update/error consumers. This method is thread-safe, due to relying on
    * {@link CopyOnWriteArrayList} as a backing data structure for the two lists holding update/error
@@ -123,22 +136,13 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
     ForkJoinPool.commonPool()
         .execute(
             () -> {
-              // attempt to store the 'current' epoch
               long current =
-                  this.lastProcessedEpoch.updateAndGet(
-                      last -> {
-                        if (Long.compareUnsigned(epoch, last) > 0) {
-                          // update the epoch if it is more recent than the last processed epoch
-                          return epoch;
-                        }
-
-                        // otherwise, keep the last processed epoch, since it is more current
-                        return last;
-                      });
+                  this.lastProcessedEpoch.updateAndGet(SubscribableProp.setIfMoreRecent(epoch));
 
               // the epoch was not updated, which means that the current update event should be
               // discarded
               if (current != epoch) {
+                //                System.out.printf("%s: discarded %s\n", epoch, value);
                 return;
               }
 
@@ -150,8 +154,10 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
                 // since some time may have passed, recheck that this epoch is still valid
                 if (this.lastProcessedEpoch.get() != epoch) {
                   // if not, discard the update
+                  //                  System.out.printf("%s: discarded %s\n", epoch, value);
                   return;
                 }
+                //                System.out.printf("%s: %s\n", epoch, value);
 
                 // send the same value to all consumers
                 this.updateHandlers.forEach(c -> c.accept(value));
@@ -167,7 +173,34 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
    *
    * @param t the error that prevented the update
    */
-  protected void onUpdateError(Throwable t) {
-    this.errorHandlers.forEach(c -> c.accept(t));
+  protected void onUpdateError(Throwable t, long epoch) {
+    if (this.errorHandlers.isEmpty()) {
+      // nothing to do if we have no consumers
+      return;
+    }
+
+    // attempt to store the 'current' epoch
+    long current = this.lastProcessedEpoch.updateAndGet(SubscribableProp.setIfMoreRecent(epoch));
+
+    // the epoch was not updated, which means that the current update event should be
+    // discarded
+    if (current != epoch) {
+      return;
+    }
+
+    this.sendStage.lock();
+    try {
+      // since some time may have passed, recheck that this epoch is still valid
+      if (this.lastProcessedEpoch.get() != epoch) {
+        // if not, discard the update
+        return;
+      }
+
+      // send the same value to all consumers
+      this.errorHandlers.forEach(c -> c.accept(t));
+    } finally {
+      // allow the next update to be sent
+      this.sendStage.unlock();
+    }
   }
 }

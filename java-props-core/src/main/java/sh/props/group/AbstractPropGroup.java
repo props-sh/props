@@ -25,13 +25,7 @@
 
 package sh.props.group;
 
-import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
@@ -39,11 +33,9 @@ import sh.props.interfaces.Prop;
 
 abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
-  protected final AtomicReference<TupleT> value = new AtomicReference<>();
+  protected final AtomicReference<EpochTuple<TupleT>> value =
+      new AtomicReference<>(new EpochTuple<>(null));
   private final String key;
-  private final BlockingQueue<UnaryOperator<TupleT>> ops = new LinkedBlockingQueue<>();
-  private final ReentrantLock sendStage = new ReentrantLock();
-  private final AtomicReference<TupleT> lastSentValue = new AtomicReference<>();
 
   /**
    * Class constructor that accept this prop group's key.
@@ -86,84 +78,36 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
-   * Applies all ops on the specified value and then updates any subscribers, while locking to
-   * ensure that all subscribers receive the same value, during a run.
+   * Applies the specified transformation and signals the update to any subscribers.
    *
-   * <p>The method locks since the update is processed asynchronously using the default {@link
-   * ForkJoinPool}. This removes the risk that a subset of the specified subscribers (consumers)
-   * might receive one value, while the others might be receiving a different value.
-   *
-   * <p>Since the underlying Props are also updated asynchronously, this implementation might send
-   * more than one event, eventually converging to the final value representing all of the
-   * underlying props.
+   * @param op the transformation to apply
    */
-  private void applyOpsAndNotifySubscribers() {
-    // check if any consumers are registered
-    if (this.updateHandlers.isEmpty()) {
-      // if there are no subscribers, ensure that the updates are applied before returning
-      this.applyUpdatesOnValue();
-
-      // do not submit a ForkJoinTask if there are no subscribers to notify
-      return;
-    }
-
-    ForkJoinPool.commonPool()
-        .execute(
-            () -> {
-              // ensure we execute a single update concurrently
-              this.sendStage.lock();
-
-              try {
-                // apply the update ops
-                TupleT val = this.applyUpdatesOnValue();
-
-                // check if the last value we sent is different to the one we're trying to send
-                if (Objects.equals(this.lastSentValue.get(), val)) {
-                  // avoid sending duplicate events
-                  return;
-                }
-
-                // send the same value to all consumers
-                this.updateHandlers.forEach(c -> c.accept(val));
-
-                // update the last sent value
-                this.lastSentValue.set(val);
-              } finally {
-                // ensure the updated value was received by all consumers
-                // before allowing a new update to be processed
-                this.sendStage.unlock();
-              }
-            });
+  protected void apply(UnaryOperator<TupleT> op) {
+    EpochTuple<TupleT> updated = this.value.updateAndGet(t -> t.value(op));
+    this.onUpdatedValue(updated.value, updated.epoch);
   }
 
   /**
-   * Processes any operations, applying them to the associated value.
+   * Convenience method to check the correctness of the specified value.
    *
-   * @return the final value after applying all/any of the updates
+   * @param value a reference that could be null
+   * @return a non-null reference
    */
-  @Nullable
-  private TupleT applyUpdatesOnValue() {
-    // get the initial value
-    TupleT result = this.value.get();
-
-    // iterate over all ops and apply them
-    UnaryOperator<TupleT> op;
-    while ((op = this.ops.poll()) != null) {
-      result = this.value.updateAndGet(op);
+  private EpochTuple<TupleT> nonNullValue(@Nullable EpochTuple<TupleT> value) {
+    if (value == null) {
+      throw new NullPointerException("Invalid state, EpochTuple should not be null!");
     }
-
-    return result;
+    return value;
   }
 
   /**
-   * Stores the op and asynchronously sends the update to subscribers, if any are registered.
+   * Sends any errors to subscribing error handlers
    *
-   * @param transformation a function that generates the op to apply, given the passed value
-   * @param onValue the value to apply via a transformation
+   * @param throwable the error to send
    */
-  protected <V> void apply(Function<V, UnaryOperator<TupleT>> transformation, V onValue) {
-    this.ops.add(transformation.apply(onValue));
-    this.applyOpsAndNotifySubscribers();
+  protected void error(Throwable throwable) {
+    EpochTuple<TupleT> result = this.value.updateAndGet(eT -> eT.error(throwable));
+    this.onUpdateError(throwable, result.epoch);
   }
 
   /**
@@ -174,12 +118,48 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   @Override
   @Nullable
   public TupleT get() {
-    return this.value.get();
+    EpochTuple<TupleT> result = this.nonNullValue(this.value.get());
+    if (result.error != null) {
+      // we are only expending RuntimeExceptions to be thrown by this implementation
+      throw (RuntimeException) result.error;
+    }
+
+    return result.value;
   }
 
   @Override
   protected boolean setValue(@Nullable String value) {
     throw new IllegalStateException(
         "A prop group cannot be bound to the Registry, nor can its value be updated directly.");
+  }
+
+  protected static class EpochTuple<TupleT> {
+    private final long epoch;
+    private final @Nullable TupleT value;
+    private final @Nullable Throwable error;
+
+    public EpochTuple(@Nullable TupleT value) {
+      this.epoch = 1;
+      this.value = value;
+      this.error = null;
+    }
+
+    public EpochTuple(long epoch, @Nullable TupleT value, @Nullable Throwable error) {
+      this.epoch = epoch;
+      this.value = value;
+      this.error = error;
+    }
+
+    public EpochTuple<TupleT> value(TupleT value) {
+      return new EpochTuple<>(this.epoch + 1, value, null);
+    }
+
+    public EpochTuple<TupleT> value(UnaryOperator<TupleT> op) {
+      return new EpochTuple<>(this.epoch + 1, op.apply(this.value), null);
+    }
+
+    public EpochTuple<TupleT> error(Throwable throwable) {
+      return new EpochTuple<>(this.epoch + 1, null, throwable);
+    }
   }
 }
