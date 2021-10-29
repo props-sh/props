@@ -51,11 +51,6 @@ import sh.props.tuples.Tuple;
 public class CoordinatedAsyncTest {
   public static final int HOW_MANY_TIMES = 1000;
 
-  private static void ignoreErrors(Throwable t) {
-    // do nothing
-    t.printStackTrace();
-  }
-
   @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedPairOfProps() {
     // ARRANGE
@@ -68,7 +63,7 @@ public class CoordinatedAsyncTest {
 
     DummyConsumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2);
 
@@ -99,7 +94,7 @@ public class CoordinatedAsyncTest {
 
     DummyConsumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2, prop3);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2, 3);
 
@@ -132,7 +127,7 @@ public class CoordinatedAsyncTest {
 
     DummyConsumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2, 3, 4);
 
@@ -168,7 +163,7 @@ public class CoordinatedAsyncTest {
     DummyConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new DummyConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
-    prop.subscribe(consumer, CoordinatedAsyncTest::ignoreErrors);
+    prop.subscribe(consumer, (ignored) -> {});
 
     var expected = Tuple.of(1, 2, 3, 4, 5);
 
