@@ -67,7 +67,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
-   * Initializes the holder with a valid value for the tuple
+   * Initializes the holder with a valid value for the tuple.
    *
    * @param value the value to set
    */
@@ -91,17 +91,17 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @param op the transformation to apply
    */
   protected void apply(UnaryOperator<TupleT> op) {
-    Holder<TupleT> updated = this.value.updateAndGet(t -> t.value(op));
+    Holder<TupleT> updated = this.value.updateAndGet(holder -> holder.value(op));
     this.onUpdatedValue(updated.value, updated.epoch);
   }
 
   /**
-   * Sends any errors to subscribing error handlers
+   * Sends any errors to subscribing error handlers.
    *
    * @param throwable the error to send
    */
   protected void error(Throwable throwable) {
-    Holder<TupleT> result = this.value.updateAndGet(eT -> eT.error(throwable));
+    Holder<TupleT> result = this.value.updateAndGet(holder -> holder.error(throwable));
     this.onUpdateError(throwable, result.epoch);
   }
 
@@ -151,7 +151,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
     }
 
     /**
-     * Class constructor used to create a new complete Holder
+     * Class constructor used to create a new complete Holder.
      *
      * @param epoch the epoch to set
      * @param value a value

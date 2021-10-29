@@ -49,7 +49,7 @@ import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 public class CoordinatedAsyncTest {
-  public static final int HOW_MANY_TIMES = 10000;
+  public static final int HOW_MANY_TIMES = 1000;
 
   private static void ignoreErrors(Throwable t) {
     // do nothing

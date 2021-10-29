@@ -69,6 +69,8 @@ public class RefactoredProp<T, R> implements Prop<R> {
    * finally returning null.
    *
    * @return the prop's value, or null
+   * @throws InvalidReadOpException if the value cannot be read
+   * @throws RuntimeException if the old prop is converted to the new type, but the conversion fails
    */
   @Override
   @Nullable

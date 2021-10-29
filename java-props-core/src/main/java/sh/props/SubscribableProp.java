@@ -168,9 +168,10 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
   /**
    * Notifies subscribers of any errors that occurred while updating this object's value.
    *
-   * @param t the error that prevented the update
+   * @param error the error that prevented the update
+   * @param epoch the epoch at which this error was recorded
    */
-  protected void onUpdateError(Throwable t, long epoch) {
+  protected void onUpdateError(Throwable error, long epoch) {
     if (this.errorHandlers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
@@ -194,7 +195,7 @@ public abstract class SubscribableProp<T> extends AbstractProp<T> implements Pro
       }
 
       // send the same value to all consumers
-      this.errorHandlers.forEach(c -> c.accept(t));
+      this.errorHandlers.forEach(c -> c.accept(error));
     } finally {
       // allow the next update to be sent
       this.sendStage.unlock();
