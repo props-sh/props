@@ -42,6 +42,12 @@ import sh.props.tuples.Tuple;
  */
 class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
     implements Prop<Quad<T, U, V, W>> {
+
+  private final Prop<T> first;
+  private final Prop<U> second;
+  private final Prop<V> third;
+  private final Prop<W> fourth;
+
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -54,6 +60,11 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
   SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     // generate a key represented by each prop
     super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
+
+    this.first = first;
+    this.second = second;
+    this.third = third;
+    this.fourth = fourth;
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedQuad.updateFirst(v)), this::error);
@@ -133,7 +144,10 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
   public String[] toStringParts() {
     Quad<T, U, V, W> v = this.get();
     return new String[] {
-      v.first.toString(), v.second.toString(), v.third.toString(), v.fourth.toString()
+      AbstractPropGroup.encodeValue(v.first, this.first),
+      AbstractPropGroup.encodeValue(v.second, this.second),
+      AbstractPropGroup.encodeValue(v.third, this.third),
+      AbstractPropGroup.encodeValue(v.fourth, this.fourth),
     };
   }
 }

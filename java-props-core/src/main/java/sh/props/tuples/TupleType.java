@@ -23,17 +23,7 @@
  *
  */
 
-package sh.props.group;
+package sh.props.tuples;
 
-import sh.props.interfaces.Prop;
-import sh.props.tuples.TupleType;
-
-public interface PropGroup<TupleT extends TupleType> extends Prop<TupleT> {
-
-  /**
-   * Converts each type in the tuple to a string and returns a string array.
-   *
-   * @return a string array containing all the props' string representations
-   */
-  String[] toStringParts();
-}
+/** Generic base type for tuples. */
+public interface TupleType {}

@@ -29,9 +29,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
+import sh.props.converter.Converter;
 import sh.props.interfaces.Prop;
+import sh.props.tuples.TupleType;
 
-abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
+abstract class AbstractPropGroup<TupleT extends TupleType> extends SubscribableProp<TupleT>
     implements PropGroup<TupleT> {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
@@ -65,6 +67,34 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
       sb.append("∪").append(part);
     }
     return sb.toString();
+  }
+
+  /**
+   * Helper method that can encode the provided value using a converter, if the associated prop
+   * implements {@link Converter}.
+   *
+   * @param <T> the type of the prop's value
+   * @param <PropT> the type of the prop
+   * @param value the value to encode as string
+   * @param prop the prop to use as a Converter
+   * @return the prop's value string representation, or null if the provided value was null
+   */
+  @Nullable
+  protected static <T, PropT extends Prop<T>> String encodeValue(@Nullable T value, PropT prop) {
+    // if the value is null, stop here
+    if (value == null) {
+      return null;
+    }
+
+    if (prop instanceof Converter) {
+      // if the Prop is a Converter, use it to encode the value
+      @SuppressWarnings("unchecked")
+      Converter<T> converter = (Converter<T>) prop;
+      return converter.encode(value);
+    }
+
+    // fall back to using Object.toString()
+    return value.toString();
   }
 
   /**

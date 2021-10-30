@@ -41,6 +41,11 @@ import sh.props.tuples.Tuple;
  */
 class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     implements Prop<Triple<T, U, V>> {
+
+  private final Prop<T> first;
+  private final Prop<U> second;
+  private final Prop<V> third;
+
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -52,6 +57,10 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
   SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
     // generate a key represented by each prop
     super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
+
+    this.first = first;
+    this.second = second;
+    this.third = third;
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTriple.updateFirst(v)), this::error);
@@ -112,6 +121,10 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
   @Override
   public String[] toStringParts() {
     Triple<T, U, V> v = this.get();
-    return new String[] {v.first.toString(), v.second.toString(), v.third.toString()};
+    return new String[] {
+      AbstractPropGroup.encodeValue(v.first, this.first),
+      AbstractPropGroup.encodeValue(v.second, this.second),
+      AbstractPropGroup.encodeValue(v.third, this.third),
+    };
   }
 }

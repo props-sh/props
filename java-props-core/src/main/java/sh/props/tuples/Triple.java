@@ -37,7 +37,7 @@ import sh.props.annotations.Nullable;
  * @param <U> the type of the second object
  * @param <V> the type of the third object
  */
-public class Triple<T, U, V> extends Pair<T, U> {
+public class Triple<T, U, V> extends Pair<T, U> implements TupleType {
 
   @Nullable public final V third;
 

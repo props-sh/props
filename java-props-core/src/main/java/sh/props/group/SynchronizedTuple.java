@@ -42,6 +42,13 @@ import sh.props.tuples.Tuple;
  */
 class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, W, X>>
     implements Prop<Tuple<T, U, V, W, X>> {
+
+  private final Prop<T> first;
+  private final Prop<U> second;
+  private final Prop<V> third;
+  private final Prop<W> fourth;
+  private final Prop<X> fifth;
+
   /**
    * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -57,6 +64,12 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
     super(
         AbstractPropGroup.multiKey(
             first.key(), second.key(), third.key(), fourth.key(), fifth.key()));
+
+    this.first = first;
+    this.second = second;
+    this.third = third;
+    this.fourth = fourth;
+    this.fifth = fifth;
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTuple.updateFirst(v)), this::error);
@@ -156,11 +169,11 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
   public String[] toStringParts() {
     Tuple<T, U, V, W, X> v = this.get();
     return new String[] {
-      v.first.toString(),
-      v.second.toString(),
-      v.third.toString(),
-      v.fourth.toString(),
-      v.fifth.toString()
+      AbstractPropGroup.encodeValue(v.first, this.first),
+      AbstractPropGroup.encodeValue(v.second, this.second),
+      AbstractPropGroup.encodeValue(v.third, this.third),
+      AbstractPropGroup.encodeValue(v.fourth, this.fourth),
+      AbstractPropGroup.encodeValue(v.fifth, this.fifth),
     };
   }
 }
