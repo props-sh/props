@@ -26,6 +26,8 @@
 package sh.props.interfaces;
 
 import java.util.function.Supplier;
+import sh.props.annotations.Nullable;
+import sh.props.converter.Converter;
 
 /**
  * Interface that is returned to the caller to explicitly call out the public contract exported by
@@ -34,6 +36,33 @@ import java.util.function.Supplier;
  * @param <T> the property's type
  */
 public interface Prop<T> extends Supplier<T>, Subscribable<T> {
+  /**
+   * Helper method that can encode the provided value using a converter, if the associated prop
+   * implements {@link Converter}.
+   *
+   * @param <PropT> the type of the prop
+   * @param value the value to encode as string
+   * @param prop the prop to use as a Converter
+   * @return the prop's value string representation, or null if the provided value was null
+   */
+  @Nullable
+  static <T, PropT extends Prop<T>> String encodeValue(@Nullable T value, PropT prop) {
+    // if the value is null, stop here
+    if (value == null) {
+      return null;
+    }
+
+    if (prop instanceof Converter) {
+      // if the Prop is a Converter, use it to encode the value
+      @SuppressWarnings("unchecked")
+      Converter<T> converter = (Converter<T>) prop;
+      return converter.encode(value);
+    }
+
+    // fall back to using Object.toString()
+    return value.toString();
+  }
+
   /**
    * Designates this {@link Prop}'s key identifier.
    *
