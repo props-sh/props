@@ -103,4 +103,15 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateThird(V value) {
     return prev -> prev.updateThird(value);
   }
+
+  /**
+   * Convert each subtype of this group to a string, then return all as a string array.
+   *
+   * @return a string array with the values converted to strings
+   */
+  @Override
+  public String[] toStringParts() {
+    Triple<T, U, V> v = this.get();
+    return new String[] {v.first.toString(), v.second.toString(), v.third.toString()};
+  }
 }

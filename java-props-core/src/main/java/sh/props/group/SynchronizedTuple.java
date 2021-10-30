@@ -146,4 +146,21 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
     return prev -> prev.updateFifth(value);
   }
+
+  /**
+   * Convert each subtype of this group to a string, then return all as a string array.
+   *
+   * @return a string array with the values converted to strings
+   */
+  @Override
+  public String[] toStringParts() {
+    Tuple<T, U, V, W, X> v = this.get();
+    return new String[] {
+      v.first.toString(),
+      v.second.toString(),
+      v.third.toString(),
+      v.fourth.toString(),
+      v.fifth.toString()
+    };
+  }
 }

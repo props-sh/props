@@ -123,4 +123,17 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
   private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFourth(W value) {
     return prev -> prev.updateFourth(value);
   }
+
+  /**
+   * Convert each subtype of this group to a string, then return all as a string array.
+   *
+   * @return a string array with the values converted to strings
+   */
+  @Override
+  public String[] toStringParts() {
+    Quad<T, U, V, W> v = this.get();
+    return new String[] {
+      v.first.toString(), v.second.toString(), v.third.toString(), v.fourth.toString()
+    };
+  }
 }

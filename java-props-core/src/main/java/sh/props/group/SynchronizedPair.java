@@ -84,4 +84,15 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
   private static <T, U> UnaryOperator<Pair<T, U>> updateSecond(U value) {
     return prev -> prev.updateSecond(value);
   }
+
+  /**
+   * Convert each subtype of this group to a string, then return all as a string array.
+   *
+   * @return a string array with the values converted to strings
+   */
+  @Override
+  public String[] toStringParts() {
+    Pair<T, U> v = this.get();
+    return new String[] {v.first.toString(), v.second.toString()};
+  }
 }

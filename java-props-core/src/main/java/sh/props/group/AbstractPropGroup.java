@@ -31,7 +31,8 @@ import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Prop;
 
-abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
+    implements PropGroup<TupleT> {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
   private final String key;
@@ -68,6 +69,8 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
   /**
    * Initializes the holder with a valid value for the tuple.
+   *
+   * <p>This method should be called in any implementing subclass's constructor.
    *
    * @param value the value to set
    */
@@ -111,14 +114,13 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @return the tuple of values represented by this prop group
    */
   @Override
-  @Nullable
+  // we know a holder is always present
+  // and we expect subclasses to call initialize() with a non-null value
+  @SuppressWarnings("NullAway")
   public TupleT get() {
     Holder<TupleT> result = this.value.get();
 
-    // skip the check since value is initialized to a non-null value
-    @SuppressWarnings("NullAway")
-    boolean isError = result.error != null;
-    if (isError) {
+    if (result.error != null) {
       // we are only expecting RuntimeExceptions to be thrown by this implementation
       throw (RuntimeException) result.error;
     }
