@@ -28,22 +28,14 @@ package sh.props.group;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
+import sh.props.TemplatedPropSupplier;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Prop;
 
-abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
+public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
+    implements TemplatedPropSupplier {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
-  private final String key;
-
-  /**
-   * Class constructor that accept this prop group's key.
-   *
-   * @param key the key representing this prop group
-   */
-  AbstractPropGroup(String key) {
-    this.key = key;
-  }
 
   /**
    * Helper function that concatenates the passed strings to generate a composite key. Each key part
@@ -69,20 +61,12 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   /**
    * Initializes the holder with a valid value for the tuple.
    *
+   * <p>This method should be called in any implementing subclass's constructor.
+   *
    * @param value the value to set
    */
   protected final void initialize(TupleT value) {
     this.value.updateAndGet(t -> t.value(value));
-  }
-
-  /**
-   * Designates this {@link Prop}'s key identifier.
-   *
-   * @return a string id
-   */
-  @Override
-  public String key() {
-    return this.key;
   }
 
   /**
@@ -111,14 +95,13 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @return the tuple of values represented by this prop group
    */
   @Override
-  @Nullable
+  // we know a holder is always present
+  // and we expect subclasses to call initialize() with a non-null value
+  @SuppressWarnings("NullAway")
   public TupleT get() {
     Holder<TupleT> result = this.value.get();
 
-    // skip the check since value is initialized to a non-null value
-    @SuppressWarnings("NullAway")
-    boolean isError = result.error != null;
-    if (isError) {
+    if (result.error != null) {
       // we are only expecting RuntimeExceptions to be thrown by this implementation
       throw (RuntimeException) result.error;
     }
@@ -126,11 +109,22 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
     return result.value;
   }
 
+  /**
+   * Converts the current prop group into a template prop, capable of merging the tuple's values
+   * into the provided template.
+   *
+   * <p>The implementation will convert the tuple's values into strings (using each Prop's
+   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
+   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
+   * values more than once. See {@link String#format(String, Object...)} for more details.
+   *
+   * @param template the template to populate
+   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
+   *     supports subscriptions
+   */
   @Override
-  protected boolean setValue(@Nullable String value) {
-    throw new IllegalStateException(
-        "A prop group cannot be bound to the Registry, nor can its value be updated directly.");
-  }
+  public abstract Prop<String> renderTemplate(String template);
 
   /**
    * Holder class that keep references to a value/error, as well as an epoch that can be used to

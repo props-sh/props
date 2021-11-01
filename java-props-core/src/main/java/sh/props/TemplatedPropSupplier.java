@@ -25,23 +25,21 @@
 
 package sh.props;
 
-import sh.props.annotations.Nullable;
-import sh.props.converter.Converter;
 import sh.props.interfaces.Prop;
 
 /**
- * Abstract {@link Prop} class which encompasses all the methods needed by the {@link Registry} to
- * reason about a prop.
- *
- * @param <T> the property's type
+ * Interface that signals that an implementing subclass can be converted to a <code>
+ * Prop&lt;String&gt;</code> object. The resulting {@link Prop} object will render the template
+ * using a number of unspecified values, left at the discretion of the implementing subclass.
  */
-public abstract class AbstractProp<T> extends SubscribableProp<T> implements Prop<T>, Converter<T> {
+@FunctionalInterface
+public interface TemplatedPropSupplier {
 
   /**
-   * Setter method that should update the underlying implementation's value.
+   * Renders the provided template using an unspecified number of values.
    *
-   * @param value the new value to set
-   * @return true if the update succeeded
+   * @param template the template to render
+   * @return the rendered template
    */
-  protected abstract boolean setValue(@Nullable String value);
+  Prop<String> renderTemplate(String template);
 }

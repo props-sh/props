@@ -25,7 +25,11 @@
 
 package sh.props.group;
 
+import static java.lang.String.format;
+
 import java.util.function.UnaryOperator;
+import sh.props.AbstractProp;
+import sh.props.TemplatedProp;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
@@ -39,6 +43,10 @@ import sh.props.tuples.Tuple;
  * @param <U> the type of the second prop
  */
 class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Prop<Pair<T, U>> {
+
+  private final AbstractProp<T> first;
+  private final AbstractProp<U> second;
+
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -46,9 +54,9 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @param first the first prop
    * @param second the second prop
    */
-  SynchronizedPair(Prop<T> first, Prop<U> second) {
-    // generate a key represented by each prop
-    super(AbstractPropGroup.multiKey(first.key(), second.key()));
+  SynchronizedPair(AbstractProp<T> first, AbstractProp<U> second) {
+    this.first = first;
+    this.second = second;
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedPair.updateFirst(v)), this::error);
@@ -83,5 +91,43 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    */
   private static <T, U> UnaryOperator<Pair<T, U>> updateSecond(U value) {
     return prev -> prev.updateSecond(value);
+  }
+
+  /**
+   * Converts the current prop group into a template prop, capable of merging the tuple's values
+   * into the provided template.
+   *
+   * <p>The implementation will convert the tuple's values into strings (using each Prop's
+   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
+   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
+   * values more than once. See {@link String#format(String, Object...)} for more details.
+   *
+   * @param template the template to populate
+   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
+   *     supports subscriptions
+   */
+  @Override
+  public Prop<String> renderTemplate(String template) {
+    return new TemplatedProp<>(this) {
+      @Override
+      protected String renderTemplate(Pair<T, U> value) {
+        return format(
+            template,
+            TemplatedProp.encodeValue(value.first, SynchronizedPair.this.first),
+            TemplatedProp.encodeValue(value.second, SynchronizedPair.this.second));
+      }
+    };
+  }
+
+  /**
+   * Generates and returns a key for this object. The key is generated using {@link
+   * AbstractPropGroup#multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return AbstractPropGroup.multiKey(this.first.key(), this.second.key());
   }
 }

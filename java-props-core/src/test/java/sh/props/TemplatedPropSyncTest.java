@@ -25,66 +25,89 @@
 
 package sh.props;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
-import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
-class CoordinatedSyncTest {
+class TemplatedPropSyncTest {
 
   @Test
-  void synchronizedPairOfProps() {
+  void singlePropTemplate() {
     // ARRANGE
     InMemory source = new InMemory(true);
+    source.put("key1", "1");
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    var prop1 = registry.bind(new IntProp("key1", null));
+    final var expected = "I am expecting 1";
+
+    // ACT
+    var templatedProp = prop1.renderTemplate("I am expecting %s");
+
+    // ASSERT
+    assertThat(templatedProp.get(), equalTo(expected));
+  }
+
+  @Test
+  void pairTemplate() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
+    source.put("key1", "1");
+    source.put("key2", "2");
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
+    var group = Group.of(prop1, prop2);
 
-    var supplier = Group.of(prop1, prop2);
+    final var expected = "I am expecting 1 and 2";
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
+    var templatedProp = group.renderTemplate("I am expecting %s and %s");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2)));
+    assertThat(templatedProp.get(), equalTo(expected));
   }
 
   @Test
-  void synchronizedTripleOfProps() {
+  void tripleTemplate() {
     // ARRANGE
     InMemory source = new InMemory(true);
+    source.put("key1", "1");
+    source.put("key2", "2");
+    source.put("key3", "3");
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
+    var group = Group.of(prop1, prop2, prop3);
 
-    @SuppressWarnings("VariableDeclarationUsageDistance")
-    var supplier = Group.of(prop1, prop2, prop3);
+    final var expected = "I am expecting 1, 2, and 3";
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
+    var templatedProp = group.renderTemplate("I am expecting %s, %s, and %s");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3)));
+    assertThat(templatedProp.get(), equalTo(expected));
   }
 
   @Test
-  void synchronizedQuadOfProps() {
+  void quadTemplate() {
     // ARRANGE
     InMemory source = new InMemory(true);
+    source.put("key1", "1");
+    source.put("key2", "2");
+    source.put("key3", "3");
+    source.put("key4", "4");
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
@@ -92,24 +115,26 @@ class CoordinatedSyncTest {
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
+    var group = Group.of(prop1, prop2, prop3, prop4);
 
-    @SuppressWarnings("VariableDeclarationUsageDistance")
-    var supplier = Group.of(prop1, prop2, prop3, prop4);
+    final var expected = "I am expecting 1, 2, 3, and 4";
 
     // ACT
+    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, and %s");
+
+    // ASSERT
+    assertThat(templatedProp.get(), equalTo(expected));
+  }
+
+  @Test
+  void tupleTemplate() {
+    // ARRANGE
+    InMemory source = new InMemory(true);
     source.put("key1", "1");
     source.put("key2", "2");
     source.put("key3", "3");
     source.put("key4", "4");
-
-    // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
-  }
-
-  @Test
-  void synchronizedTupleOfProps() {
-    // ARRANGE
-    InMemory source = new InMemory(true);
+    source.put("key5", "5");
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
@@ -118,19 +143,15 @@ class CoordinatedSyncTest {
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
     var prop5 = registry.bind(new IntProp("key5", null));
+    var group = Group.of(prop1, prop2, prop3, prop4, prop5);
 
-    @SuppressWarnings("VariableDeclarationUsageDistance")
-    var supplier = Group.of(prop1, prop2, prop3, prop4, prop5);
+    final var expected = "I am expecting 1, 2, 3, 4, and 5";
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
-    source.put("key5", "5");
+    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, %s, and %s");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4, 5)));
+    assertThat(templatedProp.get(), equalTo(expected));
   }
 
   private static class IntProp extends CustomProp<Integer> implements IntegerConverter {

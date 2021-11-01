@@ -25,64 +25,71 @@
 
 package sh.props;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
-import java.time.Duration;
-import java.util.ArrayDeque;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.function.Consumer;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
-import sh.props.tuples.Pair;
-import sh.props.tuples.Quad;
-import sh.props.tuples.Triple;
-import sh.props.tuples.Tuple;
 
-@SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
-public class CoordinatedAsyncTest {
-  public static final int HOW_MANY_TIMES = 1000;
+@SuppressWarnings("NullAway")
+class TemplatedPropAsyncTest {
 
-  @RepeatedTest(value = HOW_MANY_TIMES)
-  void synchronizedPairOfProps() {
+  @Test
+  void singlePropTemplate() {
     // ARRANGE
+    final var expected = "I am expecting 1";
+
+    InMemory source = new InMemory(true);
+
+    Registry registry = new RegistryBuilder().withSource(source).build();
+
+    var prop1 = registry.bind(new IntProp("key1", null));
+    var templatedProp = prop1.renderTemplate("I am expecting %s");
+
+    DummyConsumer<String> consumer = spy(new DummyConsumer<>());
+    templatedProp.subscribe(consumer, (ignore) -> {});
+
+    // ACT
+    source.put("key1", "1");
+
+    // ASSERT
+    verify(consumer, timeout(1_000)).accept(expected);
+  }
+
+  @Test
+  void pairTemplate() {
+    // ARRANGE
+    final var expected = "I am expecting 1 and 2";
+
     InMemory source = new InMemory(true);
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
+    var group = Group.of(prop1, prop2);
+    var templatedProp = group.renderTemplate("I am expecting %s and %s");
 
-    DummyConsumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Group.of(prop1, prop2);
-    prop.subscribe(consumer, (ignored) -> {});
-
-    var expected = Tuple.of(1, 2);
+    DummyConsumer<String> consumer = spy(new DummyConsumer<>());
+    templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key1", "1");
     source.put("key2", "2");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
-
-    var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    verify(consumer, timeout(3_000)).accept(expected);
   }
 
-  @RepeatedTest(value = HOW_MANY_TIMES)
-  void synchronizedTripleOfProps() {
+  @Test
+  void tripleTemplate() {
     // ARRANGE
+    final var expected = "I am expecting 1, 2, and 3";
+
     InMemory source = new InMemory(true);
 
     Registry registry = new RegistryBuilder().withSource(source).build();
@@ -90,12 +97,11 @@ public class CoordinatedAsyncTest {
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
+    var group = Group.of(prop1, prop2, prop3);
+    var templatedProp = group.renderTemplate("I am expecting %s, %s, and %s");
 
-    DummyConsumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Group.of(prop1, prop2, prop3);
-    prop.subscribe(consumer, (ignored) -> {});
-
-    var expected = Tuple.of(1, 2, 3);
+    DummyConsumer<String> consumer = spy(new DummyConsumer<>());
+    templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key1", "1");
@@ -103,18 +109,14 @@ public class CoordinatedAsyncTest {
     source.put("key3", "3");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
-
-    var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    verify(consumer, timeout(1_000)).accept(expected);
   }
 
-  @RepeatedTest(value = HOW_MANY_TIMES)
-  void synchronizedQuadOfProps() {
+  @Test
+  void quadTemplate() {
     // ARRANGE
+    final var expected = "I am expecting 1, 2, 3, and 4";
+
     InMemory source = new InMemory(true);
 
     Registry registry = new RegistryBuilder().withSource(source).build();
@@ -123,12 +125,13 @@ public class CoordinatedAsyncTest {
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
+    var group = Group.of(prop1, prop2, prop3, prop4);
 
-    DummyConsumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
-    var prop = Group.of(prop1, prop2, prop3, prop4);
-    prop.subscribe(consumer, (ignored) -> {});
+    // ACT
+    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, and %s");
 
-    var expected = Tuple.of(1, 2, 3, 4);
+    DummyConsumer<String> consumer = spy(new DummyConsumer<>());
+    templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key1", "1");
@@ -137,18 +140,14 @@ public class CoordinatedAsyncTest {
     source.put("key4", "4");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
-
-    var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    verify(consumer, timeout(1_000)).accept(expected);
   }
 
-  @RepeatedTest(value = HOW_MANY_TIMES)
-  void synchronizedTupleOfProps() {
+  @Test
+  void tupleTemplate() {
     // ARRANGE
+    final var expected = "I am expecting 1, 2, 3, 4, and 5";
+
     InMemory source = new InMemory(true);
 
     Registry registry = new RegistryBuilder().withSource(source).build();
@@ -158,13 +157,11 @@ public class CoordinatedAsyncTest {
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
     var prop5 = registry.bind(new IntProp("key5", null));
+    var group = Group.of(prop1, prop2, prop3, prop4, prop5);
+    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, %s, and %s");
 
-    DummyConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
-        spy(new DummyConsumer<>());
-    var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
-    prop.subscribe(consumer, (ignored) -> {});
-
-    var expected = Tuple.of(1, 2, 3, 4, 5);
+    DummyConsumer<String> consumer = spy(new DummyConsumer<>());
+    templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key1", "1");
@@ -174,34 +171,14 @@ public class CoordinatedAsyncTest {
     source.put("key5", "5");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
-
-    var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    verify(consumer, timeout(1_000)).accept(expected);
   }
 
   private static class DummyConsumer<T> implements Consumer<T> {
-    private final LinkedHashSet<T> store = new LinkedHashSet<>();
 
     @Override
-    public synchronized void accept(T t) {
-      this.store.add(t);
-    }
-
-    public synchronized ArrayDeque<T> get() {
-      return new ArrayDeque<>(this.store);
-    }
-
-    public synchronized T getLast() {
-      T val = null;
-      Iterator<T> it = this.store.iterator();
-      while (it.hasNext()) {
-        val = it.next();
-      }
-      return val;
+    public void accept(T t) {
+      // no-op
     }
   }
 

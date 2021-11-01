@@ -25,7 +25,11 @@
 
 package sh.props.group;
 
+import static java.lang.String.format;
+
 import java.util.function.UnaryOperator;
+import sh.props.AbstractProp;
+import sh.props.TemplatedProp;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
@@ -41,6 +45,11 @@ import sh.props.tuples.Tuple;
  */
 class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     implements Prop<Triple<T, U, V>> {
+
+  private final AbstractProp<T> first;
+  private final AbstractProp<U> second;
+  private final AbstractProp<V> third;
+
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
    * nullable), otherwise using this implementation makes no sense.
@@ -49,9 +58,10 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    * @param second the second prop
    * @param third the third prop
    */
-  SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
-    // generate a key represented by each prop
-    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
+  SynchronizedTriple(AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
+    this.first = first;
+    this.second = second;
+    this.third = third;
 
     // subscribe to all updates and errors
     first.subscribe(v -> this.apply(SynchronizedTriple.updateFirst(v)), this::error);
@@ -102,5 +112,44 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    */
   private static <T, U, V> UnaryOperator<Triple<T, U, V>> updateThird(V value) {
     return prev -> prev.updateThird(value);
+  }
+
+  /**
+   * Converts the current prop group into a template prop, capable of merging the tuple's values
+   * into the provided template.
+   *
+   * <p>The implementation will convert the tuple's values into strings (using each Prop's
+   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
+   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
+   * values more than once. See {@link String#format(String, Object...)} for more details.
+   *
+   * @param template the template to populate
+   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
+   *     supports subscriptions
+   */
+  @Override
+  public Prop<String> renderTemplate(String template) {
+    return new TemplatedProp<>(this) {
+      @Override
+      protected String renderTemplate(Triple<T, U, V> value) {
+        return format(
+            template,
+            TemplatedProp.encodeValue(value.first, SynchronizedTriple.this.first),
+            TemplatedProp.encodeValue(value.second, SynchronizedTriple.this.second),
+            TemplatedProp.encodeValue(value.third, SynchronizedTriple.this.third));
+      }
+    };
+  }
+
+  /**
+   * Generates and returns a key for this object. The key is generated using {@link
+   * AbstractPropGroup#multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return AbstractPropGroup.multiKey(this.first.key(), this.second.key(), this.third.key());
   }
 }

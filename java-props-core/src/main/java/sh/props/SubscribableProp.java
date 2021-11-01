@@ -48,7 +48,7 @@ import sh.props.interfaces.Prop;
  *
  * @param <T> the type of the prop object
  */
-public abstract class SubscribableProp<T> extends AbstractProp<T> implements Prop<T> {
+public abstract class SubscribableProp<T> implements Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
   protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
