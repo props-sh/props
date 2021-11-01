@@ -29,6 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.InvalidReadOpException;
+import sh.props.group.AbstractPropGroup;
 import sh.props.group.Group;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
@@ -47,7 +48,7 @@ import sh.props.tuples.Pair;
 public class RefactoredProp<T, R> implements Prop<R> {
 
   private final String key;
-  private final Prop<Pair<T, R>> group;
+  private final AbstractPropGroup<Pair<T, R>> group;
   private final Function<T, R> converter;
 
   /**
@@ -104,6 +105,16 @@ public class RefactoredProp<T, R> implements Prop<R> {
   @Override
   public String key() {
     return this.key;
+  }
+
+  /**
+   * Supports rendering the current implementation's value into the provided template.
+   *
+   * @param template a template that accept this prop's value
+   * @return a {@link Prop} that can returned the rendered template and allows subscriptions
+   */
+  public Prop<String> renderTemplate(String template) {
+    return this.group.renderTemplate(template);
   }
 
   /**

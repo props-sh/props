@@ -31,7 +31,7 @@ import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Prop;
 
-abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
+public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
   private final String key;

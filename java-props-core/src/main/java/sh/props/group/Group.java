@@ -26,7 +26,6 @@
 package sh.props.group;
 
 import sh.props.AbstractProp;
-import sh.props.interfaces.Prop;
 import sh.props.interfaces.Subscribable;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
@@ -46,7 +45,8 @@ public class Group {
    * @param <U> the type of the second prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U> Prop<Pair<T, U>> of(AbstractProp<T> first, AbstractProp<U> second) {
+  public static <T, U> AbstractPropGroup<Pair<T, U>> of(
+      AbstractProp<T> first, AbstractProp<U> second) {
     return new SynchronizedPair<>(first, second);
   }
 
@@ -63,7 +63,7 @@ public class Group {
    * @param <V> the type of the third prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V> Prop<Triple<T, U, V>> of(
+  public static <T, U, V> AbstractPropGroup<Triple<T, U, V>> of(
       AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
     return new SynchronizedTriple<>(first, second, third);
   }
@@ -83,7 +83,7 @@ public class Group {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> Prop<Quad<T, U, V, W>> of(
+  public static <T, U, V, W> AbstractPropGroup<Quad<T, U, V, W>> of(
       AbstractProp<T> first,
       AbstractProp<U> second,
       AbstractProp<V> third,
@@ -108,7 +108,7 @@ public class Group {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> Prop<Tuple<T, U, V, W, X>> of(
+  public static <T, U, V, W, X> AbstractPropGroup<Tuple<T, U, V, W, X>> of(
       AbstractProp<T> first,
       AbstractProp<U> second,
       AbstractProp<V> third,
