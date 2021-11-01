@@ -44,8 +44,8 @@ import sh.props.tuples.Tuple;
  */
 class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Prop<Pair<T, U>> {
 
-  private final Prop<T> first;
-  private final Prop<U> second;
+  private final AbstractProp<T> first;
+  private final AbstractProp<U> second;
 
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
@@ -54,7 +54,7 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @param first the first prop
    * @param second the second prop
    */
-  SynchronizedPair(Prop<T> first, Prop<U> second) {
+  SynchronizedPair(AbstractProp<T> first, AbstractProp<U> second) {
     // generate a key represented by each prop
     super(AbstractPropGroup.multiKey(first.key(), second.key()));
 
@@ -115,7 +115,10 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
     return new TemplatedProp<>(this) {
       @Override
       protected String renderTemplate(Pair<T, U> value) {
-        return format(template, AbstractProp.encodeValue(value.first, SynchronizedPair.this.first));
+        return format(
+            template,
+            TemplatedProp.encodeValue(value.first, SynchronizedPair.this.first),
+            TemplatedProp.encodeValue(value.second, SynchronizedPair.this.second));
       }
     };
   }

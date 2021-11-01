@@ -47,11 +47,11 @@ import sh.props.tuples.Tuple;
 class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, W, X>>
     implements Prop<Tuple<T, U, V, W, X>> {
 
-  private final Prop<T> first;
-  private final Prop<U> second;
-  private final Prop<V> third;
-  private final Prop<W> fourth;
-  private final Prop<X> fifth;
+  private final AbstractProp<T> first;
+  private final AbstractProp<U> second;
+  private final AbstractProp<V> third;
+  private final AbstractProp<W> fourth;
+  private final AbstractProp<X> fifth;
 
   /**
    * Constructs a synchronized tuple of values. At least two {@link Prop}s should be specified (not
@@ -63,7 +63,12 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @param fourth the fourth prop
    * @param fifth the fifth prop
    */
-  SynchronizedTuple(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
+  SynchronizedTuple(
+      AbstractProp<T> first,
+      AbstractProp<U> second,
+      AbstractProp<V> third,
+      AbstractProp<W> fourth,
+      AbstractProp<X> fifth) {
     // generate a key represented by each prop
     super(
         AbstractPropGroup.multiKey(
@@ -185,11 +190,11 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
       protected String renderTemplate(Tuple<T, U, V, W, X> value) {
         return format(
             template,
-            AbstractProp.encodeValue(value.first, SynchronizedTuple.this.first),
-            AbstractProp.encodeValue(value.second, SynchronizedTuple.this.second),
-            AbstractProp.encodeValue(value.third, SynchronizedTuple.this.third),
-            AbstractProp.encodeValue(value.fourth, SynchronizedTuple.this.fourth),
-            AbstractProp.encodeValue(value.fifth, SynchronizedTuple.this.fifth));
+            TemplatedProp.encodeValue(value.first, SynchronizedTuple.this.first),
+            TemplatedProp.encodeValue(value.second, SynchronizedTuple.this.second),
+            TemplatedProp.encodeValue(value.third, SynchronizedTuple.this.third),
+            TemplatedProp.encodeValue(value.fourth, SynchronizedTuple.this.fourth),
+            TemplatedProp.encodeValue(value.fifth, SynchronizedTuple.this.fifth));
       }
     };
   }

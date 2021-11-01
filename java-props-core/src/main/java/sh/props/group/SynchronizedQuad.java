@@ -47,10 +47,10 @@ import sh.props.tuples.Tuple;
 class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
     implements Prop<Quad<T, U, V, W>> {
 
-  private final Prop<T> first;
-  private final Prop<U> second;
-  private final Prop<V> third;
-  private final Prop<W> fourth;
+  private final AbstractProp<T> first;
+  private final AbstractProp<U> second;
+  private final AbstractProp<V> third;
+  private final AbstractProp<W> fourth;
 
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
@@ -61,7 +61,11 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
    * @param third the third prop
    * @param fourth the fourth prop
    */
-  SynchronizedQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
+  SynchronizedQuad(
+      AbstractProp<T> first,
+      AbstractProp<U> second,
+      AbstractProp<V> third,
+      AbstractProp<W> fourth) {
     // generate a key represented by each prop
     super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
 
@@ -160,10 +164,10 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
       protected String renderTemplate(Quad<T, U, V, W> value) {
         return format(
             template,
-            AbstractProp.encodeValue(value.first, SynchronizedQuad.this.first),
-            AbstractProp.encodeValue(value.second, SynchronizedQuad.this.second),
-            AbstractProp.encodeValue(value.third, SynchronizedQuad.this.third),
-            AbstractProp.encodeValue(value.fourth, SynchronizedQuad.this.fourth));
+            TemplatedProp.encodeValue(value.first, SynchronizedQuad.this.first),
+            TemplatedProp.encodeValue(value.second, SynchronizedQuad.this.second),
+            TemplatedProp.encodeValue(value.third, SynchronizedQuad.this.third),
+            TemplatedProp.encodeValue(value.fourth, SynchronizedQuad.this.fourth));
       }
     };
   }

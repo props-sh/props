@@ -58,7 +58,8 @@ public class RefactoredProp<T, R> implements Prop<R> {
    * @param converter a converter function that can transform the old data type into the new
    *     datatype
    */
-  public RefactoredProp(Prop<T> oldProp, Prop<R> refactoredProp, Function<T, R> converter) {
+  public RefactoredProp(
+      AbstractProp<T> oldProp, AbstractProp<R> refactoredProp, Function<T, R> converter) {
     this.key = refactoredProp.key();
     this.group = Group.of(oldProp, refactoredProp);
     this.converter = converter;

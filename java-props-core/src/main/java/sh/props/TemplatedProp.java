@@ -26,6 +26,8 @@
 package sh.props;
 
 import java.util.function.Consumer;
+import sh.props.annotations.Nullable;
+import sh.props.converter.Converter;
 import sh.props.interfaces.Prop;
 
 /**
@@ -46,6 +48,23 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    */
   public TemplatedProp(Prop<T> prop) {
     this.prop = prop;
+  }
+
+  /**
+   * Helper method that can encode the provided value using a {@link Converter}.
+   *
+   * @param value the value to encode as string
+   * @return the prop's value string representation, or null if the provided value was null
+   */
+  @Nullable
+  public static <T> String encodeValue(@Nullable T value, Converter<T> converter) {
+    // if the value is null, stop here
+    if (value == null) {
+      return null;
+    }
+
+    // if the Prop is a Converter, use it to encode the value
+    return converter.encode(value);
   }
 
   /**

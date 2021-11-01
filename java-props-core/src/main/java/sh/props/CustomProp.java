@@ -34,6 +34,7 @@ import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.exceptions.InvalidUpdateOpException;
+import sh.props.interfaces.Prop;
 
 /**
  * An almost complete implementation of property objects, containing additional metadata that may be
@@ -43,7 +44,7 @@ import sh.props.exceptions.InvalidUpdateOpException;
  *
  * @param <T> the property's type
  */
-public abstract class CustomProp<T> extends SubscribableProp<T> implements Converter<T> {
+public abstract class CustomProp<T> extends AbstractProp<T> implements Converter<T> {
 
   public final String key;
 
@@ -173,6 +174,29 @@ public abstract class CustomProp<T> extends SubscribableProp<T> implements Conve
     // ensure the Prop is in a valid state before returning it
     this.validateBeforeGet(value);
     return value;
+  }
+
+  /**
+   * Converts the current prop into a template prop, capable of merging the tuple's values into the
+   * provided template.
+   *
+   * <p>The implementation will convert the tuple's values into strings (using each Prop's
+   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
+   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
+   * values more than once. See {@link String#format(String, Object...)} for more details.
+   *
+   * @param template the template to populate
+   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
+   *     supports subscriptions
+   */
+  public Prop<String> renderTemplate(String template) {
+    return new TemplatedProp<>(this) {
+      @Override
+      protected String renderTemplate(T value) {
+        return format(template, TemplatedProp.encodeValue(value, CustomProp.this));
+      }
+    };
   }
 
   /**

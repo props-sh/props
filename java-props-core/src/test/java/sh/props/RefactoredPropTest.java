@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
 import sh.props.converter.StringConverter;
 import sh.props.exceptions.InvalidReadOpException;
-import sh.props.interfaces.Prop;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
@@ -52,8 +51,8 @@ class RefactoredPropTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<String> prop1 = registry.bind(new StringProp("key1", null));
-    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new StringProp("key1", null));
+    var prop2 = registry.bind(new IntProp("key2", null));
 
     DummyConsumer<Integer> initialized = spy(new DummyConsumer<>());
     prop2.subscribe(initialized, (ignore) -> {});
@@ -86,8 +85,8 @@ class RefactoredPropTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<String> prop1 = registry.bind(new StringProp("key1", null));
-    Prop<Integer> prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new StringProp("key1", null));
+    var prop2 = registry.bind(new IntProp("key2", null));
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
     RefactoredProp<String, Integer> supplier =
@@ -113,8 +112,8 @@ class RefactoredPropTest {
 
     Registry registry = new RegistryBuilder().withSource(source).build();
 
-    Prop<String> prop1 = registry.bind(new StringProp("key1", null));
-    Prop<Integer> prop2 = registry.bind(new IntPropErr("key2", null));
+    var prop1 = registry.bind(new StringProp("key1", null));
+    var prop2 = registry.bind(new IntPropErr("key2", null));
 
     DummyConsumer<Throwable> initialized = spy(new DummyConsumer<>());
     prop2.subscribe((ignore) -> {}, initialized);

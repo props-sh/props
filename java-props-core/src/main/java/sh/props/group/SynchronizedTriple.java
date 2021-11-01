@@ -46,9 +46,9 @@ import sh.props.tuples.Tuple;
 class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
     implements Prop<Triple<T, U, V>> {
 
-  private final Prop<T> first;
-  private final Prop<U> second;
-  private final Prop<V> third;
+  private final AbstractProp<T> first;
+  private final AbstractProp<U> second;
+  private final AbstractProp<V> third;
 
   /**
    * Constructs a synchronized quad of values. At least two {@link Prop}s should be specified (not
@@ -58,7 +58,7 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    * @param second the second prop
    * @param third the third prop
    */
-  SynchronizedTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
+  SynchronizedTriple(AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
     // generate a key represented by each prop
     super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
 
@@ -138,9 +138,9 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
       protected String renderTemplate(Triple<T, U, V> value) {
         return format(
             template,
-            AbstractProp.encodeValue(value.first, SynchronizedTriple.this.first),
-            AbstractProp.encodeValue(value.second, SynchronizedTriple.this.second),
-            AbstractProp.encodeValue(value.third, SynchronizedTriple.this.third));
+            TemplatedProp.encodeValue(value.first, SynchronizedTriple.this.first),
+            TemplatedProp.encodeValue(value.second, SynchronizedTriple.this.second),
+            TemplatedProp.encodeValue(value.third, SynchronizedTriple.this.third));
       }
     };
   }

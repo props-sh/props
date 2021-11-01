@@ -141,14 +141,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
    *     supports subscriptions
    */
-  @Override
   public abstract Prop<String> renderTemplate(String template);
-
-  @Override
-  protected boolean setValue(@Nullable String value) {
-    throw new IllegalStateException(
-        "A prop group cannot be bound to the Registry, nor can its value be updated directly.");
-  }
 
   /**
    * Holder class that keep references to a value/error, as well as an epoch that can be used to
