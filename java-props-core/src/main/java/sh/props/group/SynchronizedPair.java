@@ -55,9 +55,6 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
    * @param second the second prop
    */
   SynchronizedPair(AbstractProp<T> first, AbstractProp<U> second) {
-    // generate a key represented by each prop
-    super(AbstractPropGroup.multiKey(first.key(), second.key()));
-
     this.first = first;
     this.second = second;
 
@@ -121,5 +118,16 @@ class SynchronizedPair<T, U> extends AbstractPropGroup<Pair<T, U>> implements Pr
             TemplatedProp.encodeValue(value.second, SynchronizedPair.this.second));
       }
     };
+  }
+
+  /**
+   * Generates and returns a key for this object. The key is generated using {@link
+   * AbstractPropGroup#multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return AbstractPropGroup.multiKey(this.first.key(), this.second.key());
   }
 }

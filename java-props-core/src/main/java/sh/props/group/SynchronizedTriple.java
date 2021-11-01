@@ -59,9 +59,6 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
    * @param third the third prop
    */
   SynchronizedTriple(AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
-    // generate a key represented by each prop
-    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key()));
-
     this.first = first;
     this.second = second;
     this.third = third;
@@ -143,5 +140,16 @@ class SynchronizedTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>>
             TemplatedProp.encodeValue(value.third, SynchronizedTriple.this.third));
       }
     };
+  }
+
+  /**
+   * Generates and returns a key for this object. The key is generated using {@link
+   * AbstractPropGroup#multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return AbstractPropGroup.multiKey(this.first.key(), this.second.key(), this.third.key());
   }
 }

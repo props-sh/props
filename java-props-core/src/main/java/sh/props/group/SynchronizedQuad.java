@@ -66,9 +66,6 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
       AbstractProp<U> second,
       AbstractProp<V> third,
       AbstractProp<W> fourth) {
-    // generate a key represented by each prop
-    super(AbstractPropGroup.multiKey(first.key(), second.key(), third.key(), fourth.key()));
-
     this.first = first;
     this.second = second;
     this.third = third;
@@ -170,5 +167,17 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
             TemplatedProp.encodeValue(value.fourth, SynchronizedQuad.this.fourth));
       }
     };
+  }
+
+  /**
+   * Generates and returns a key for this object. The key is generated using {@link
+   * AbstractPropGroup#multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return AbstractPropGroup.multiKey(
+        this.first.key(), this.second.key(), this.third.key(), this.fourth.key());
   }
 }

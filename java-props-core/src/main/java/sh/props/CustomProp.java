@@ -44,7 +44,8 @@ import sh.props.interfaces.Prop;
  *
  * @param <T> the property's type
  */
-public abstract class CustomProp<T> extends AbstractProp<T> implements Converter<T> {
+public abstract class CustomProp<T> extends AbstractProp<T>
+    implements Converter<T>, TemplatedPropSupplier {
 
   public final String key;
 
@@ -190,6 +191,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
    *     supports subscriptions
    */
+  @Override
   public Prop<String> renderTemplate(String template) {
     return new TemplatedProp<>(this) {
       @Override

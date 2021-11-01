@@ -28,22 +28,14 @@ package sh.props.group;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
+import sh.props.TemplatedPropSupplier;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Prop;
 
-public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
+public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
+    implements TemplatedPropSupplier {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
-  private final String key;
-
-  /**
-   * Class constructor that accept this prop group's key.
-   *
-   * @param key the key representing this prop group
-   */
-  AbstractPropGroup(String key) {
-    this.key = key;
-  }
 
   /**
    * Helper function that concatenates the passed strings to generate a composite key. Each key part
@@ -75,16 +67,6 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
    */
   protected final void initialize(TupleT value) {
     this.value.updateAndGet(t -> t.value(value));
-  }
-
-  /**
-   * Designates this {@link Prop}'s key identifier.
-   *
-   * @return a string id
-   */
-  @Override
-  public String key() {
-    return this.key;
   }
 
   /**
@@ -141,6 +123,7 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
    * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
    *     supports subscriptions
    */
+  @Override
   public abstract Prop<String> renderTemplate(String template);
 
   /**

@@ -69,11 +69,6 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
       AbstractProp<V> third,
       AbstractProp<W> fourth,
       AbstractProp<X> fifth) {
-    // generate a key represented by each prop
-    super(
-        AbstractPropGroup.multiKey(
-            first.key(), second.key(), third.key(), fourth.key(), fifth.key()));
-
     this.first = first;
     this.second = second;
     this.third = third;
@@ -197,5 +192,17 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
             TemplatedProp.encodeValue(value.fifth, SynchronizedTuple.this.fifth));
       }
     };
+  }
+
+  /**
+   * Generates and returns a key for this object. The key is generated using {@link
+   * AbstractPropGroup#multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return AbstractPropGroup.multiKey(
+        this.first.key(), this.second.key(), this.third.key(), this.fourth.key(), this.fifth.key());
   }
 }
