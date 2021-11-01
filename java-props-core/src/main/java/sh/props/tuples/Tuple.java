@@ -39,7 +39,7 @@ import sh.props.annotations.Nullable;
  * @param <W> the type of the fourth object in the tuple
  * @param <X> the type of the fifth object in the tuple
  */
-public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> implements TupleType {
+public final class Tuple<T, U, V, W, X> extends Quad<T, U, V, W> {
 
   @Nullable public final X fifth;
 

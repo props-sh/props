@@ -23,17 +23,51 @@
  *
  */
 
-package sh.props.group;
+package sh.props;
 
+import java.util.function.Consumer;
 import sh.props.interfaces.Prop;
-import sh.props.tuples.TupleType;
 
-public interface PropGroup<TupleT extends TupleType> extends Prop<TupleT> {
+/**
+ * Partial implementation that can be used to combine a string template with a backing {@link Prop},
+ * rendering the template with the provided value.
+ *
+ * @param <T> the type of the backing prop
+ */
+public abstract class TemplatedProp<T> implements Prop<String> {
+
+  private final Prop<T> prop;
 
   /**
-   * Converts each type in the tuple to a string and returns a string array.
+   * Default constructor for the template prop, accepting the backing {@link Prop} that supplies
+   * values and accepts subscriptions.
    *
-   * @return a string array containing all the props' string representations
+   * @param prop the backing prop
    */
-  String[] toStringParts();
+  public TemplatedProp(Prop<T> prop) {
+    this.prop = prop;
+  }
+
+  /**
+   * Implement this method and render a string template using the provided value.
+   *
+   * @param value the tuple to render into a template
+   * @return the rendered template
+   */
+  protected abstract String renderTemplate(T value);
+
+  @Override
+  public String key() {
+    return this.prop.key();
+  }
+
+  @Override
+  public String get() {
+    return this.renderTemplate(this.prop.get());
+  }
+
+  @Override
+  public void subscribe(Consumer<String> onUpdate, Consumer<Throwable> onError) {
+    this.prop.subscribe(this::renderTemplate, onError);
+  }
 }

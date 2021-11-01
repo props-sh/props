@@ -25,7 +25,11 @@
 
 package sh.props.group;
 
+import static java.lang.String.format;
+
 import java.util.function.UnaryOperator;
+import sh.props.AbstractProp;
+import sh.props.TemplatedProp;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Tuple;
 
@@ -161,19 +165,32 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
   }
 
   /**
-   * Convert each subtype of this group to a string, then return all as a string array.
+   * Converts the current prop group into a template prop, capable of merging the tuple's values
+   * into the provided template.
    *
-   * @return a string array with the values converted to strings
+   * <p>The implementation will convert the tuple's values into strings (using each Prop's
+   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
+   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
+   * values more than once. See {@link String#format(String, Object...)} for more details.
+   *
+   * @param template the template to populate
+   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
+   *     supports subscriptions
    */
   @Override
-  public String[] toStringParts() {
-    Tuple<T, U, V, W, X> v = this.get();
-    return new String[] {
-      AbstractPropGroup.encodeValue(v.first, this.first),
-      AbstractPropGroup.encodeValue(v.second, this.second),
-      AbstractPropGroup.encodeValue(v.third, this.third),
-      AbstractPropGroup.encodeValue(v.fourth, this.fourth),
-      AbstractPropGroup.encodeValue(v.fifth, this.fifth),
+  public Prop<String> renderTemplate(String template) {
+    return new TemplatedProp<>(this) {
+      @Override
+      protected String renderTemplate(Tuple<T, U, V, W, X> value) {
+        return format(
+            template,
+            AbstractProp.encodeValue(value.first, SynchronizedTuple.this.first),
+            AbstractProp.encodeValue(value.second, SynchronizedTuple.this.second),
+            AbstractProp.encodeValue(value.third, SynchronizedTuple.this.third),
+            AbstractProp.encodeValue(value.fourth, SynchronizedTuple.this.fourth),
+            AbstractProp.encodeValue(value.fifth, SynchronizedTuple.this.fifth));
+      }
     };
   }
 }

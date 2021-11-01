@@ -29,12 +29,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.Converter;
 import sh.props.interfaces.Prop;
-import sh.props.tuples.TupleType;
 
-abstract class AbstractPropGroup<TupleT extends TupleType> extends SubscribableProp<TupleT>
-    implements PropGroup<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
   private final String key;
@@ -67,34 +64,6 @@ abstract class AbstractPropGroup<TupleT extends TupleType> extends SubscribableP
       sb.append("∪").append(part);
     }
     return sb.toString();
-  }
-
-  /**
-   * Helper method that can encode the provided value using a converter, if the associated prop
-   * implements {@link Converter}.
-   *
-   * @param <T> the type of the prop's value
-   * @param <PropT> the type of the prop
-   * @param value the value to encode as string
-   * @param prop the prop to use as a Converter
-   * @return the prop's value string representation, or null if the provided value was null
-   */
-  @Nullable
-  protected static <T, PropT extends Prop<T>> String encodeValue(@Nullable T value, PropT prop) {
-    // if the value is null, stop here
-    if (value == null) {
-      return null;
-    }
-
-    if (prop instanceof Converter) {
-      // if the Prop is a Converter, use it to encode the value
-      @SuppressWarnings("unchecked")
-      Converter<T> converter = (Converter<T>) prop;
-      return converter.encode(value);
-    }
-
-    // fall back to using Object.toString()
-    return value.toString();
   }
 
   /**
@@ -157,6 +126,23 @@ abstract class AbstractPropGroup<TupleT extends TupleType> extends SubscribableP
 
     return result.value;
   }
+
+  /**
+   * Converts the current prop group into a template prop, capable of merging the tuple's values
+   * into the provided template.
+   *
+   * <p>The implementation will convert the tuple's values into strings (using each Prop's
+   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
+   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
+   * values more than once. See {@link String#format(String, Object...)} for more details.
+   *
+   * @param template the template to populate
+   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
+   *     supports subscriptions
+   */
+  @Override
+  public abstract Prop<String> renderTemplate(String template);
 
   @Override
   protected boolean setValue(@Nullable String value) {

@@ -36,7 +36,7 @@ import sh.props.annotations.Nullable;
  * @param <T> the type of the first object
  * @param <U> the type of the second object
  */
-public class Pair<T, U> implements TupleType {
+public class Pair<T, U> {
 
   @Nullable public final T first;
   @Nullable public final U second;
