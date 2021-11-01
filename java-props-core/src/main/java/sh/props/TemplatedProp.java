@@ -87,6 +87,6 @@ public abstract class TemplatedProp<T> implements Prop<String> {
 
   @Override
   public void subscribe(Consumer<String> onUpdate, Consumer<Throwable> onError) {
-    this.prop.subscribe(this::renderTemplate, onError);
+    this.prop.subscribe(value -> onUpdate.accept(this.renderTemplate(value)), onError);
   }
 }
