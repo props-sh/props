@@ -57,7 +57,7 @@ spotless {
 
     java {
         removeUnusedImports()
-        googleJavaFormat("1.10")
+        googleJavaFormat("1.10.0")
         trimTrailingWhitespace()
         endWithNewline()
         licenseHeaderFile(rootProject.file("props.license.kt"))

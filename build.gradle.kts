@@ -1,15 +1,11 @@
 group = "sh.props"
 version = project.version
 
-subprojects {
-    buildscript {
-        repositories {
-            mavenCentral()
-        }
+buildscript {
+    repositories {
+        mavenCentral()
     }
-}
-
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+    dependencies {
+        "classpath"(group = "com.google.googlejavaformat", name = "google-java-format", version = "1.10.0")
+    }
 }
