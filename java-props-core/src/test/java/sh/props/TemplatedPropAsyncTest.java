@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
-import sh.props.group.Group;
+import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
@@ -48,7 +48,7 @@ class TemplatedPropAsyncTest {
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     var prop1 = registry.bind(new IntProp("key1", null));
-    var templatedProp = prop1.renderTemplate("I am expecting %s");
+    var templatedProp = TemplatedProp.of("I am expecting %s", prop1);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
@@ -71,8 +71,7 @@ class TemplatedPropAsyncTest {
 
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
-    var group = Group.of(prop1, prop2);
-    var templatedProp = group.renderTemplate("I am expecting %s and %s");
+    var templatedProp = TemplatedProp.of("I am expecting %s and %s", prop1, prop2);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
@@ -97,8 +96,7 @@ class TemplatedPropAsyncTest {
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
-    var group = Group.of(prop1, prop2, prop3);
-    var templatedProp = group.renderTemplate("I am expecting %s, %s, and %s");
+    var templatedProp = TemplatedProp.of("I am expecting %s, %s, and %s", prop1, prop2, prop3);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
@@ -125,10 +123,8 @@ class TemplatedPropAsyncTest {
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
-    var group = Group.of(prop1, prop2, prop3, prop4);
-
-    // ACT
-    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, and %s");
+    var templatedProp =
+        TemplatedProp.of("I am expecting %s, %s, %s, and %s", prop1, prop2, prop3, prop4);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
@@ -157,8 +153,9 @@ class TemplatedPropAsyncTest {
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
     var prop5 = registry.bind(new IntProp("key5", null));
-    var group = Group.of(prop1, prop2, prop3, prop4, prop5);
-    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, %s, and %s");
+    var templatedProp =
+        TemplatedProp.of(
+            "I am expecting %s, %s, %s, %s, and %s", prop1, prop2, prop3, prop4, prop5);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});

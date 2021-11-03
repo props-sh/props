@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.jupiter.api.Test;
 import sh.props.converter.IntegerConverter;
-import sh.props.group.Group;
+import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
 
 @SuppressWarnings("NullAway")
@@ -48,7 +48,7 @@ class TemplatedPropSyncTest {
     final var expected = "I am expecting 1";
 
     // ACT
-    var templatedProp = prop1.renderTemplate("I am expecting %s");
+    var templatedProp = TemplatedProp.of("I am expecting %s", prop1);
 
     // ASSERT
     assertThat(templatedProp.get(), equalTo(expected));
@@ -65,12 +65,11 @@ class TemplatedPropSyncTest {
 
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
-    var group = Group.of(prop1, prop2);
 
     final var expected = "I am expecting 1 and 2";
 
     // ACT
-    var templatedProp = group.renderTemplate("I am expecting %s and %s");
+    var templatedProp = TemplatedProp.of("I am expecting %s and %s", prop1, prop2);
 
     // ASSERT
     assertThat(templatedProp.get(), equalTo(expected));
@@ -89,12 +88,11 @@ class TemplatedPropSyncTest {
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
-    var group = Group.of(prop1, prop2, prop3);
 
     final var expected = "I am expecting 1, 2, and 3";
 
     // ACT
-    var templatedProp = group.renderTemplate("I am expecting %s, %s, and %s");
+    var templatedProp = TemplatedProp.of("I am expecting %s, %s, and %s", prop1, prop2, prop3);
 
     // ASSERT
     assertThat(templatedProp.get(), equalTo(expected));
@@ -115,12 +113,12 @@ class TemplatedPropSyncTest {
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
-    var group = Group.of(prop1, prop2, prop3, prop4);
 
     final var expected = "I am expecting 1, 2, 3, and 4";
 
     // ACT
-    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, and %s");
+    var templatedProp =
+        TemplatedProp.of("I am expecting %s, %s, %s, and %s", prop1, prop2, prop3, prop4);
 
     // ASSERT
     assertThat(templatedProp.get(), equalTo(expected));
@@ -143,12 +141,13 @@ class TemplatedPropSyncTest {
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
     var prop5 = registry.bind(new IntProp("key5", null));
-    var group = Group.of(prop1, prop2, prop3, prop4, prop5);
 
     final var expected = "I am expecting 1, 2, 3, 4, and 5";
 
     // ACT
-    var templatedProp = group.renderTemplate("I am expecting %s, %s, %s, %s, and %s");
+    var templatedProp =
+        TemplatedProp.of(
+            "I am expecting %s, %s, %s, %s, and %s", prop1, prop2, prop3, prop4, prop5);
 
     // ASSERT
     assertThat(templatedProp.get(), equalTo(expected));

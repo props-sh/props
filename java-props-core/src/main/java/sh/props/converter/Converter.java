@@ -45,7 +45,8 @@ public interface Converter<T> {
    * @param value the value to encode
    * @return the string representation of the passed <code>value</code> argument
    */
-  default String encode(T value) {
-    return value.toString();
+  @Nullable
+  default String encode(@Nullable T value) {
+    return value == null ? null : value.toString();
   }
 }

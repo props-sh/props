@@ -45,7 +45,7 @@ import sh.props.tuples.Pair;
  * @param <T> the type of the property being refactored
  * @param <R> the type of the new property
  */
-public class RefactoredProp<T, R> implements Prop<R>, TemplatedPropSupplier {
+public class RefactoredProp<T, R> implements Prop<R> {
 
   private final String key;
   private final AbstractPropGroup<Pair<T, R>> group;
@@ -105,17 +105,6 @@ public class RefactoredProp<T, R> implements Prop<R>, TemplatedPropSupplier {
   @Override
   public String key() {
     return this.key;
-  }
-
-  /**
-   * Supports rendering the current implementation's value into the provided template.
-   *
-   * @param template a template that accept this prop's value
-   * @return a {@link Prop} that can returned the rendered template and allows subscriptions
-   */
-  @Override
-  public Prop<String> renderTemplate(String template) {
-    return this.group.renderTemplate(template);
   }
 
   /**
