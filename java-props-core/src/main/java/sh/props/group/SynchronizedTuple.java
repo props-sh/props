@@ -25,11 +25,8 @@
 
 package sh.props.group;
 
-import static java.lang.String.format;
-
 import java.util.function.UnaryOperator;
 import sh.props.AbstractProp;
-import sh.props.TemplatedProp;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Tuple;
 
@@ -162,36 +159,6 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
     return prev -> prev.updateFifth(value);
-  }
-
-  /**
-   * Converts the current prop group into a template prop, capable of merging the tuple's values
-   * into the provided template.
-   *
-   * <p>The implementation will convert the tuple's values into strings (using each Prop's
-   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
-   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
-   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
-   * values more than once. See {@link String#format(String, Object...)} for more details.
-   *
-   * @param template the template to populate
-   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
-   *     supports subscriptions
-   */
-  @Override
-  public Prop<String> renderTemplate(String template) {
-    return new TemplatedProp<>(this) {
-      @Override
-      protected String renderTemplate(Tuple<T, U, V, W, X> value) {
-        return format(
-            template,
-            TemplatedProp.encodeValue(value.first, SynchronizedTuple.this.first),
-            TemplatedProp.encodeValue(value.second, SynchronizedTuple.this.second),
-            TemplatedProp.encodeValue(value.third, SynchronizedTuple.this.third),
-            TemplatedProp.encodeValue(value.fourth, SynchronizedTuple.this.fourth),
-            TemplatedProp.encodeValue(value.fifth, SynchronizedTuple.this.fifth));
-      }
-    };
   }
 
   /**

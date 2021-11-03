@@ -28,12 +28,9 @@ package sh.props.group;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import sh.props.SubscribableProp;
-import sh.props.TemplatedPropSupplier;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Prop;
 
-public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
-    implements TemplatedPropSupplier {
+public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
 
   protected final AtomicReference<Holder<TupleT>> value = new AtomicReference<>(new Holder<>());
 
@@ -108,23 +105,6 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
 
     return result.value;
   }
-
-  /**
-   * Converts the current prop group into a template prop, capable of merging the tuple's values
-   * into the provided template.
-   *
-   * <p>The implementation will convert the tuple's values into strings (using each Prop's
-   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
-   * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
-   * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
-   * values more than once. See {@link String#format(String, Object...)} for more details.
-   *
-   * @param template the template to populate
-   * @return a <code>Prop</code> that returns the rendered value on {@link Prop#get()} and also
-   *     supports subscriptions
-   */
-  @Override
-  public abstract Prop<String> renderTemplate(String template);
 
   /**
    * Holder class that keep references to a value/error, as well as an epoch that can be used to
