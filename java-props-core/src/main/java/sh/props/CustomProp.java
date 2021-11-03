@@ -145,7 +145,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
 
       // ensure the value is valid before sending it to subscribers
       this.validateBeforeGet(value);
-      this.onUpdatedValue(value, epoch);
+      this.onValueUpdate(value, epoch);
 
       return true;
 

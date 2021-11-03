@@ -127,7 +127,7 @@ public abstract class SubscribableProp<T> implements Prop<T> {
    * @param value the value to set
    * @param epoch the epoch at which this value was recorded
    */
-  protected void onUpdatedValue(@Nullable T value, long epoch) {
+  protected void onValueUpdate(@Nullable T value, long epoch) {
     if (this.updateHandlers.isEmpty()) {
       // nothing to do if we have no consumers
       return;
