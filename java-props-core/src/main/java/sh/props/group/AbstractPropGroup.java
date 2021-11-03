@@ -73,7 +73,7 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
    */
   protected void apply(UnaryOperator<TupleT> op) {
     Holder<TupleT> updated = this.value.updateAndGet(holder -> holder.value(op));
-    this.onUpdatedValue(updated.value, updated.epoch);
+    this.onValueUpdate(updated.value, updated.epoch);
   }
 
   /**

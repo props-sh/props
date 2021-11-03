@@ -23,19 +23,20 @@
  *
  */
 
-package sh.props.converter;
-
-import static sh.props.converter.ConverterUtils.safeParseInstant;
+package sh.props.base;
 
 import java.time.Instant;
-import sh.props.annotations.Nullable;
+import sh.props.CustomProp;
+import sh.props.converter.InstantConverter;
+import sh.props.interfaces.Prop;
 
-/** Converter that casts the inputted {@link String} to an {@link Instant} value. */
-public interface InstantConverter extends Converter<Instant> {
+/**
+ * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
+ */
+public abstract class AbstractInstantProp extends CustomProp<Instant> implements InstantConverter {
 
-  @Override
-  @Nullable
-  default Instant decode(String value) {
-    return safeParseInstant(value);
+  protected AbstractInstantProp(
+      String key, Instant defaultValue, String description, boolean isRequired, boolean isSecret) {
+    super(key, defaultValue, description, isRequired, isSecret);
   }
 }

@@ -23,19 +23,20 @@
  *
  */
 
-package sh.props.converter;
+package sh.props.base;
 
-import static sh.props.converter.ConverterUtils.safeParseInstant;
+import java.nio.file.Path;
+import sh.props.CustomProp;
+import sh.props.converter.PathConverter;
+import sh.props.interfaces.Prop;
 
-import java.time.Instant;
-import sh.props.annotations.Nullable;
+/**
+ * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
+ */
+public abstract class AbstractPathProp extends CustomProp<Path> implements PathConverter {
 
-/** Converter that casts the inputted {@link String} to an {@link Instant} value. */
-public interface InstantConverter extends Converter<Instant> {
-
-  @Override
-  @Nullable
-  default Instant decode(String value) {
-    return safeParseInstant(value);
+  protected AbstractPathProp(
+      String key, Path defaultValue, String description, boolean isRequired, boolean isSecret) {
+    super(key, defaultValue, description, isRequired, isSecret);
   }
 }

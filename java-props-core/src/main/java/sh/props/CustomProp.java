@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Mihai Bojin
+ * Copyright (c) 2021 Mihai Bojin
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
 
       // ensure the value is valid before sending it to subscribers
       this.validateBeforeGet(value);
-      this.onUpdatedValue(value, epoch);
+      this.onValueUpdate(value, epoch);
 
       return true;
 
@@ -221,22 +221,34 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    * @param value the value to be redacted
    * @return the redacted value
    */
-  protected String redact(T value) {
+  protected String redact(@Nullable T value) {
     return "<redacted>";
   }
 
+  /**
+   * Returns this Prop's redacted value if {@link CustomProp#isSecret()} is true, or the Prop's
+   * string representation, by calling {@link Converter#encode(Object)}.
+   *
+   * @return a safe value that can be printed in logs or standard output
+   */
+  @Nullable
+  protected String getSafeValue() {
+    T currentValue = this.currentValue.get();
+    if (this.isSecret()) {
+      return this.redact(currentValue);
+    } else {
+      return this.encode(currentValue);
+    }
+  }
+
+  /**
+   * Print this Prop as a string.
+   *
+   * @return this Prop's string representation
+   */
   @Override
   public String toString() {
-    // copy the value to avoid an NPE caused by a race condition
-    T currentValue = this.currentValue.get();
-    if (currentValue != null) {
-      return format(
-          "Prop{%s=(%s)%s}",
-          this.key,
-          currentValue.getClass().getSimpleName(),
-          this.isSecret() ? this.redact(currentValue) : currentValue);
-    }
-
-    return format("Prop{%s=null}", this.key);
+    final String template = "Prop{%s=%s}";
+    return format(template, this.key, this.getSafeValue());
   }
 }

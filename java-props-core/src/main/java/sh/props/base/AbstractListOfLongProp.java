@@ -23,19 +23,25 @@
  *
  */
 
-package sh.props.converter;
+package sh.props.base;
 
-import static sh.props.converter.ConverterUtils.safeParseInstant;
+import java.util.List;
+import sh.props.CustomProp;
+import sh.props.converter.ListOfLongConverter;
+import sh.props.interfaces.Prop;
 
-import java.time.Instant;
-import sh.props.annotations.Nullable;
+/**
+ * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
+ */
+public abstract class AbstractListOfLongProp extends CustomProp<List<Long>>
+    implements ListOfLongConverter {
 
-/** Converter that casts the inputted {@link String} to an {@link Instant} value. */
-public interface InstantConverter extends Converter<Instant> {
-
-  @Override
-  @Nullable
-  default Instant decode(String value) {
-    return safeParseInstant(value);
+  protected AbstractListOfLongProp(
+      String key,
+      List<Long> defaultValue,
+      String description,
+      boolean isRequired,
+      boolean isSecret) {
+    super(key, defaultValue, description, isRequired, isSecret);
   }
 }
