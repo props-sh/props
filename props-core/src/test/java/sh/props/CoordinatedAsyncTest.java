@@ -31,13 +31,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.spy;
+import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.time.Duration;
 import org.junit.jupiter.api.RepeatedTest;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.IntProp;
 import sh.props.testhelpers.StoreAllValuesConsumer;
+import sh.props.testhelpers.TestIntProp;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Triple;
@@ -50,12 +51,12 @@ public class CoordinatedAsyncTest {
   @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedPairOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
 
     StoreAllValuesConsumer<Pair<Integer, Integer>> consumer = spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2);
@@ -80,13 +81,13 @@ public class CoordinatedAsyncTest {
   @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedTripleOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
 
     StoreAllValuesConsumer<Triple<Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());
@@ -113,14 +114,14 @@ public class CoordinatedAsyncTest {
   @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedQuadOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
 
     StoreAllValuesConsumer<Quad<Integer, Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());
@@ -148,15 +149,15 @@ public class CoordinatedAsyncTest {
   @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedTupleOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
-    var prop5 = registry.bind(new IntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop5 = registry.bind(new TestIntProp("key5", null));
 
     StoreAllValuesConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());

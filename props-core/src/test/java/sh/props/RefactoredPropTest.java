@@ -32,15 +32,16 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.source.impl.InMemory;
 import sh.props.testhelpers.DummyConsumer;
-import sh.props.testhelpers.ErrorOnGetProp;
-import sh.props.testhelpers.IntProp;
-import sh.props.testhelpers.StringProp;
+import sh.props.testhelpers.TestErrorOnGetProp;
+import sh.props.testhelpers.TestIntProp;
+import sh.props.testhelpers.TestStringProp;
 
 @SuppressWarnings("NullAway")
 class RefactoredPropTest {
@@ -48,12 +49,12 @@ class RefactoredPropTest {
   @Test
   void valueIsReturnedFromRefactoredProp() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new StringProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
 
     DummyConsumer<Integer> initialized = spy(new DummyConsumer<>());
     prop2.subscribe(initialized, (ignore) -> {});
@@ -82,12 +83,12 @@ class RefactoredPropTest {
   @Test
   void valueIsReturnedFromOldProp() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new StringProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
     RefactoredProp<String, Integer> supplier =
@@ -109,12 +110,12 @@ class RefactoredPropTest {
   @Test
   void exceptionIsPropagated() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new StringProp("key1", null));
-    var prop2 = registry.bind(new ErrorOnGetProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp("key1", null));
+    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
 
     DummyConsumer<Throwable> initialized = spy(new DummyConsumer<>());
     prop2.subscribe((ignore) -> {}, initialized);

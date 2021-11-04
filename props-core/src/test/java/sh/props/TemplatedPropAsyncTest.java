@@ -28,12 +28,13 @@ package sh.props;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Test;
 import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
 import sh.props.testhelpers.DummyConsumer;
-import sh.props.testhelpers.IntProp;
+import sh.props.testhelpers.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropAsyncTest {
@@ -43,11 +44,11 @@ class TemplatedPropAsyncTest {
     // ARRANGE
     final var expected = "I am expecting 1";
 
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
     var templatedProp = TemplatedProp.of("I am expecting %s", prop1);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
@@ -65,12 +66,12 @@ class TemplatedPropAsyncTest {
     // ARRANGE
     final var expected = "I am expecting 1 and 2";
 
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
     var templatedProp = TemplatedProp.of("I am expecting %s and %s", prop1, prop2);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
@@ -89,13 +90,13 @@ class TemplatedPropAsyncTest {
     // ARRANGE
     final var expected = "I am expecting 1, 2, and 3";
 
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
     var templatedProp = TemplatedProp.of("I am expecting %s, %s, and %s", prop1, prop2, prop3);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
@@ -115,14 +116,14 @@ class TemplatedPropAsyncTest {
     // ARRANGE
     final var expected = "I am expecting 1, 2, 3, and 4";
 
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
     var templatedProp =
         TemplatedProp.of("I am expecting %s, %s, %s, and %s", prop1, prop2, prop3, prop4);
 
@@ -144,15 +145,15 @@ class TemplatedPropAsyncTest {
     // ARRANGE
     final var expected = "I am expecting 1, 2, 3, 4, and 5";
 
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
-    var prop5 = registry.bind(new IntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop5 = registry.bind(new TestIntProp("key5", null));
     var templatedProp =
         TemplatedProp.of(
             "I am expecting %s, %s, %s, %s, and %s", prop1, prop2, prop3, prop4, prop5);

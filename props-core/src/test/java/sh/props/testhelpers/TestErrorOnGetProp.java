@@ -25,14 +25,20 @@
 
 package sh.props.testhelpers;
 
-import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.IntegerConverter;
+import sh.props.exceptions.InvalidReadOpException;
+import sh.props.typed.IntegerProp;
 
-/** Test-only implementation. */
-public class IntProp extends CustomProp<Integer> implements IntegerConverter {
+public class TestErrorOnGetProp extends IntegerProp {
 
-  public IntProp(String key, @Nullable Integer defaultValue) {
+  public TestErrorOnGetProp(String key, @Nullable Integer defaultValue) {
     super(key, defaultValue, null, false, false);
+  }
+
+  @Override
+  protected void validateBeforeGet(@Nullable Integer value) {
+    if (value != null && value > 1) {
+      throw new InvalidReadOpException("unretrievable value");
+    }
   }
 }

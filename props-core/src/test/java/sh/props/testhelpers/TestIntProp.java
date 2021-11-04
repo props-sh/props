@@ -23,24 +23,15 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.DoubleConverter;
-import sh.props.interfaces.Prop;
+import sh.props.typed.IntegerProp;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractDoubleProp extends CustomProp<Double> implements DoubleConverter {
+/** Test-only implementation. */
+public class TestIntProp extends IntegerProp {
 
-  protected AbstractDoubleProp(
-      String key,
-      @Nullable Double defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+  public TestIntProp(String key, @Nullable Integer defaultValue) {
+    super(key, defaultValue, null, false, false);
   }
 }

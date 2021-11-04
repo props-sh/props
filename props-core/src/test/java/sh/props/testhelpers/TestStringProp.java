@@ -26,12 +26,11 @@
 package sh.props.testhelpers;
 
 import sh.props.annotations.Nullable;
-import sh.props.base.AbstractStringProp;
 
 /** Test-only implementation. */
-public class StringProp extends AbstractStringProp {
+public class TestStringProp extends sh.props.typed.StringProp {
 
-  public StringProp(String key, @Nullable String defaultValue) {
+  public TestStringProp(String key, @Nullable String defaultValue) {
     super(key, defaultValue, null, false, false);
   }
 }

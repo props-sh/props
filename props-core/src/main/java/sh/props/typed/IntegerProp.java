@@ -23,19 +23,37 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
 import sh.props.converter.IntegerConverter;
 import sh.props.interfaces.Prop;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractIntegerProp extends CustomProp<Integer> implements IntegerConverter {
+/** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
+public class IntegerProp extends CustomProp<Integer> implements IntegerConverter {
 
-  protected AbstractIntegerProp(
+  /**
+   * Convenience constructor that creates an optional {@link CustomProp} without specifying a
+   * default value.
+   *
+   * @param key the Prop's key
+   */
+  public IntegerProp(String key) {
+    this(key, null, null, false, false);
+  }
+
+  /**
+   * Complete constructor that can fully customize a {@link CustomProp}.
+   *
+   * @param key the Prop's key
+   * @param defaultValue a default value, or null if one doesn't exist
+   * @param description a generic description used to explain what the prop is for
+   * @param isRequired true if the Prop must have a value when {@link Prop#get()} is called
+   * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
+   *     when {@link Object#toString()} is called
+   */
+  public IntegerProp(
       String key,
       @Nullable Integer defaultValue,
       @Nullable String description,

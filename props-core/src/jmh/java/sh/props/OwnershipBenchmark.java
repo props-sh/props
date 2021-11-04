@@ -103,7 +103,7 @@ public class OwnershipBenchmark {
     @Setup(Level.Invocation)
     public void setUp() {
       this.source1 = new InMemory();
-      this.registry = new RegistryBuilder().withSource(this.source1).build();
+      this.registry = new RegistryBuilder(this.source1).build();
 
       // set initial values
       this.source1.put("key", "v1");

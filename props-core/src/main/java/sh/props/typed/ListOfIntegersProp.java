@@ -23,22 +23,41 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
-import java.time.temporal.ChronoUnit;
+import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ChronoUnitConverter;
+import sh.props.converter.ListOfIntegerConverter;
 import sh.props.interfaces.Prop;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractChronoUnitProp extends CustomProp<ChronoUnit>
-    implements ChronoUnitConverter {
-  protected AbstractChronoUnitProp(
+/** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
+public class ListOfIntegersProp extends CustomProp<List<Integer>>
+    implements ListOfIntegerConverter {
+
+  /**
+   * Convenience constructor that creates an optional {@link CustomProp} without specifying a
+   * default value.
+   *
+   * @param key the Prop's key
+   */
+  public ListOfIntegersProp(String key) {
+    this(key, null, null, false, false);
+  }
+
+  /**
+   * Complete constructor that can fully customize a {@link CustomProp}.
+   *
+   * @param key the Prop's key
+   * @param defaultValue a default value, or null if one doesn't exist
+   * @param description a generic description used to explain what the prop is for
+   * @param isRequired true if the Prop must have a value when {@link Prop#get()} is called
+   * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
+   *     when {@link Object#toString()} is called
+   */
+  public ListOfIntegersProp(
       String key,
-      @Nullable ChronoUnit defaultValue,
+      @Nullable List<Integer> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

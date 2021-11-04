@@ -29,13 +29,14 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.IntProp;
+import sh.props.testhelpers.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class RegistryTest {
@@ -46,7 +47,7 @@ class RegistryTest {
     InMemory source = new InMemory();
     source.put("key", "value");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
     // ACT
     source.put("key", "value2");
@@ -62,7 +63,7 @@ class RegistryTest {
     InMemory source = new InMemory();
     source.put("key", "value");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
     // ACT
     source.put("key", "value2");
@@ -88,10 +89,10 @@ class RegistryTest {
     InMemory source = new InMemory();
     source.put("key", "1");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = new IntProp("key", null);
+    var prop = new TestIntProp("key", null);
     registry.bind(prop);
 
     // ASSERT
@@ -104,9 +105,9 @@ class RegistryTest {
     InMemory source = new InMemory();
     source.put("key", "1");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop = new IntProp("key", null);
+    var prop = new TestIntProp("key", null);
     registry.bind(prop);
 
     // ACT
@@ -120,10 +121,10 @@ class RegistryTest {
   @Test
   void autoUpdated() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key", "value");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
     // ACT
     source.put("key", "value2");
@@ -138,7 +139,7 @@ class RegistryTest {
     InMemory source = new InMemory();
     source.put("key", "value");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
     // ACT
     source.put("key", "value2");
@@ -150,13 +151,13 @@ class RegistryTest {
   @Test
   void propBoundAndReceivesAsyncUpdates() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
     AtomicInteger localValue = new AtomicInteger(0);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop = new IntProp("key", null);
+    var prop = new TestIntProp("key", null);
     registry.bind(prop);
 
     prop.subscribe(localValue::set, (ignored) -> {});
@@ -171,17 +172,17 @@ class RegistryTest {
   @Test
   void bindMultipleProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
     AtomicInteger localValue1 = new AtomicInteger(0);
-    var prop1 = new IntProp("key", null);
+    var prop1 = new TestIntProp("key", null);
     registry.bind(prop1);
     prop1.subscribe(localValue1::set, (ignored) -> {});
 
     AtomicInteger localValue2 = new AtomicInteger(0);
-    var prop2 = new IntProp("key", null);
+    var prop2 = new TestIntProp("key", null);
     registry.bind(prop2);
     prop2.subscribe(localValue2::set, (ignored) -> {});
 

@@ -36,6 +36,22 @@ public class RegistryBuilder {
   ArrayDeque<Source> sources = new ArrayDeque<>();
 
   /**
+   * Class constructor that accepts sources that the {@link Registry} will use for retrieving
+   * values.
+   *
+   * @param sources the source or sources to add to the registry
+   */
+  public RegistryBuilder(Source... sources) {
+    // be less restrictive here and avoid throwing an exception
+    if (sources != null) {
+      // if any sources are specified, add them
+      for (Source source : sources) {
+        this.sources.addFirst(source);
+      }
+    }
+  }
+
+  /**
    * Registers a source with the current registry.
    *
    * @param source the source to register
