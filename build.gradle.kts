@@ -1,4 +1,4 @@
-group = "sh.props"
+group = project.group
 version = project.version
 
 buildscript {

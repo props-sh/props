@@ -136,6 +136,7 @@ publishing {
     }
     publications {
         register<MavenPublication>("gpr") {
+            group = project.group as String
             from(components["java"])
         }
     }
