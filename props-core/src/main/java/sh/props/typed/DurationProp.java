@@ -23,15 +23,25 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.typed;
 
+import java.time.Duration;
+import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.base.AbstractStringProp;
+import sh.props.converter.DurationConverter;
+import sh.props.interfaces.Prop;
 
-/** Test-only implementation. */
-public class StringProp extends AbstractStringProp {
+/**
+ * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
+ */
+public class DurationProp extends CustomProp<Duration> implements DurationConverter {
 
-  public StringProp(String key, @Nullable String defaultValue) {
-    super(key, defaultValue, null, false, false);
+  public DurationProp(
+      String key,
+      @Nullable Duration defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
+    super(key, defaultValue, description, isRequired, isSecret);
   }
 }

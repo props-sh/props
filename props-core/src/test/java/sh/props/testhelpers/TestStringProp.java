@@ -23,26 +23,14 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import java.util.List;
-import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ListOfLongConverter;
-import sh.props.interfaces.Prop;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractListOfLongProp extends CustomProp<List<Long>>
-    implements ListOfLongConverter {
+/** Test-only implementation. */
+public class TestStringProp extends sh.props.typed.StringProp {
 
-  protected AbstractListOfLongProp(
-      String key,
-      @Nullable List<Long> defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+  public TestStringProp(String key, @Nullable String defaultValue) {
+    super(key, defaultValue, null, false, false);
   }
 }

@@ -23,24 +23,36 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.StringConverter;
+import sh.props.converter.NumericDurationConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractStringProp extends CustomProp<String> implements StringConverter {
+public class NumericDurationProp extends CustomProp<Duration> implements NumericDurationConverter {
 
-  protected AbstractStringProp(
+  public NumericDurationProp(
       String key,
-      @Nullable String defaultValue,
+      @Nullable Duration defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
+  }
+
+  /**
+   * Uses {@link ChronoUnit#SECONDS} by default. Override this method to use a different unit.
+   *
+   * @return seconds
+   */
+  @Override
+  public ChronoUnit unit() {
+    return ChronoUnit.SECONDS;
   }
 }

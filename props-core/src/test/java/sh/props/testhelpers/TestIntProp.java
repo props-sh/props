@@ -23,26 +23,15 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import java.util.List;
-import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ListOfStringConverter;
-import sh.props.interfaces.Prop;
+import sh.props.typed.IntegerProp;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractListOfStringProp extends CustomProp<List<String>>
-    implements ListOfStringConverter {
+/** Test-only implementation. */
+public class TestIntProp extends IntegerProp {
 
-  protected AbstractListOfStringProp(
-      String key,
-      @Nullable List<String> defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+  public TestIntProp(String key, @Nullable Integer defaultValue) {
+    super(key, defaultValue, null, false, false);
   }
 }

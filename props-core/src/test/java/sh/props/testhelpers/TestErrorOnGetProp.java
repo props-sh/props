@@ -23,26 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import java.time.Duration;
-import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.NumericDurationConverter;
-import sh.props.interfaces.Prop;
+import sh.props.exceptions.InvalidReadOpException;
+import sh.props.typed.IntegerProp;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractNumericDurationProp extends CustomProp<Duration>
-    implements NumericDurationConverter {
+public class TestErrorOnGetProp extends IntegerProp {
 
-  protected AbstractNumericDurationProp(
-      String key,
-      @Nullable Duration defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+  public TestErrorOnGetProp(String key, @Nullable Integer defaultValue) {
+    super(key, defaultValue, null, false, false);
+  }
+
+  @Override
+  protected void validateBeforeGet(@Nullable Integer value) {
+    if (value != null && value > 1) {
+      throw new InvalidReadOpException("unretrievable value");
+    }
   }
 }

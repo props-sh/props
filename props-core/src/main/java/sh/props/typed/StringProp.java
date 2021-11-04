@@ -23,21 +23,21 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.DoubleConverter;
+import sh.props.converter.StringConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractDoubleProp extends CustomProp<Double> implements DoubleConverter {
+public class StringProp extends CustomProp<String> implements StringConverter {
 
-  protected AbstractDoubleProp(
+  public StringProp(
       String key,
-      @Nullable Double defaultValue,
+      @Nullable String defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

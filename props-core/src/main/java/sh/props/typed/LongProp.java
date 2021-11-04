@@ -23,23 +23,24 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.typed;
 
+import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.base.AbstractIntegerProp;
-import sh.props.exceptions.InvalidReadOpException;
+import sh.props.converter.LongConverter;
+import sh.props.interfaces.Prop;
 
-/** Test-only implementation. */
-public class ErrorOnGetProp extends AbstractIntegerProp {
+/**
+ * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
+ */
+public class LongProp extends CustomProp<Long> implements LongConverter {
 
-  public ErrorOnGetProp(String key, @Nullable Integer defaultValue) {
-    super(key, defaultValue, null, false, false);
-  }
-
-  @Override
-  protected void validateBeforeGet(@Nullable Integer value) {
-    if (value != null && value > 1) {
-      throw new InvalidReadOpException("unretrievable value");
-    }
+  public LongProp(
+      String key,
+      @Nullable Long defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
+    super(key, defaultValue, description, isRequired, isSecret);
   }
 }

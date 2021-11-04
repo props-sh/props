@@ -23,21 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
+import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.FloatConverter;
+import sh.props.converter.ListOfDoubleConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractFloatProp extends CustomProp<Float> implements FloatConverter {
+public class ListOfDoubleProp extends CustomProp<List<Double>> implements ListOfDoubleConverter {
 
-  protected AbstractFloatProp(
+  public ListOfDoubleProp(
       String key,
-      @Nullable Float defaultValue,
+      @Nullable List<Double> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

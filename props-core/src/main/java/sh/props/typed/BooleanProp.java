@@ -23,22 +23,21 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
-import java.nio.file.Path;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.PathConverter;
+import sh.props.converter.BooleanConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractPathProp extends CustomProp<Path> implements PathConverter {
+public class BooleanProp extends CustomProp<Boolean> implements BooleanConverter {
 
-  protected AbstractPathProp(
+  public BooleanProp(
       String key,
-      @Nullable Path defaultValue,
+      @Nullable Boolean defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

@@ -23,16 +23,25 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.typed;
 
+import java.time.Instant;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.IntegerConverter;
+import sh.props.converter.InstantConverter;
+import sh.props.interfaces.Prop;
 
-/** Test-only implementation. */
-public class IntProp extends CustomProp<Integer> implements IntegerConverter {
+/**
+ * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
+ */
+public class InstantProp extends CustomProp<Instant> implements InstantConverter {
 
-  public IntProp(String key, @Nullable Integer defaultValue) {
-    super(key, defaultValue, null, false, false);
+  public InstantProp(
+      String key,
+      @Nullable Instant defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
+    super(key, defaultValue, description, isRequired, isSecret);
   }
 }

@@ -23,23 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
-import java.time.Duration;
+import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.DurationConverter;
+import sh.props.converter.ListOfStringConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractDurationProp extends CustomProp<Duration>
-    implements DurationConverter {
+public class ListOfStringProp extends CustomProp<List<String>> implements ListOfStringConverter {
 
-  protected AbstractDurationProp(
+  public ListOfStringProp(
       String key,
-      @Nullable Duration defaultValue,
+      @Nullable List<String> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

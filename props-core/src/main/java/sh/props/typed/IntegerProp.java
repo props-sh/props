@@ -23,23 +23,21 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
-import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ListOfFloatConverter;
+import sh.props.converter.IntegerConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractListOfFloatProp extends CustomProp<List<Float>>
-    implements ListOfFloatConverter {
+public class IntegerProp extends CustomProp<Integer> implements IntegerConverter {
 
-  protected AbstractListOfFloatProp(
+  public IntegerProp(
       String key,
-      @Nullable List<Float> defaultValue,
+      @Nullable Integer defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

@@ -23,23 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
 import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ListOfDoubleConverter;
+import sh.props.converter.ListOfLongConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractListOfDoubleProp extends CustomProp<List<Double>>
-    implements ListOfDoubleConverter {
+public class ListOfLongProp extends CustomProp<List<Long>> implements ListOfLongConverter {
 
-  protected AbstractListOfDoubleProp(
+  public ListOfLongProp(
       String key,
-      @Nullable List<Double> defaultValue,
+      @Nullable List<Long> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

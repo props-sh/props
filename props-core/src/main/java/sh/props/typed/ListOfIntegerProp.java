@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
 import java.util.List;
 import sh.props.CustomProp;
@@ -34,10 +34,9 @@ import sh.props.interfaces.Prop;
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractListOfIntegerProp extends CustomProp<List<Integer>>
-    implements ListOfIntegerConverter {
+public class ListOfIntegerProp extends CustomProp<List<Integer>> implements ListOfIntegerConverter {
 
-  protected AbstractListOfIntegerProp(
+  public ListOfIntegerProp(
       String key,
       @Nullable List<Integer> defaultValue,
       @Nullable String description,

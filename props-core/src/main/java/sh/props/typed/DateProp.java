@@ -23,21 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
+import java.util.Date;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.IntegerConverter;
+import sh.props.converter.DateConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractIntegerProp extends CustomProp<Integer> implements IntegerConverter {
+public class DateProp extends CustomProp<Date> implements DateConverter {
 
-  protected AbstractIntegerProp(
+  public DateProp(
       String key,
-      @Nullable Integer defaultValue,
+      @Nullable Date defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

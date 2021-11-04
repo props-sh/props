@@ -23,24 +23,36 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
+import java.nio.file.Path;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.LongConverter;
+import sh.props.converter.PathConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractLongProp extends CustomProp<Long> implements LongConverter {
+public class PathProp extends CustomProp<Path> implements PathConverter {
 
-  protected AbstractLongProp(
+  public PathProp(
       String key,
-      @Nullable Long defaultValue,
+      @Nullable Path defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
+  }
+
+  /**
+   * Will not expand the user's home directory by default. Override this method to enable that
+   * functionality.
+   *
+   * @return false
+   */
+  @Override
+  public boolean expandUserHomeDir() {
+    return false;
   }
 }

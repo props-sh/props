@@ -23,22 +23,21 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
-import java.time.Instant;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.InstantConverter;
+import sh.props.converter.FloatConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractInstantProp extends CustomProp<Instant> implements InstantConverter {
+public class FloatProp extends CustomProp<Float> implements FloatConverter {
 
-  protected AbstractInstantProp(
+  public FloatProp(
       String key,
-      @Nullable Instant defaultValue,
+      @Nullable Float defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

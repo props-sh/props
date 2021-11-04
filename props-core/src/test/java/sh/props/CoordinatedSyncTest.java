@@ -28,11 +28,12 @@ package sh.props;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Test;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.IntProp;
+import sh.props.testhelpers.TestIntProp;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
@@ -41,12 +42,12 @@ class CoordinatedSyncTest {
   @Test
   void synchronizedPairOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
 
     var supplier = Group.of(prop1, prop2);
 
@@ -61,13 +62,13 @@ class CoordinatedSyncTest {
   @Test
   void synchronizedTripleOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Group.of(prop1, prop2, prop3);
@@ -84,14 +85,14 @@ class CoordinatedSyncTest {
   @Test
   void synchronizedQuadOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Group.of(prop1, prop2, prop3, prop4);
@@ -109,15 +110,15 @@ class CoordinatedSyncTest {
   @Test
   void synchronizedTupleOfProps() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
-    var prop5 = registry.bind(new IntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop5 = registry.bind(new TestIntProp("key5", null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Group.of(prop1, prop2, prop3, prop4, prop5);

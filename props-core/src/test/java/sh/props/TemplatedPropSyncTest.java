@@ -27,11 +27,12 @@ package sh.props;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Test;
 import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.IntProp;
+import sh.props.testhelpers.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropSyncTest {
@@ -39,12 +40,12 @@ class TemplatedPropSyncTest {
   @Test
   void singlePropTemplate() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key1", "1");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
     final var expected = "I am expecting 1";
 
     // ACT
@@ -57,14 +58,14 @@ class TemplatedPropSyncTest {
   @Test
   void pairTemplate() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key1", "1");
     source.put("key2", "2");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
 
     final var expected = "I am expecting 1 and 2";
 
@@ -78,16 +79,16 @@ class TemplatedPropSyncTest {
   @Test
   void tripleTemplate() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key1", "1");
     source.put("key2", "2");
     source.put("key3", "3");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
 
     final var expected = "I am expecting 1, 2, and 3";
 
@@ -101,18 +102,18 @@ class TemplatedPropSyncTest {
   @Test
   void quadTemplate() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key1", "1");
     source.put("key2", "2");
     source.put("key3", "3");
     source.put("key4", "4");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
 
     final var expected = "I am expecting 1, 2, 3, and 4";
 
@@ -127,20 +128,20 @@ class TemplatedPropSyncTest {
   @Test
   void tupleTemplate() {
     // ARRANGE
-    InMemory source = new InMemory(true);
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key1", "1");
     source.put("key2", "2");
     source.put("key3", "3");
     source.put("key4", "4");
     source.put("key5", "5");
 
-    Registry registry = new RegistryBuilder().withSource(source).build();
+    Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new IntProp("key1", null));
-    var prop2 = registry.bind(new IntProp("key2", null));
-    var prop3 = registry.bind(new IntProp("key3", null));
-    var prop4 = registry.bind(new IntProp("key4", null));
-    var prop5 = registry.bind(new IntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop5 = registry.bind(new TestIntProp("key5", null));
 
     final var expected = "I am expecting 1, 2, 3, 4, and 5";
 

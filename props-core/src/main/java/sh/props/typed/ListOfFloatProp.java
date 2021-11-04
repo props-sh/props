@@ -23,21 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
+import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.BooleanConverter;
+import sh.props.converter.ListOfFloatConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractBooleanProp extends CustomProp<Boolean> implements BooleanConverter {
+public class ListOfFloatProp extends CustomProp<List<Float>> implements ListOfFloatConverter {
 
-  protected AbstractBooleanProp(
+  public ListOfFloatProp(
       String key,
-      @Nullable Boolean defaultValue,
+      @Nullable List<Float> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

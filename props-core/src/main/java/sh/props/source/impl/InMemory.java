@@ -33,6 +33,8 @@ import sh.props.source.Source;
 
 /** Useful for tests, when the implementation requires overriding values. */
 public class InMemory extends Source {
+  public static final boolean UPDATE_REGISTRY_ON_EVERY_WRITE = true;
+  public static final boolean UPDATE_REGISTRY_MANUALLY = false;
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 

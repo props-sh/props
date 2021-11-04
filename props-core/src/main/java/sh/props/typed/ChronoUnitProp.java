@@ -23,22 +23,22 @@
  *
  */
 
-package sh.props.base;
+package sh.props.typed;
 
-import java.util.Date;
+import java.time.temporal.ChronoUnit;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.DateConverter;
+import sh.props.converter.ChronoUnitConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public abstract class AbstractDateProp extends CustomProp<Date> implements DateConverter {
+public class ChronoUnitProp extends CustomProp<ChronoUnit> implements ChronoUnitConverter {
 
-  protected AbstractDateProp(
+  public ChronoUnitProp(
       String key,
-      @Nullable Date defaultValue,
+      @Nullable ChronoUnit defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
