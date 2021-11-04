@@ -11,6 +11,7 @@ plugins {
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
     id("me.champeau.jmh")
+    `maven-publish`
 }
 
 dependencies {
@@ -56,7 +57,7 @@ spotless {
 
     java {
         removeUnusedImports()
-        googleJavaFormat("1.9")
+        googleJavaFormat("1.10.0")
         trimTrailingWhitespace()
         endWithNewline()
         licenseHeaderFile(rootProject.file("props.license.kt"))
@@ -119,4 +120,24 @@ tasks.create<Zip>("docZip") {
 
 jmh {
     iterations.set(1)
+}
+
+// Publish to GitHub Packages
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/props-sh/props")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            group = project.group as String
+            from(components["java"])
+        }
+    }
 }

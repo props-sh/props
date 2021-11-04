@@ -1,9 +1,16 @@
-name: Pull Request
+name: Publish a package to GitHub Package Repo
+
 on:
-  - push
+  push:
+    branches: ['main']
+
 jobs:
-  pre-merge-checks:
+  build-and-publish-package:
     runs-on: macos-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -22,6 +29,12 @@ jobs:
 
       - name: Test
         run: ./gradlew check test
+
+      - name: Publish
+        run: ./gradlew publish
+        env:
+          USERNAME: ${{ env.GITHUB_ACTOR }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cleanup Gradle Cache
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.

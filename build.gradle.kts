@@ -1,7 +1,11 @@
-// https://docs.gradle.org/current/userguide/plugins.html#sec:subprojects_plugins_dsl
-plugins {
-    `maven-publish`
-}
-
-group = "sh.props"
+group = project.group
 version = project.version
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        "classpath"(group = "com.google.googlejavaformat", name = "google-java-format", version = "1.10.0")
+    }
+}

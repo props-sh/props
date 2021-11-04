@@ -208,6 +208,8 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * Helper method that can encode the provided value using a {@link Converter}.
    *
    * @param value the value to encode as string
+   * @param converter the converter object that can encode/decode the value
+   * @param <T> the type of the value to encode
    * @return the prop's value string representation, or null if the provided value was null
    */
   @Nullable
