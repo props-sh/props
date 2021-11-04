@@ -28,13 +28,13 @@ package sh.props.typed;
 import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ListOfDoubleConverter;
+import sh.props.converter.ListOfFloatConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public class ListOfDoubleProp extends CustomProp<List<Double>> implements ListOfDoubleConverter {
+public class ListOfFloatsProp extends CustomProp<List<Float>> implements ListOfFloatConverter {
 
   /**
    * Complete constructor that can fully customize a {@link CustomProp}.
@@ -46,9 +46,9 @@ public class ListOfDoubleProp extends CustomProp<List<Double>> implements ListOf
    * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
    *     when {@link Object#toString()} is called
    */
-  public ListOfDoubleProp(
+  public ListOfFloatsProp(
       String key,
-      @Nullable List<Double> defaultValue,
+      @Nullable List<Float> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {

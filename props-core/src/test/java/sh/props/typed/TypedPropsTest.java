@@ -166,7 +166,7 @@ class TypedPropsTest {
   }
 
   @Test
-  void listOfDoubleProp() {
+  void listOfDoublesProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key", "1d,2d");
@@ -174,14 +174,14 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfDoubleProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfDoublesProp("key", null, null, false, false));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1d, 2d)));
   }
 
   @Test
-  void listOfFloatProp() {
+  void listOfFloatsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key", "1f,2f");
@@ -189,14 +189,14 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfFloatProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfFloatsProp("key", null, null, false, false));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1f, 2f)));
   }
 
   @Test
-  void listOfIntegerProp() {
+  void listOfIntegersProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key", "1,2,3");
@@ -204,14 +204,14 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfIntegerProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfIntegersProp("key", null, null, false, false));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1, 2, 3)));
   }
 
   @Test
-  void listOfLongProp() {
+  void listOfLongsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key", "1L,2L,3L");
@@ -219,14 +219,14 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfLongProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfLongsProp("key", null, null, false, false));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1L, 2L, 3L)));
   }
 
   @Test
-  void listOfStringProp() {
+  void listOfStringsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     source.put("key", "one,two");
@@ -234,7 +234,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfStringProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfStringsProp("key", null, null, false, false));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of("one", "two")));

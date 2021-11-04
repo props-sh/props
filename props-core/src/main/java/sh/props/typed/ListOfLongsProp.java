@@ -28,13 +28,13 @@ package sh.props.typed;
 import java.util.List;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.ListOfStringConverter;
+import sh.props.converter.ListOfLongConverter;
 import sh.props.interfaces.Prop;
 
 /**
  * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
  */
-public class ListOfStringProp extends CustomProp<List<String>> implements ListOfStringConverter {
+public class ListOfLongsProp extends CustomProp<List<Long>> implements ListOfLongConverter {
 
   /**
    * Complete constructor that can fully customize a {@link CustomProp}.
@@ -46,9 +46,9 @@ public class ListOfStringProp extends CustomProp<List<String>> implements ListOf
    * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
    *     when {@link Object#toString()} is called
    */
-  public ListOfStringProp(
+  public ListOfLongsProp(
       String key,
-      @Nullable List<String> defaultValue,
+      @Nullable List<Long> defaultValue,
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
