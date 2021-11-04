@@ -35,6 +35,16 @@ import sh.props.interfaces.Prop;
  */
 public class BooleanProp extends CustomProp<Boolean> implements BooleanConverter {
 
+  /**
+   * Complete constructor that can fully customize a {@link CustomProp}.
+   *
+   * @param key the Prop's key
+   * @param defaultValue a default value, or null if one doesn't exist
+   * @param description a generic description used to explain what the prop is for
+   * @param isRequired true if the Prop must have a value when {@link Prop#get()} is called
+   * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
+   *     when {@link Object#toString()} is called
+   */
   public BooleanProp(
       String key,
       @Nullable Boolean defaultValue,
