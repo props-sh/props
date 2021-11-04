@@ -30,10 +30,18 @@ import sh.props.annotations.Nullable;
 import sh.props.converter.DoubleConverter;
 import sh.props.interfaces.Prop;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
+/** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class DoubleProp extends CustomProp<Double> implements DoubleConverter {
+
+  /**
+   * Convenience constructor that creates an optional {@link CustomProp} without specifying a
+   * default value.
+   *
+   * @param key the Prop's key
+   */
+  public DoubleProp(String key) {
+    this(key, null, null, false, false);
+  }
 
   /**
    * Complete constructor that can fully customize a {@link CustomProp}.

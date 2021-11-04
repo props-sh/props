@@ -54,7 +54,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new BooleanProp("key", null, null, false, false));
+    var prop = registry.bind(new BooleanProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(true));
@@ -69,7 +69,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ChronoUnitProp("key", null, null, false, false));
+    var prop = registry.bind(new ChronoUnitProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(ChronoUnit.HALF_DAYS));
@@ -84,7 +84,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new DateProp("key", null, null, false, false));
+    var prop = registry.bind(new DateProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Date.from(Instant.ofEpochMilli(1_196_673_330_010L))));
@@ -99,7 +99,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new DoubleProp("key", null, null, false, false));
+    var prop = registry.bind(new DoubleProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(3.14d));
@@ -114,7 +114,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new DurationProp("key", null, null, false, false));
+    var prop = registry.bind(new DurationProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Duration.ofSeconds(12345)));
@@ -129,7 +129,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new FloatProp("key", null, null, false, false));
+    var prop = registry.bind(new FloatProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(3.14f));
@@ -144,7 +144,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new InstantProp("key", null, null, false, false));
+    var prop = registry.bind(new InstantProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Instant.ofEpochMilli(1_196_673_330_010L)));
@@ -159,7 +159,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new IntegerProp("key", null, null, false, false));
+    var prop = registry.bind(new IntegerProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(123));
@@ -174,7 +174,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfDoublesProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfDoublesProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1d, 2d)));
@@ -189,7 +189,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfFloatsProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfFloatsProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1f, 2f)));
@@ -204,7 +204,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfIntegersProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfIntegersProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1, 2, 3)));
@@ -219,7 +219,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfLongsProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfLongsProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1L, 2L, 3L)));
@@ -234,7 +234,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfStringsProp("key", null, null, false, false));
+    var prop = registry.bind(new ListOfStringsProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of("one", "two")));
@@ -249,7 +249,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new LongProp("key", null, null, false, false));
+    var prop = registry.bind(new LongProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(123456789012L));
@@ -264,7 +264,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new NumericDurationProp("key", null, null, false, false));
+    var prop = registry.bind(new NumericDurationProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Duration.of(123456789012L, ChronoUnit.SECONDS)));
@@ -283,7 +283,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new PathProp("key", null, null, false, false));
+    var prop = registry.bind(new PathProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo(tempFile));
@@ -298,7 +298,7 @@ class TypedPropsTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new StringProp("key", null, null, false, false));
+    var prop = registry.bind(new StringProp("key"));
 
     // ASSERT
     assertThat(prop.get(), equalTo("a string"));
