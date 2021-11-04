@@ -3,7 +3,8 @@ version = project.version
 
 buildscript {
     repositories {
-        mavenLocal()
+        // uncomment if you need to use the local Maven cache
+        // mavenLocal()
         mavenCentral()
     }
     dependencies {
@@ -11,7 +12,8 @@ buildscript {
     }
     allprojects {
         repositories {
-            mavenLocal()
+        // uncomment if you need to use the local Maven cache
+        // mavenLocal()
         }
     }
 }
