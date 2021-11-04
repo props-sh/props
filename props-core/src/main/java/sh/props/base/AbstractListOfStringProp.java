@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.util.List;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.ListOfStringConverter;
 import sh.props.interfaces.Prop;
 
@@ -38,8 +39,8 @@ public abstract class AbstractListOfStringProp extends CustomProp<List<String>>
 
   protected AbstractListOfStringProp(
       String key,
-      List<String> defaultValue,
-      String description,
+      @Nullable List<String> defaultValue,
+      @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);

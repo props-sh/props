@@ -34,8 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
-import sh.props.converter.IntegerConverter;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.IntProp;
 
 @SuppressWarnings("NullAway")
 class RegistryTest {
@@ -191,13 +191,5 @@ class RegistryTest {
     // ASSERT
     await().atMost(5, SECONDS).until(localValue1::get, equalTo(2));
     await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
-  }
-
-  /** Test-only prop implementation. TODO: refactor out after adding Abstract[Type]Props */
-  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntProp(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
   }
 }

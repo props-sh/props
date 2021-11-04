@@ -23,25 +23,14 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import java.nio.file.Path;
-import sh.props.CustomProp;
-import sh.props.annotations.Nullable;
-import sh.props.converter.PathConverter;
-import sh.props.interfaces.Prop;
+import java.util.function.Consumer;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractPathProp extends CustomProp<Path> implements PathConverter {
-
-  protected AbstractPathProp(
-      String key,
-      @Nullable Path defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+/** Test-only implementation. */
+public class DummyConsumer<T> implements Consumer<T> {
+  @Override
+  public void accept(T t) {
+    // do nothing
   }
 }

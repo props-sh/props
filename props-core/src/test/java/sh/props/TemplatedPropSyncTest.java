@@ -29,9 +29,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.jupiter.api.Test;
-import sh.props.converter.IntegerConverter;
 import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.IntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropSyncTest {
@@ -151,12 +151,5 @@ class TemplatedPropSyncTest {
 
     // ASSERT
     assertThat(templatedProp.get(), equalTo(expected));
-  }
-
-  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntProp(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
   }
 }

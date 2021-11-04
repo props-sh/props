@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.time.Instant;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.InstantConverter;
 import sh.props.interfaces.Prop;
 
@@ -36,7 +37,11 @@ import sh.props.interfaces.Prop;
 public abstract class AbstractInstantProp extends CustomProp<Instant> implements InstantConverter {
 
   protected AbstractInstantProp(
-      String key, Instant defaultValue, String description, boolean isRequired, boolean isSecret) {
+      String key,
+      @Nullable Instant defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
   }
 }

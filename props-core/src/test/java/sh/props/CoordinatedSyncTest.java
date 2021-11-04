@@ -30,9 +30,9 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.junit.jupiter.api.Test;
-import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.IntProp;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
@@ -131,12 +131,5 @@ class CoordinatedSyncTest {
 
     // ASSERT
     await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4, 5)));
-  }
-
-  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntProp(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
   }
 }

@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.util.Date;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.DateConverter;
 import sh.props.interfaces.Prop;
 
@@ -36,7 +37,11 @@ import sh.props.interfaces.Prop;
 public abstract class AbstractDateProp extends CustomProp<Date> implements DateConverter {
 
   protected AbstractDateProp(
-      String key, Date defaultValue, String description, boolean isRequired, boolean isSecret) {
+      String key,
+      @Nullable Date defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
   }
 }

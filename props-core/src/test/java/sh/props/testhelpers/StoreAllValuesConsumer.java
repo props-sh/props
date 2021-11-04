@@ -23,25 +23,40 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import java.nio.file.Path;
-import sh.props.CustomProp;
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.converter.PathConverter;
-import sh.props.interfaces.Prop;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractPathProp extends CustomProp<Path> implements PathConverter {
+/** Test-only implementation. */
+public class StoreAllValuesConsumer<T> implements Consumer<T> {
 
-  protected AbstractPathProp(
-      String key,
-      @Nullable Path defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+  private final LinkedHashSet<T> store = new LinkedHashSet<>();
+
+  @Override
+  public synchronized void accept(T t) {
+    this.store.add(t);
+  }
+
+  public synchronized ArrayDeque<T> get() {
+    return new ArrayDeque<>(this.store);
+  }
+
+  /**
+   * Retrieves the last value accepted by this consumer.
+   *
+   * @return the last accepted value, or null if none were accepted
+   */
+  @Nullable
+  public synchronized T getLast() {
+    T val = null;
+    Iterator<T> it = this.store.iterator();
+    while (it.hasNext()) {
+      val = it.next();
+    }
+    return val;
   }
 }

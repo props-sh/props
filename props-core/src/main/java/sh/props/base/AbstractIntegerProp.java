@@ -26,6 +26,7 @@
 package sh.props.base;
 
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.IntegerConverter;
 import sh.props.interfaces.Prop;
 
@@ -35,7 +36,11 @@ import sh.props.interfaces.Prop;
 public abstract class AbstractIntegerProp extends CustomProp<Integer> implements IntegerConverter {
 
   protected AbstractIntegerProp(
-      String key, Integer defaultValue, String description, boolean isRequired, boolean isSecret) {
+      String key,
+      @Nullable Integer defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
   }
 }

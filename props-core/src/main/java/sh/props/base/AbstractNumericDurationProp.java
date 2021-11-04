@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.time.Duration;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.NumericDurationConverter;
 import sh.props.interfaces.Prop;
 
@@ -37,7 +38,11 @@ public abstract class AbstractNumericDurationProp extends CustomProp<Duration>
     implements NumericDurationConverter {
 
   protected AbstractNumericDurationProp(
-      String key, Duration defaultValue, String description, boolean isRequired, boolean isSecret) {
+      String key,
+      @Nullable Duration defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
   }
 }

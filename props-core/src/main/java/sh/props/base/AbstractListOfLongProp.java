@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.util.List;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.ListOfLongConverter;
 import sh.props.interfaces.Prop;
 
@@ -38,8 +39,8 @@ public abstract class AbstractListOfLongProp extends CustomProp<List<Long>>
 
   protected AbstractListOfLongProp(
       String key,
-      List<Long> defaultValue,
-      String description,
+      @Nullable List<Long> defaultValue,
+      @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);

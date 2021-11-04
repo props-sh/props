@@ -33,13 +33,14 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.util.function.Consumer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import sh.props.converter.IntegerConverter;
-import sh.props.converter.StringConverter;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.DummyConsumer;
+import sh.props.testhelpers.ErrorOnGetProp;
+import sh.props.testhelpers.IntProp;
+import sh.props.testhelpers.StringProp;
 
 @SuppressWarnings("NullAway")
 class RefactoredPropTest {
@@ -113,7 +114,7 @@ class RefactoredPropTest {
     Registry registry = new RegistryBuilder().withSource(source).build();
 
     var prop1 = registry.bind(new StringProp("key1", null));
-    var prop2 = registry.bind(new IntPropErr("key2", null));
+    var prop2 = registry.bind(new ErrorOnGetProp("key2", null));
 
     DummyConsumer<Throwable> initialized = spy(new DummyConsumer<>());
     prop2.subscribe((ignore) -> {}, initialized);
@@ -135,40 +136,5 @@ class RefactoredPropTest {
     assertThat(prop1.get(), equalTo("1"));
     Assertions.assertThrows(InvalidReadOpException.class, prop2::get);
     Assertions.assertThrows(InvalidReadOpException.class, supplier::get);
-  }
-
-  private static class DummyConsumer<T> implements Consumer<T> {
-    @Override
-    public void accept(T t) {
-      // do nothing
-    }
-  }
-
-  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntProp(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
-  }
-
-  private static class IntPropErr extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntPropErr(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
-
-    @Override
-    protected void validateBeforeGet(Integer value) {
-      if (value != null && value > 1) {
-        throw new InvalidReadOpException("unretrievable value");
-      }
-    }
-  }
-
-  private static class StringProp extends CustomProp<String> implements StringConverter {
-
-    protected StringProp(String key, String defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
   }
 }

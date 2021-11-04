@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.time.temporal.ChronoUnit;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.ChronoUnitConverter;
 import sh.props.interfaces.Prop;
 
@@ -37,8 +38,8 @@ public abstract class AbstractChronoUnitProp extends CustomProp<ChronoUnit>
     implements ChronoUnitConverter {
   protected AbstractChronoUnitProp(
       String key,
-      ChronoUnit defaultValue,
-      String description,
+      @Nullable ChronoUnit defaultValue,
+      @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);

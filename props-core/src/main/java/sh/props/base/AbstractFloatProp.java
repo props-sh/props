@@ -26,6 +26,7 @@
 package sh.props.base;
 
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.FloatConverter;
 import sh.props.interfaces.Prop;
 
@@ -35,7 +36,11 @@ import sh.props.interfaces.Prop;
 public abstract class AbstractFloatProp extends CustomProp<Float> implements FloatConverter {
 
   protected AbstractFloatProp(
-      String key, Float defaultValue, String description, boolean isRequired, boolean isSecret) {
+      String key,
+      @Nullable Float defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
   }
 }

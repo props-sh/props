@@ -26,6 +26,7 @@
 package sh.props.base;
 
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.BooleanConverter;
 import sh.props.interfaces.Prop;
 
@@ -35,7 +36,11 @@ import sh.props.interfaces.Prop;
 public abstract class AbstractBooleanProp extends CustomProp<Boolean> implements BooleanConverter {
 
   protected AbstractBooleanProp(
-      String key, Boolean defaultValue, String description, boolean isRequired, boolean isSecret) {
+      String key,
+      @Nullable Boolean defaultValue,
+      @Nullable String description,
+      boolean isRequired,
+      boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
   }
 }

@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.util.List;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.ListOfFloatConverter;
 import sh.props.interfaces.Prop;
 
@@ -38,8 +39,8 @@ public abstract class AbstractListOfFloatProp extends CustomProp<List<Float>>
 
   protected AbstractListOfFloatProp(
       String key,
-      List<Float> defaultValue,
-      String description,
+      @Nullable List<Float> defaultValue,
+      @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);

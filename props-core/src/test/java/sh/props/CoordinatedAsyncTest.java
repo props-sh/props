@@ -33,14 +33,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.spy;
 
 import java.time.Duration;
-import java.util.ArrayDeque;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.function.Consumer;
 import org.junit.jupiter.api.RepeatedTest;
-import sh.props.converter.IntegerConverter;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.IntProp;
+import sh.props.testhelpers.StoreAllValuesConsumer;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Triple;
@@ -60,7 +57,7 @@ public class CoordinatedAsyncTest {
     var prop1 = registry.bind(new IntProp("key1", null));
     var prop2 = registry.bind(new IntProp("key2", null));
 
-    DummyConsumer<Pair<Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    StoreAllValuesConsumer<Pair<Integer, Integer>> consumer = spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -91,7 +88,8 @@ public class CoordinatedAsyncTest {
     var prop2 = registry.bind(new IntProp("key2", null));
     var prop3 = registry.bind(new IntProp("key3", null));
 
-    DummyConsumer<Triple<Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    StoreAllValuesConsumer<Triple<Integer, Integer, Integer>> consumer =
+        spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -124,7 +122,8 @@ public class CoordinatedAsyncTest {
     var prop3 = registry.bind(new IntProp("key3", null));
     var prop4 = registry.bind(new IntProp("key4", null));
 
-    DummyConsumer<Quad<Integer, Integer, Integer, Integer>> consumer = spy(new DummyConsumer<>());
+    StoreAllValuesConsumer<Quad<Integer, Integer, Integer, Integer>> consumer =
+        spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -159,8 +158,8 @@ public class CoordinatedAsyncTest {
     var prop4 = registry.bind(new IntProp("key4", null));
     var prop5 = registry.bind(new IntProp("key5", null));
 
-    DummyConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
-        spy(new DummyConsumer<>());
+    StoreAllValuesConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
+        spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -181,34 +180,5 @@ public class CoordinatedAsyncTest {
 
     var last = consumer.getLast();
     assertThat("Last notification should be a complete value", last, equalTo(expected));
-  }
-
-  private static class DummyConsumer<T> implements Consumer<T> {
-    private final LinkedHashSet<T> store = new LinkedHashSet<>();
-
-    @Override
-    public synchronized void accept(T t) {
-      this.store.add(t);
-    }
-
-    public synchronized ArrayDeque<T> get() {
-      return new ArrayDeque<>(this.store);
-    }
-
-    public synchronized T getLast() {
-      T val = null;
-      Iterator<T> it = this.store.iterator();
-      while (it.hasNext()) {
-        val = it.next();
-      }
-      return val;
-    }
-  }
-
-  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntProp(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
   }
 }

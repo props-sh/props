@@ -23,25 +23,23 @@
  *
  */
 
-package sh.props.base;
+package sh.props.testhelpers;
 
-import java.nio.file.Path;
-import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.PathConverter;
-import sh.props.interfaces.Prop;
+import sh.props.base.AbstractIntegerProp;
+import sh.props.exceptions.InvalidReadOpException;
 
-/**
- * Helper class meant to act as a base class when defining a {@link Prop} with the underlying type.
- */
-public abstract class AbstractPathProp extends CustomProp<Path> implements PathConverter {
+/** Test-only implementation. */
+public class ErrorOnGetProp extends AbstractIntegerProp {
 
-  protected AbstractPathProp(
-      String key,
-      @Nullable Path defaultValue,
-      @Nullable String description,
-      boolean isRequired,
-      boolean isSecret) {
-    super(key, defaultValue, description, isRequired, isSecret);
+  public ErrorOnGetProp(String key, @Nullable Integer defaultValue) {
+    super(key, defaultValue, null, false, false);
+  }
+
+  @Override
+  protected void validateBeforeGet(@Nullable Integer value) {
+    if (value != null && value > 1) {
+      throw new InvalidReadOpException("unretrievable value");
+    }
   }
 }

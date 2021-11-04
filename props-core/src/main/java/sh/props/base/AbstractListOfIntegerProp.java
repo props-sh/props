@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.util.List;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.ListOfIntegerConverter;
 import sh.props.interfaces.Prop;
 
@@ -38,8 +39,8 @@ public abstract class AbstractListOfIntegerProp extends CustomProp<List<Integer>
 
   protected AbstractListOfIntegerProp(
       String key,
-      List<Integer> defaultValue,
-      String description,
+      @Nullable List<Integer> defaultValue,
+      @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);

@@ -29,11 +29,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
-import sh.props.converter.IntegerConverter;
 import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.DummyConsumer;
+import sh.props.testhelpers.IntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropAsyncTest {
@@ -169,20 +169,5 @@ class TemplatedPropAsyncTest {
 
     // ASSERT
     verify(consumer, timeout(1_000)).accept(expected);
-  }
-
-  private static class DummyConsumer<T> implements Consumer<T> {
-
-    @Override
-    public void accept(T t) {
-      // no-op
-    }
-  }
-
-  private static class IntProp extends CustomProp<Integer> implements IntegerConverter {
-
-    protected IntProp(String key, Integer defaultValue) {
-      super(key, defaultValue, null, false, false);
-    }
   }
 }

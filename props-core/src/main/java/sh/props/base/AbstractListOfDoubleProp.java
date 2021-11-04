@@ -27,6 +27,7 @@ package sh.props.base;
 
 import java.util.List;
 import sh.props.CustomProp;
+import sh.props.annotations.Nullable;
 import sh.props.converter.ListOfDoubleConverter;
 import sh.props.interfaces.Prop;
 
@@ -38,8 +39,8 @@ public abstract class AbstractListOfDoubleProp extends CustomProp<List<Double>>
 
   protected AbstractListOfDoubleProp(
       String key,
-      List<Double> defaultValue,
-      String description,
+      @Nullable List<Double> defaultValue,
+      @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
     super(key, defaultValue, description, isRequired, isSecret);
