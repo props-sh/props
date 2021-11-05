@@ -47,7 +47,7 @@ public class InMemory extends Source {
    * #updateSubscribers()}.
    */
   public InMemory() {
-    this(false);
+    this(UPDATE_REGISTRY_MANUALLY);
   }
 
   /**
