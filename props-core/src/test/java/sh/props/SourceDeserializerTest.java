@@ -179,7 +179,7 @@ class SourceDeserializerTest {
         IllegalStateException.class,
         () ->
             SourceDeserializer.read(
-                List.of("classpath=/source/standard-types.properties", "test-source")));
+                List.of("classpath=/source/standard-types.properties", "UNKNOWN")));
   }
 
   @Test

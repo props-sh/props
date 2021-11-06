@@ -60,7 +60,7 @@ public class SourceDeserializer {
     }
 
     // register the source class and ensure the operation succeeded
-    SourceFactory<? extends Source> prev = Holder.MAP.putIfAbsent(key, factory);
+    SourceFactory<? extends Source> prev = Holder.MAP.putIfAbsent(key.toLowerCase(), factory);
     if (prev != null) {
       throw new IllegalArgumentException(
           key
@@ -114,7 +114,7 @@ public class SourceDeserializer {
   @Nullable
   static Source constructSource(String line) {
     // identify an implementation that can process this config line
-    String id = findId(line);
+    String id = findId(line).toLowerCase();
     SourceFactory<? extends Source> factory = Holder.MAP.get(id);
     if (factory == null) {
       // fail if the configuration file contains other artifacts
