@@ -25,7 +25,6 @@
 
 package sh.props;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -33,10 +32,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.spy;
 import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
-import java.time.Duration;
 import org.junit.jupiter.api.RepeatedTest;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.AwaitAssertionTest;
 import sh.props.testhelpers.StoreAllValuesConsumer;
 import sh.props.testhelpers.TestIntProp;
 import sh.props.tuples.Pair;
@@ -45,7 +44,7 @@ import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
-public class CoordinatedAsyncTest {
+public class CoordinatedAsyncTest extends AwaitAssertionTest {
   public static final int HOW_MANY_TIMES = 1000;
 
   @RepeatedTest(value = HOW_MANY_TIMES)
@@ -69,10 +68,7 @@ public class CoordinatedAsyncTest {
     source.put("key2", "2");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
+    await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
     assertThat("Last notification should be a complete value", last, equalTo(expected));
@@ -102,10 +98,7 @@ public class CoordinatedAsyncTest {
     source.put("key3", "3");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
+    await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
     assertThat("Last notification should be a complete value", last, equalTo(expected));
@@ -137,10 +130,7 @@ public class CoordinatedAsyncTest {
     source.put("key4", "4");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
+    await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
     assertThat("Last notification should be a complete value", last, equalTo(expected));
@@ -174,10 +164,7 @@ public class CoordinatedAsyncTest {
     source.put("key5", "5");
 
     // ASSERT
-    await()
-        .pollInterval(Duration.ofNanos(1000))
-        .atMost(5, SECONDS)
-        .until(consumer::get, hasItem(expected));
+    await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
     assertThat("Last notification should be a complete value", last, equalTo(expected));

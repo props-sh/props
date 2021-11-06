@@ -80,6 +80,8 @@ public class Layer implements Consumer<Map<String, String>> {
       return this;
     }
 
+    // TODO: unnecessarily complicated, remove the Schedulable interface and simply call
+    //       #updateSubscribers when the Layer is initialized
     // if a source is schedulable but was not scheduled
     if ((this.source instanceof Schedulable) && !((Schedulable) this.source).scheduled()) {
       // eagerly initialize the associated layers by triggering an update

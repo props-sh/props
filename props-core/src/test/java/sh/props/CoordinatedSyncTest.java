@@ -25,7 +25,6 @@
 
 package sh.props;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
@@ -33,11 +32,12 @@ import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 import org.junit.jupiter.api.Test;
 import sh.props.group.Group;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.AwaitAssertionTest;
 import sh.props.testhelpers.TestIntProp;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings("NullAway")
-class CoordinatedSyncTest {
+class CoordinatedSyncTest extends AwaitAssertionTest {
 
   @Test
   void synchronizedPairOfProps() {
@@ -56,7 +56,7 @@ class CoordinatedSyncTest {
     source.put("key2", "2");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2)));
+    await().until(supplier::get, equalTo(Tuple.of(1, 2)));
   }
 
   @Test
@@ -79,7 +79,7 @@ class CoordinatedSyncTest {
     source.put("key3", "3");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3)));
+    await().until(supplier::get, equalTo(Tuple.of(1, 2, 3)));
   }
 
   @Test
@@ -104,7 +104,7 @@ class CoordinatedSyncTest {
     source.put("key4", "4");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
+    await().until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
   }
 
   @Test
@@ -131,6 +131,6 @@ class CoordinatedSyncTest {
     source.put("key5", "5");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4, 5)));
+    await().until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4, 5)));
   }
 }

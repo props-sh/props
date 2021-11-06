@@ -23,56 +23,19 @@
  *
  */
 
-package sh.props.source.refresh;
+package sh.props.testhelpers;
 
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import sh.props.source.Schedulable;
-import sh.props.source.Source;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-public class ScheduledSource extends Source implements Schedulable {
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeAll;
 
-  private final Source delegate;
-  private volatile boolean scheduled;
+public class AwaitAssertionTest {
 
-  public ScheduledSource(Source delegate, boolean scheduled) {
-    this.delegate = delegate;
-    this.scheduled = scheduled;
-  }
-
-  @Override
-  public String id() {
-    return this.delegate.id();
-  }
-
-  @Override
-  public Map<String, String> get() {
-    return this.delegate.get();
-  }
-
-  @Override
-  public boolean scheduled() {
-    return this.scheduled;
-  }
-
-  @Override
-  public void setScheduled() {
-    this.scheduled = true;
-  }
-
-  @Override
-  public void register(Consumer<Map<String, String>> subscriber) {
-    this.delegate.register(subscriber);
-  }
-
-  @Override
-  public Stream<Consumer<Map<String, String>>> subscribers() {
-    return this.delegate.subscribers();
-  }
-
-  @Override
-  public void updateSubscribers() {
-    this.delegate.updateSubscribers();
+  @BeforeAll
+  static void beforeAll() {
+    Awaitility.setDefaultTimeout(5, SECONDS);
+    Awaitility.setDefaultPollInterval(100, NANOSECONDS);
   }
 }

@@ -66,6 +66,7 @@ class Trigger implements Runnable {
     }
 
     try {
+      // TODO: refactor to use the ForkJoinPool
       CompletableFuture.runAsync(this.source::updateSubscribers)
           .whenComplete((unused, throwable) -> this.markDone(t0, throwable));
     } catch (RuntimeException e) {

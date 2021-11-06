@@ -25,7 +25,6 @@
 
 package sh.props.source.impl;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -38,15 +37,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
+import sh.props.testhelpers.AwaitAssertionTest;
 import sh.props.typed.BooleanProp;
 
 @SuppressWarnings("NullAway")
-class SourcesTest {
+class SourcesTest extends AwaitAssertionTest {
 
   @Test
   void classpathPropertyFile() {
@@ -120,7 +119,7 @@ class SourcesTest {
 
     // ASSERT
     source.updateSubscribers();
-    await().pollInterval(Duration.ofNanos(1000)).atMost(5, SECONDS).until(prop::get, equalTo(true));
+    await().until(prop::get, equalTo(true));
   }
 
   @Test

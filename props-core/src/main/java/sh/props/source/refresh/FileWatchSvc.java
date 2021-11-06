@@ -30,6 +30,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
+import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -109,7 +110,12 @@ public class FileWatchSvc implements Runnable {
     }
 
     // listen for updates on all event types
-    path.getParent().register(this.watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+    path.getParent()
+        .register(
+            this.watcher,
+            new WatchEvent.Kind[] {ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE},
+            SensitivityWatchEventModifier.HIGH);
+
     // and map the file to a trigger object which will be later used for refreshing the data
     this.triggers.put(path, new Trigger(source));
     // mark this source as scheduled
@@ -122,8 +128,10 @@ public class FileWatchSvc implements Runnable {
     WatchKey key = null;
     try {
       while ((key = this.watcher.take()) != null) {
+        WatchKey current = key;
+
         // process all events for the given key
-        key.pollEvents().stream()
+        current.pollEvents().stream()
 
             // ignore overflows
             .filter(event -> event.kind() != OVERFLOW)
@@ -135,6 +143,9 @@ public class FileWatchSvc implements Runnable {
                   WatchEvent<Path> ev = (WatchEvent<Path>) event;
                   return ev.context();
                 })
+
+            // resolve the passed relative path to an absolute path
+            .map(path -> ((Path) current.watchable()).resolve(path))
 
             // ensure each path only appears once
             // we don't care for duplicate events on the same file
