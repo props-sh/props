@@ -62,6 +62,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
 
     // initialize the registry and bind a prop
     var registry = new RegistryBuilder(source).build();
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
 
     // ACT / ASSERT
@@ -95,6 +96,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
 
     // initialize the registry and bind a prop
     var registry = new RegistryBuilder(source).build();
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
 
     // ACT / ASSERT

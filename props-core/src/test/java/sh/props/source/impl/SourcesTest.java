@@ -111,6 +111,7 @@ class SourcesTest extends AwaitAssertionTest {
     // ARRANGE
     var source = new InMemory(UPDATE_REGISTRY_MANUALLY);
     var registry = new RegistryBuilder(source).build();
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     BooleanProp prop = registry.bind(new BooleanProp("key"));
 
     // ACT
