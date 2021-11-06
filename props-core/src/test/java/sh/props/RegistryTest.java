@@ -25,7 +25,6 @@
 
 package sh.props;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,10 +35,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.AwaitAssertionTest;
 import sh.props.testhelpers.TestIntProp;
 
 @SuppressWarnings("NullAway")
-class RegistryTest {
+class RegistryTest extends AwaitAssertionTest {
 
   @Test
   void updateValue() {
@@ -115,7 +115,7 @@ class RegistryTest {
     source.updateSubscribers();
 
     // ASSERT
-    await().atMost(5, SECONDS).until(prop::get, equalTo(2));
+    await().until(prop::get, equalTo(2));
   }
 
   @Test
@@ -166,7 +166,7 @@ class RegistryTest {
     source.put("key", "2");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(localValue::get, equalTo(2));
+    await().until(localValue::get, equalTo(2));
   }
 
   @Test
@@ -190,7 +190,7 @@ class RegistryTest {
     source.put("key", "2");
 
     // ASSERT
-    await().atMost(5, SECONDS).until(localValue1::get, equalTo(2));
-    await().atMost(5, SECONDS).until(localValue2::get, equalTo(2));
+    await().until(localValue1::get, equalTo(2));
+    await().until(localValue2::get, equalTo(2));
   }
 }

@@ -123,11 +123,14 @@ class ConverterUtils {
   /**
    * Splits a {@link String} by the given <code>separator</code>, casts every item using the
    * specified <code>mapper</code> func and returns a {@link List} of numbers.
+   *
+   * <p>Any leading and trailing space characters, as defined by {@link String#trim()}, will be
+   * removed after the string is split.
    */
-  // TODO: allow spaces between separators and values
   static <T extends Number> List<T> splitStringAsNumbers(
       String input, String separator, Function<Number, T> mapper) {
     return Stream.of(input.split(Pattern.quote(separator)))
+        .map(String::trim)
         .map(ConverterUtils::safeParseNumber)
         .filter(Objects::nonNull)
         .map(mapper)

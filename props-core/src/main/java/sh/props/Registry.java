@@ -119,6 +119,11 @@ public class Registry implements Notifiable {
   /**
    * Retrieves the value for the specified key.
    *
+   * <p>Since this method retrieves the value directly from the underlying {@link Datastore}, it is
+   * the fastest way to observe a changed value. Any bound {@link Prop} objects will have to wait
+   * for {@link Registry#sendUpdate(String, String, Layer)} to finish executing asynchronously
+   * before observing any changes.
+   *
    * @param key the key to retrieve
    * @param converter the type converter used to cast the value to its appropriate type
    * @param <T> the return object's type

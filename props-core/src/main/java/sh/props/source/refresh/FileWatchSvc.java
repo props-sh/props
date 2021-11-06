@@ -30,6 +30,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
+import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -91,15 +92,14 @@ public class FileWatchSvc implements Runnable {
   }
 
   /**
-   * Registers the specified path for notification on updates.
+   * Registers the specified source to be refreshed when the underlying file is changed on disk.
    *
    * @param source an {@link Source} that is also {@link FileWatchable}
    * @param <T> the type of the source to register; it must be both {@link Source} and {@link
    *     FileWatchable}
-   * @return a {@link ScheduledSource} wrapping the input parameter
    * @throws IOException if the source's path could not be registered with the {@link WatchService}
    */
-  public <T extends Source & FileWatchable> ScheduledSource register(T source) throws IOException {
+  public <T extends Source & FileWatchable> void refreshOnChanges(T source) throws IOException {
     Path path = source.file();
     if (path == null) {
       throw new NullPointerException("The passed argument must not be null");
@@ -109,11 +109,14 @@ public class FileWatchSvc implements Runnable {
     }
 
     // listen for updates on all event types
-    path.getParent().register(this.watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+    path.getParent()
+        .register(
+            this.watcher,
+            new WatchEvent.Kind[] {ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE},
+            SensitivityWatchEventModifier.HIGH);
+
     // and map the file to a trigger object which will be later used for refreshing the data
     this.triggers.put(path, new Trigger(source));
-    // mark this source as scheduled
-    return new ScheduledSource(source, true);
   }
 
   /** Main file-watching logic. */
@@ -122,8 +125,10 @@ public class FileWatchSvc implements Runnable {
     WatchKey key = null;
     try {
       while ((key = this.watcher.take()) != null) {
+        WatchKey current = key;
+
         // process all events for the given key
-        key.pollEvents().stream()
+        current.pollEvents().stream()
 
             // ignore overflows
             .filter(event -> event.kind() != OVERFLOW)
@@ -135,6 +140,9 @@ public class FileWatchSvc implements Runnable {
                   WatchEvent<Path> ev = (WatchEvent<Path>) event;
                   return ev.context();
                 })
+
+            // resolve the passed relative path to an absolute path
+            .map(path -> ((Path) current.watchable()).resolve(path))
 
             // ensure each path only appears once
             // we don't care for duplicate events on the same file

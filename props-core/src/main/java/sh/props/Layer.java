@@ -35,7 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.source.Schedulable;
 import sh.props.source.Source;
 
 public class Layer implements Consumer<Map<String, String>> {
@@ -80,21 +79,8 @@ public class Layer implements Consumer<Map<String, String>> {
       return this;
     }
 
-    // if a source is schedulable but was not scheduled
-    if ((this.source instanceof Schedulable) && !((Schedulable) this.source).scheduled()) {
-      // eagerly initialize the associated layers by triggering an update
-      log.warning(
-          () ->
-              format(
-                  "The '%s' source is schedulable but was not already scheduled."
-                      + "Executing a manual update.",
-                  this.source));
-      this.source.updateSubscribers();
-
-    } else if (!(this.source instanceof Schedulable)) {
-      // read from source at least once
-      this.source.updateSubscribers();
-    }
+    // otherwise, update current subscribers (e.g. the current layer)
+    this.source.updateSubscribers();
 
     return this;
   }

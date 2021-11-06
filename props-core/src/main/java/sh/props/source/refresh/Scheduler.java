@@ -28,6 +28,7 @@ package sh.props.source.refresh;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.time.Duration;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import sh.props.source.Source;
 import sh.props.util.BackgroundExecutorFactory;
@@ -40,10 +41,10 @@ public class Scheduler {
    * Class constructor.
    *
    * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
-   * single thread.
+   * number of threads equal to {@link ForkJoinPool#getCommonPoolParallelism()}.
    */
   public Scheduler() {
-    this(BackgroundExecutorFactory.create(1));
+    this(BackgroundExecutorFactory.create(ForkJoinPool.getCommonPoolParallelism()));
   }
 
   /**
@@ -70,16 +71,13 @@ public class Scheduler {
    * @param source the source to refresh
    * @param initialDelay the initial delay before the first refresh is executed
    * @param refreshPeriod the refresh period
-   * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public ScheduledSource schedule(Source source, Duration initialDelay, Duration refreshPeriod) {
+  public void refresh(Source source, Duration initialDelay, Duration refreshPeriod) {
 
     // schedule the source for periodic data refreshes
     this.executor.scheduleAtFixedRate(
         new Trigger(source), initialDelay.toNanos(), refreshPeriod.toNanos(), NANOSECONDS);
-
-    return new ScheduledSource(source, true);
   }
 
   /**
@@ -88,11 +86,10 @@ public class Scheduler {
    *
    * @param source the source to refresh
    * @param refreshPeriod the refresh period
-   * @return a {@link ScheduledSource} object
    */
   @SuppressWarnings("FutureReturnValueIgnored")
-  public ScheduledSource scheduleEagerly(Source source, Duration refreshPeriod) {
-    return this.schedule(source, Duration.ZERO, refreshPeriod);
+  public void refreshEagerly(Source source, Duration refreshPeriod) {
+    this.refresh(source, Duration.ZERO, refreshPeriod);
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */

@@ -27,7 +27,6 @@ package sh.props.source;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public interface Subscribable {
 
@@ -37,13 +36,6 @@ public interface Subscribable {
    * @param subscriber a subscriber that accepts any updates this source may be sending
    */
   void register(Consumer<Map<String, String>> subscriber);
-
-  /**
-   * Retrieves a stream of subscribers, which have registered to receive this source's updates.
-   *
-   * @return the subscribers to be notified
-   */
-  Stream<Consumer<Map<String, String>>> subscribers();
 
   /** Sends an update to all registered subscribers. */
   void updateSubscribers();

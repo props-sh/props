@@ -226,6 +226,24 @@ class TypedPropsTest {
   }
 
   @Test
+  void listOfLongsPropWithSpaces() {
+    // ARRANGE
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
+    source.put("key", " 1L, 2L ,3L ");
+
+    Registry registry = new RegistryBuilder(source).build();
+
+    // ACT
+    var prop = registry.bind(new ListOfLongsProp("key"));
+
+    // ASSERT
+    assertThat(
+        "Expecting leading/trailing spaces to be removed",
+        prop.get(),
+        equalTo(List.of(1L, 2L, 3L)));
+  }
+
+  @Test
   void listOfStringsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
