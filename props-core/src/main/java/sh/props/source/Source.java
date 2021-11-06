@@ -91,14 +91,6 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   public abstract String id();
 
   /**
-   * Initializes a {@link Source} object from the specified id.
-   *
-   * @param id the identifier representing this source
-   * @return a constructed Source object
-   */
-  public abstract Source from(String id);
-
-  /**
    * Reads all known (key,value) pairs from the source.
    *
    * @return an updated {@link Map} containing all known key,value pairs

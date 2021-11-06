@@ -25,13 +25,17 @@
 
 package sh.props;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import sh.props.source.Source;
+import sh.props.testhelpers.TestFileUtil;
 
 @SuppressWarnings("NullAway")
 class SourceDeserializerTest {
@@ -39,14 +43,27 @@ class SourceDeserializerTest {
   @Test
   void read() throws IOException {
     // ARRANGE
-    InputStream sourceConfig =
+    // make a copy of file-based properties to a temporary file
+    Path propFile = TestFileUtil.createTempFilePath("data-types.properties");
+    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
+    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+    Files.copy(testData, propFile);
+
+    // make a copy of the source configuration to a temporary file
+    Path configFile = TestFileUtil.createTempFilePath("source-config.properties");
+    InputStream configData =
         this.getClass().getResourceAsStream("/source/source-configuration.properties");
-    Properties properties = new Properties();
-    properties.load(sourceConfig);
+    assertThat("Could not find config data, cannot proceed", configData, notNullValue());
+    Files.copy(configData, configFile);
+
+    // append a file-based configuration
+    TestFileUtil.appendLine("file=" + propFile, configFile);
 
     // ACT
+    Source[] sources = SourceDeserializer.read(Files.newInputStream(configFile));
+    Registry registry = new RegistryBuilder(sources).build();
 
     // ASSERT
-    assertThat(true, equalTo(true));
+    assertThat(registry.layers, hasSize(5));
   }
 }

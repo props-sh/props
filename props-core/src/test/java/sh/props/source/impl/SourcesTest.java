@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
 import sh.props.testhelpers.AwaitAssertionTest;
+import sh.props.testhelpers.TestFileUtil;
 import sh.props.typed.BooleanProp;
 
 @SuppressWarnings("NullAway")
@@ -145,15 +146,13 @@ class SourcesTest extends AwaitAssertionTest {
   @Test
   void propertyFile() throws IOException {
     // ARRANGE
-    Path tmpDir = Files.createTempDirectory("test-types");
-    tmpDir.toFile().deleteOnExit();
+    Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
     // load existing test properties
     InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
     assertThat("Could not find test data, cannot proceed", testData, notNullValue());
 
     // copy the properties to a temp file
-    Path propFile = tmpDir.resolve("input.properties");
     Files.copy(testData, propFile);
 
     // load the test file

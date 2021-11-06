@@ -31,8 +31,6 @@ import static java.util.function.Predicate.not;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +38,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.source.Source;
+import sh.props.source.SourceFactory;
 import sh.props.source.impl.ClasspathPropertyFile;
 import sh.props.source.impl.Environment;
 import sh.props.source.impl.InMemory;
@@ -55,18 +54,20 @@ public class SourceDeserializer {
    * deserialization from a configuration file.
    *
    * @param key the key to register; must not have been previously bound
-   * @param sourceClass the {@link Source} this key should be instantiated to
+   * @param factory the {@link Source} this key should be instantiated to
    */
-  public static void register(String key, Class<? extends Source> sourceClass) {
-    if (sourceClass == null) {
-      throw new IllegalArgumentException("Cannot register null class");
+  public static <T extends Source> void register(String key, SourceFactory<T> factory) {
+    if (factory == null) {
+      throw new IllegalArgumentException("Cannot register a null factory");
     }
 
     // register the source class and ensure the operation succeeded
-    Class<? extends Source> prev = Holder.MAP.putIfAbsent(key, sourceClass);
+    SourceFactory<? extends Source> prev = Holder.MAP.putIfAbsent(key, factory);
     if (prev != null) {
       throw new IllegalArgumentException(
-          key + " cannot be overwritten; it was previously registered with " + prev);
+          key
+              + " cannot be overwritten; it was previously registered with "
+              + prev.getClass().getSimpleName());
     }
   }
 
@@ -95,7 +96,7 @@ public class SourceDeserializer {
 
   /**
    * Helper method that attempts to construct a {@link Source} object by calling {@link
-   * Source#from(String)} through Java reflection.
+   * SourceFactory#create(String)} through Java reflection.
    *
    * @param line the configuration line to process
    * @return a constructed Source object
@@ -104,8 +105,8 @@ public class SourceDeserializer {
   static Source constructSource(String line) {
     // identify an implementation that can process this config line
     String id = findId(line);
-    Class<? extends Source> sourceImpl = Holder.MAP.get(id);
-    if (sourceImpl == null) {
+    SourceFactory<? extends Source> factory = Holder.MAP.get(id);
+    if (factory == null) {
       // do not fail when the configuration file contains other artifacts; log and skip
       log.warning(
           () ->
@@ -115,19 +116,8 @@ public class SourceDeserializer {
       return null;
     }
 
-    try {
-      // construct a Source by parsing the specified line
-      Method from = sourceImpl.getMethod("from", String.class);
-      return (Source) from.invoke(null, line);
-
-    } catch (NoSuchMethodException
-        | InvocationTargetException
-        | IllegalArgumentException
-        | IllegalAccessException e) {
-      throw new IllegalStateException(
-          "Source.from was not found through reflection. This should not happen and represents a developer error",
-          e);
-    }
+    // construct a Source by parsing the specified line
+    return factory.create(line);
   }
 
   /**
@@ -138,7 +128,7 @@ public class SourceDeserializer {
    */
   static String findId(String line) {
     line = line.trim();
-    int pos = line.indexOf(':');
+    int pos = line.indexOf('=');
     if (pos == -1) {
       // return the line, as-is, since it doesn't contain any separators
       return line;
@@ -150,15 +140,15 @@ public class SourceDeserializer {
 
   /** Static holder, ensuring the map does not get initialized if this feature is not used. */
   private static class Holder {
-    public static final Map<String, Class<? extends Source>> MAP = new HashMap<>();
+    public static final Map<String, SourceFactory<? extends Source>> MAP = new HashMap<>();
 
     static {
       // define the core source implementations
-      MAP.put(ClasspathPropertyFile.ID, ClasspathPropertyFile.class);
-      MAP.put(Environment.ID, Environment.class);
-      MAP.put(InMemory.ID, InMemory.class);
-      MAP.put(PropertyFile.ID, PropertyFile.class);
-      MAP.put(SystemProperties.ID, SystemProperties.class);
+      MAP.put(ClasspathPropertyFile.ID, new ClasspathPropertyFile.Factory());
+      MAP.put(Environment.ID, new Environment.Factory());
+      MAP.put(InMemory.ID, new InMemory.Factory());
+      MAP.put(PropertyFile.ID, new PropertyFile.Factory());
+      MAP.put(SystemProperties.ID, new SystemProperties.Factory());
     }
   }
 }

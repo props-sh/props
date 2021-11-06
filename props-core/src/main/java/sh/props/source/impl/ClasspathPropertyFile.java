@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.source.Source;
+import sh.props.source.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends Source {
@@ -55,23 +56,6 @@ public class ClasspathPropertyFile extends Source {
     return ID + "://" + this.location;
   }
 
-  /**
-   * Initializes a {@link ClasspathPropertyFile} object from the specified id.
-   *
-   * @param id the identifier representing this source
-   * @return a constructed Source object
-   */
-  @Override
-  public Source from(String id) {
-    @SuppressWarnings("StringSplitter")
-    String[] parts = id.split("=");
-    if (parts.length != 2 || !ID.equals(parts[0])) {
-      throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
-    }
-
-    return new ClasspathPropertyFile(parts[1]);
-  }
-
   @Override
   public Map<String, String> get() {
     try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
@@ -90,5 +74,26 @@ public class ClasspathPropertyFile extends Source {
     }
 
     return Collections.emptyMap();
+  }
+
+  /** Factory implementation. */
+  public static class Factory implements SourceFactory<ClasspathPropertyFile> {
+
+    /**
+     * Initializes a {@link ClasspathPropertyFile} object from the specified id.
+     *
+     * @param id the identifier representing this source
+     * @return a constructed Source object
+     */
+    @Override
+    public ClasspathPropertyFile create(String id) {
+      @SuppressWarnings("StringSplitter")
+      String[] parts = id.split("=");
+      if (parts.length != 2 || !ClasspathPropertyFile.ID.equals(parts[0])) {
+        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+      }
+
+      return new ClasspathPropertyFile(parts[1]);
+    }
   }
 }
