@@ -23,20 +23,37 @@
  *
  */
 
-package sh.props.source;
+package sh.props.testhelpers;
 
-/**
- * Interface for {@link Source} factories.
- *
- * @param <T> the source subclass
- */
-@FunctionalInterface
-public interface SourceFactory<T extends Source> {
-  /**
-   * Constructs a {@link Source} object from the specified id.
-   *
-   * @param id the identifier representing this source
-   * @return a constructed Source object
-   */
-  T create(String id);
+import java.util.Map;
+import java.util.Objects;
+import sh.props.source.Source;
+import sh.props.source.SourceFactory;
+
+/** Creates a source used for tests, which only defines a key=value entry. */
+public class TestSource extends Source {
+  public static final String ID = "test-source";
+
+  @Override
+  public String id() {
+    return "test-source";
+  }
+
+  @Override
+  public Map<String, String> get() {
+    return Map.of("key", "value");
+  }
+
+  /** Defines a source factory used in tests. */
+  public static class Factory implements SourceFactory<TestSource> {
+
+    @Override
+    public TestSource create(String id) {
+      if (!Objects.equals(TestSource.ID, id)) {
+        throw new IllegalArgumentException("Invalid id: " + id);
+      }
+
+      return new TestSource();
+    }
+  }
 }

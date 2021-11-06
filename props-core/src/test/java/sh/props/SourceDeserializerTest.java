@@ -29,6 +29,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import sh.props.converter.Cast;
 import sh.props.source.Source;
 import sh.props.source.impl.InMemory;
 import sh.props.testhelpers.TestFileUtil;
+import sh.props.testhelpers.TestSource;
 
 @SuppressWarnings("NullAway")
 class SourceDeserializerTest {
@@ -169,5 +171,34 @@ class SourceDeserializerTest {
         "Expecting the prop to be overwritten via extended-types.properties",
         registry.get("a.duration", Cast.asDuration()),
         equalTo(Duration.ofDays(2)));
+  }
+
+  @Test
+  void cannotDeserializeWithUnknownSource() {
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            SourceDeserializer.read(
+                List.of("classpath=/source/standard-types.properties", "test-source")));
+  }
+
+  @Test
+  void customSourceImplementation() {
+    // ARRANGE
+    SourceDeserializer.register(TestSource.ID, new TestSource.Factory());
+
+    Source[] sources =
+        SourceDeserializer.read(
+            List.of("classpath=/source/standard-types.properties", "test-source"));
+
+    // ACT
+    Registry registry = new RegistryBuilder(sources).build();
+
+    // ASSERT
+    assertThat(
+        "Expecting the prop to be defined via standard-types.properties",
+        registry.get("a.long", Cast.asLong()),
+        equalTo(1L));
+    assertThat("Expecting a prop from the test-source", registry.get("key"), equalTo("value"));
   }
 }

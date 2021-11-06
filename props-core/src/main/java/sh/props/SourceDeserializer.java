@@ -95,6 +95,8 @@ public class SourceDeserializer {
    *
    * @param sourceConfig a list of source configurations
    * @return an array of Source objects
+   * @throws IllegalStateException if the configuration line cannot be used to identify an *
+   *     appropriate source
    */
   public static Source[] read(List<String> sourceConfig) {
     return sourceConfig.stream().map(SourceDeserializer::constructSource).toArray(Source[]::new);
@@ -106,6 +108,8 @@ public class SourceDeserializer {
    *
    * @param line the configuration line to process
    * @return a constructed Source object
+   * @throws IllegalStateException if the configuration line cannot be used to identify an
+   *     appropriate source
    */
   @Nullable
   static Source constructSource(String line) {
