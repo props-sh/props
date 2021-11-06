@@ -25,6 +25,7 @@
 
 package sh.props.source.impl;
 
+import static java.time.Duration.ZERO;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -35,18 +36,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
 import sh.props.source.refresh.FileWatchSvc;
 import sh.props.source.refresh.ScheduledSource;
+import sh.props.source.refresh.Scheduler;
 import sh.props.testhelpers.AwaitAssertionTest;
 import sh.props.typed.BooleanProp;
 
 public class ScheduledSourcesTest extends AwaitAssertionTest {
 
   @Test
-  void propertyFile() throws IOException {
+  void propertyFileWithFileWatcher() throws IOException {
     // ARRANGE
     Path tmpDir = Files.createTempDirectory("test-types");
     tmpDir.toFile().deleteOnExit();
@@ -55,10 +58,8 @@ public class ScheduledSourcesTest extends AwaitAssertionTest {
     InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
     assertThat("Could not find test data, cannot proceed", testData, notNullValue());
 
-    // define a path where the properties will be defined
+    // define the source
     Path propFile = tmpDir.resolve("input.properties");
-
-    // load the test file
     var source = new PropertyFile(propFile);
     ScheduledSource scheduledSource = FileWatchSvc.instance().register(source);
 
@@ -73,7 +74,38 @@ public class ScheduledSourcesTest extends AwaitAssertionTest {
     // copy the properties to a temp file
     Files.copy(testData, propFile);
 
-    // and expect the prop to be re-read
+    // and expect the prop to eventually be updated
+    await().until(prop::get, equalTo(true));
+  }
+
+  @Test
+  void propertyFileWithScheduler() throws IOException {
+    // ARRANGE
+    Path tmpDir = Files.createTempDirectory("test-types");
+    tmpDir.toFile().deleteOnExit();
+
+    // load existing test properties
+    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
+    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+
+    // define the source
+    Path propFile = tmpDir.resolve("input.properties");
+    var source = new PropertyFile(propFile);
+    Duration interval = Duration.ofMillis(100);
+    ScheduledSource scheduledSource = Scheduler.instance().schedule(source, ZERO, interval);
+
+    // initialize the registry and bind a prop
+    var registry = new RegistryBuilder(scheduledSource).build();
+    BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
+
+    // ACT / ASSERT
+    assertThat(
+        "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
+
+    // copy the properties to a temp file
+    Files.copy(testData, propFile);
+
+    // and expect the prop to eventually be updated
     await().until(prop::get, equalTo(true));
   }
 }
