@@ -51,6 +51,7 @@ public class SystemProperties extends Source {
 
     return new SystemProperties();
   }
+
   /**
    * Retrieves all system properties.
    *

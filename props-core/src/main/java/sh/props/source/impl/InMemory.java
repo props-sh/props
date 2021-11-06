@@ -87,6 +87,7 @@ public class InMemory extends Source {
 
     return new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
   }
+
   /**
    * Retrieves an unmodifiable map containing all (key,value) pairs defined in the {@link #store}.
    *

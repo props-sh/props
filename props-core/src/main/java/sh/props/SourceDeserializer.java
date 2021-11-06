@@ -72,7 +72,7 @@ public class SourceDeserializer {
 
   /**
    * Reads {@link Source} configuration from the specified input stream and return an array of
-   * sources, which can be passed to {@link sh.props.RegistryBuilder#RegistryBuilder(Source...)}
+   * sources, which can be passed to {@link sh.props.RegistryBuilder#RegistryBuilder(Source...)}.
    *
    * @param stream the input stream representing the configuration data
    * @return an array of Source objects
