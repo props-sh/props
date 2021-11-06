@@ -37,7 +37,7 @@ import sh.props.source.Source;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends Source {
-
+  public static final String ID = "classpath";
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;
 
@@ -52,7 +52,24 @@ public class ClasspathPropertyFile extends Source {
 
   @Override
   public String id() {
-    return "classpath://" + this.location;
+    return ID + "://" + this.location;
+  }
+
+  /**
+   * Initializes a {@link ClasspathPropertyFile} object from the specified id.
+   *
+   * @param id the identifier representing this source
+   * @return a constructed Source object
+   */
+  @Override
+  public Source from(String id) {
+    @SuppressWarnings("StringSplitter")
+    String[] parts = id.split("=");
+    if (parts.length != 2 || !ID.equals(parts[0])) {
+      throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    }
+
+    return new ClasspathPropertyFile(parts[1]);
   }
 
   @Override

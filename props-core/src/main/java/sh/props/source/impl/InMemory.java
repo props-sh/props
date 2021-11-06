@@ -27,6 +27,7 @@ package sh.props.source.impl;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 import sh.props.source.Source;
@@ -35,6 +36,7 @@ import sh.props.source.Source;
 public class InMemory extends Source {
   public static final boolean UPDATE_REGISTRY_ON_EVERY_WRITE = true;
   public static final boolean UPDATE_REGISTRY_MANUALLY = false;
+  public static final String ID = "memory";
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
@@ -61,9 +63,30 @@ public class InMemory extends Source {
 
   @Override
   public String id() {
-    return "memory";
+    return ID;
   }
 
+  /**
+   * Initializes an {@link InMemory} object from the specified id.
+   *
+   * @param id the identifier representing this source
+   * @return a constructed Source object
+   */
+  @Override
+  public Source from(String id) {
+    @SuppressWarnings("StringSplitter")
+    String[] parts = id.split("=");
+    if (parts.length > 2 || !ID.equals(parts[0])) {
+      throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    }
+
+    // construct a manually updating, in-memory source
+    if (parts.length == 2 && Objects.equals("manual", parts[1].toLowerCase())) {
+      return new InMemory(UPDATE_REGISTRY_MANUALLY);
+    }
+
+    return new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
+  }
   /**
    * Retrieves an unmodifiable map containing all (key,value) pairs defined in the {@link #store}.
    *

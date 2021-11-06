@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -40,6 +41,7 @@ import sh.props.source.Source;
 
 /** Retrieves properties from a Java properties file, located on disk. */
 public class PropertyFile extends Source implements FileWatchable {
+  public static final String ID = "file";
 
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
@@ -77,7 +79,24 @@ public class PropertyFile extends Source implements FileWatchable {
    */
   @Override
   public String id() {
-    return "file://" + this.location.toString();
+    return ID + "://" + this.location.toString();
+  }
+
+  /**
+   * Initializes a {@link PropertyFile} object from the specified id.
+   *
+   * @param id the identifier representing this source
+   * @return a constructed Source object
+   */
+  @Override
+  public Source from(String id) {
+    @SuppressWarnings("StringSplitter")
+    String[] parts = id.split("=");
+    if (parts.length != 2 || !ID.equals(parts[0])) {
+      throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    }
+
+    return new PropertyFile(Paths.get(parts[1]));
   }
 
   /**

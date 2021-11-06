@@ -30,12 +30,27 @@ import sh.props.source.Source;
 
 /** Retrieves system properties. */
 public class SystemProperties extends Source {
+  public static final String ID = "system";
 
   @Override
   public String id() {
-    return "system";
+    return ID;
   }
 
+  /**
+   * Initializes a {@link SystemProperties} object from the specified id.
+   *
+   * @param id the identifier representing this source
+   * @return a constructed Source object
+   */
+  @Override
+  public Source from(String id) {
+    if (!ID.equals(id)) {
+      throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    }
+
+    return new SystemProperties();
+  }
   /**
    * Retrieves all system properties.
    *

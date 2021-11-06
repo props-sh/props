@@ -23,47 +23,30 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props;
 
-import java.util.Map;
-import sh.props.source.Source;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-/** Retrieves all environment variables. */
-public class Environment extends Source {
-  public static final String ID = "env";
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import org.junit.jupiter.api.Test;
 
-  /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
-   *
-   * @return an unique id
-   */
-  @Override
-  public String id() {
-    return ID;
-  }
+@SuppressWarnings("NullAway")
+class SourceDeserializerTest {
 
-  /**
-   * Initializes an {@link Environment} object from the specified id.
-   *
-   * @param id the identifier representing this source
-   * @return a constructed Source object
-   */
-  @Override
-  public Source from(String id) {
-    if (!ID.equals(id)) {
-      throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
-    }
+  @Test
+  void read() throws IOException {
+    // ARRANGE
+    InputStream sourceConfig =
+        this.getClass().getResourceAsStream("/source/source-configuration.properties");
+    Properties properties = new Properties();
+    properties.load(sourceConfig);
 
-    return new Environment();
-  }
+    // ACT
 
-  /**
-   * Retrieves all environment variables.
-   *
-   * @return a map containing all env. variables
-   */
-  @Override
-  public Map<String, String> get() {
-    return System.getenv();
+    // ASSERT
+    assertThat(true, equalTo(true));
   }
 }
