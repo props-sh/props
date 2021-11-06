@@ -27,15 +27,14 @@ package sh.props.source.refresh;
 
 import static java.lang.String.format;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.source.Source;
 
 /**
- * Convenience implementation that triggers a {@link RefreshableSource#updateSubscribers()} and logs
- * any runtime exceptions.
+ * This implementation triggers a {@link Source#updateSubscribers()} operation and ensures a single
+ * concurrent execution, logging any encountered exceptions.
  */
 class Trigger implements Runnable {
 
@@ -66,39 +65,22 @@ class Trigger implements Runnable {
     }
 
     try {
-      // TODO: refactor to use the ForkJoinPool
-      CompletableFuture.runAsync(this.source::updateSubscribers)
-          .whenComplete((unused, throwable) -> this.markDone(t0, throwable));
+      this.source.updateSubscribers();
+
+      long durationNanos = System.nanoTime() - t0;
+      log.log(Level.FINE, () -> format("Refreshed %s (%d ns)", this.source, durationNanos));
+
     } catch (RuntimeException e) {
-      log.log(Level.WARNING, e, () -> "Unexpected exception while refreshing the source");
+      long durationNanos = System.nanoTime() - t0;
+      log.log(
+          Level.WARNING,
+          e,
+          () ->
+              format(
+                  "Unexpected exception while refreshing %s (%d ns)", this.source, durationNanos));
 
-      // in case that an error occurred, unlock anyway to give the operation a future chance
-      this.markDone(t0, e);
-    }
-  }
-
-  /**
-   * Releases the concurrency lock and logs the total time it took to execute the refresh operation.
-   *
-   * @param startTime the original starting time, in nanoseconds
-   * @param ex a possible exception thrown during the refresh operation
-   */
-  protected void markDone(long startTime, Throwable ex) {
-    try {
-      this.concurrencyLock.unlock();
     } finally {
-      long durationNanos = System.nanoTime() - startTime;
-      if (ex != null) {
-        log.log(
-            Level.WARNING,
-            ex,
-            () ->
-                format(
-                    "Unexpected exception while refreshing %s (%d ns)",
-                    this.source, durationNanos));
-      } else {
-        log.log(Level.FINE, () -> format("Refreshed %s (%d ns)", this.source, durationNanos));
-      }
+      this.concurrencyLock.unlock();
     }
   }
 }

@@ -92,15 +92,14 @@ public class FileWatchSvc implements Runnable {
   }
 
   /**
-   * Registers the specified path for notification on updates.
+   * Registers the specified source to be refreshed when the underlying file is changed on disk.
    *
    * @param source an {@link Source} that is also {@link FileWatchable}
    * @param <T> the type of the source to register; it must be both {@link Source} and {@link
    *     FileWatchable}
-   * @return a {@link ScheduledSource} wrapping the input parameter
    * @throws IOException if the source's path could not be registered with the {@link WatchService}
    */
-  public <T extends Source & FileWatchable> ScheduledSource register(T source) throws IOException {
+  public <T extends Source & FileWatchable> void refreshOnChanges(T source) throws IOException {
     Path path = source.file();
     if (path == null) {
       throw new NullPointerException("The passed argument must not be null");
@@ -118,8 +117,6 @@ public class FileWatchSvc implements Runnable {
 
     // and map the file to a trigger object which will be later used for refreshing the data
     this.triggers.put(path, new Trigger(source));
-    // mark this source as scheduled
-    return new ScheduledSource(source, true);
   }
 
   /** Main file-watching logic. */

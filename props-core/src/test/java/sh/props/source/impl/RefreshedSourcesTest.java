@@ -25,7 +25,6 @@
 
 package sh.props.source.impl;
 
-import static java.time.Duration.ZERO;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,12 +40,11 @@ import org.junit.jupiter.api.Test;
 import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
 import sh.props.source.refresh.FileWatchSvc;
-import sh.props.source.refresh.ScheduledSource;
 import sh.props.source.refresh.Scheduler;
 import sh.props.testhelpers.AwaitAssertionTest;
 import sh.props.typed.BooleanProp;
 
-public class ScheduledSourcesTest extends AwaitAssertionTest {
+public class RefreshedSourcesTest extends AwaitAssertionTest {
 
   @Test
   void propertyFileWithFileWatcher() throws IOException {
@@ -61,13 +59,16 @@ public class ScheduledSourcesTest extends AwaitAssertionTest {
     // define the source
     Path propFile = tmpDir.resolve("input.properties");
     var source = new PropertyFile(propFile);
-    ScheduledSource scheduledSource = FileWatchSvc.instance().register(source);
 
     // initialize the registry and bind a prop
-    var registry = new RegistryBuilder(scheduledSource).build();
+    var registry = new RegistryBuilder(source).build();
     BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
 
     // ACT / ASSERT
+
+    // register the source to be refreshed on modification events
+    FileWatchSvc.instance().refreshOnChanges(source);
+
     assertThat(
         "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
 
@@ -91,14 +92,17 @@ public class ScheduledSourcesTest extends AwaitAssertionTest {
     // define the source
     Path propFile = tmpDir.resolve("input.properties");
     var source = new PropertyFile(propFile);
-    Duration interval = Duration.ofMillis(100);
-    ScheduledSource scheduledSource = Scheduler.instance().schedule(source, ZERO, interval);
 
     // initialize the registry and bind a prop
-    var registry = new RegistryBuilder(scheduledSource).build();
+    var registry = new RegistryBuilder(source).build();
     BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
 
     // ACT / ASSERT
+
+    // register the source to be refreshed periodically
+    Duration interval = Duration.ofMillis(100);
+    Scheduler.instance().refreshEagerly(source, interval);
+
     assertThat(
         "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
 

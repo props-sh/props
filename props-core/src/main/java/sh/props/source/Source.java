@@ -39,7 +39,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Abstract class that permits subscribers to register for updates.
@@ -109,21 +108,13 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
     this.subscribers.add(subscriber);
   }
 
-  /**
-   * Retrieves a stream of subscribers to this source's updates.
-   *
-   * @return the subscribers to be notified
-   */
-  @Override
-  public Stream<Consumer<Map<String, String>>> subscribers() {
-    return this.subscribers.stream();
-  }
-
   /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
   @Override
   public void updateSubscribers() {
     Map<String, String> data = Collections.unmodifiableMap(this.get());
-    this.subscribers().forEach(d -> d.accept(data));
+    for (Consumer<Map<String, String>> subscriber : this.subscribers) {
+      subscriber.accept(data);
+    }
   }
 
   @Override
