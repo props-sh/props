@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,7 @@ import sh.props.testhelpers.TestFileUtil;
 
 @SuppressWarnings("NullAway")
 class SourceDeserializerTest {
+  static Path propFile;
   static Source[] sources;
 
   @BeforeAll
@@ -53,7 +55,7 @@ class SourceDeserializerTest {
     // ARRANGE
 
     // make a copy of file-based properties to a temporary file
-    Path propFile = TestFileUtil.createTempFilePath("-types.properties");
+    propFile = TestFileUtil.createTempFilePath("-types.properties");
     InputStream testData =
         SourceDeserializerTest.class.getResourceAsStream("/source/extended-types.properties");
     assertThat("Could not find test data, cannot proceed", testData, notNullValue());
@@ -146,5 +148,26 @@ class SourceDeserializerTest {
     // ASSERT
     assertThat(registry.layers, hasSize(4));
     assertThat(registry.get(sysPropKey), equalTo(System.getProperty(sysPropKey)));
+  }
+
+  @Test
+  void readFromConfigList() {
+    // ARRANGE
+    Source[] sources =
+        SourceDeserializer.read(
+            List.of("classpath=/source/standard-types.properties", "file=" + propFile));
+
+    // ACT
+    Registry registry = new RegistryBuilder(sources).build();
+
+    // ASSERT
+    assertThat(
+        "Expecting the prop to be defined via standard-types.properties",
+        registry.get("a.long", Cast.asLong()),
+        equalTo(1L));
+    assertThat(
+        "Expecting the prop to be overwritten via extended-types.properties",
+        registry.get("a.duration", Cast.asDuration()),
+        equalTo(Duration.ofDays(2)));
   }
 }

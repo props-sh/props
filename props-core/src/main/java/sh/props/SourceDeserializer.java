@@ -33,9 +33,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
@@ -46,7 +46,6 @@ import sh.props.source.impl.SystemProperties;
 
 /** Allows reading and deserializing {@link Source} configuration from an input stream. */
 public class SourceDeserializer {
-  private static final Logger log = Logger.getLogger(SourceDeserializer.class.getName());
 
   /**
    * Allows external implementations to register additional sources, which will then be usable for
@@ -81,16 +80,24 @@ public class SourceDeserializer {
     try (BufferedReader reader =
         new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()))) {
 
-      return reader
-          .lines()
-          .filter(not(String::isBlank))
-          .map(SourceDeserializer::constructSource)
-          .filter(Objects::nonNull)
-          .toArray(Source[]::new);
+      List<String> sourceConfig =
+          reader.lines().filter(not(String::isBlank)).collect(Collectors.toList());
+      return read(sourceConfig);
 
     } catch (Exception e) {
       throw new IllegalStateException("Error encountered while reading source configuration", e);
     }
+  }
+
+  /**
+   * Reads {@link Source} configuration from the specified input stream and return an array of
+   * sources, which can be passed to {@link sh.props.RegistryBuilder#RegistryBuilder(Source...)}.
+   *
+   * @param sourceConfig a list of source configurations
+   * @return an array of Source objects
+   */
+  public static Source[] read(List<String> sourceConfig) {
+    return sourceConfig.stream().map(SourceDeserializer::constructSource).toArray(Source[]::new);
   }
 
   /**
