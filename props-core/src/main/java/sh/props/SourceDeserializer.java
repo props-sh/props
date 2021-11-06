@@ -41,7 +41,6 @@ import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 import sh.props.source.impl.ClasspathPropertyFile;
 import sh.props.source.impl.Environment;
-import sh.props.source.impl.InMemory;
 import sh.props.source.impl.PropertyFile;
 import sh.props.source.impl.SystemProperties;
 
@@ -107,13 +106,13 @@ public class SourceDeserializer {
     String id = findId(line);
     SourceFactory<? extends Source> factory = Holder.MAP.get(id);
     if (factory == null) {
-      // do not fail when the configuration file contains other artifacts; log and skip
-      log.warning(
-          () ->
-              format(
-                  "The specified config (%s) could not be mapped to a Source. Will not add to configuration.",
-                  line));
-      return null;
+      // fail if the configuration file contains other artifacts
+      // this is to prevent users making wrong assumptions about their registry configuration
+      // e.g., assuming a key configuration file is there, when in fact it isn't
+      throw new IllegalStateException(
+          format(
+              "The specified config (%s) could not be mapped to a Source. Will not add to configuration.",
+              id));
     }
 
     // construct a Source by parsing the specified line
@@ -146,7 +145,6 @@ public class SourceDeserializer {
       // define the core source implementations
       MAP.put(ClasspathPropertyFile.ID, new ClasspathPropertyFile.Factory());
       MAP.put(Environment.ID, new Environment.Factory());
-      MAP.put(InMemory.ID, new InMemory.Factory());
       MAP.put(PropertyFile.ID, new PropertyFile.Factory());
       MAP.put(SystemProperties.ID, new SystemProperties.Factory());
     }

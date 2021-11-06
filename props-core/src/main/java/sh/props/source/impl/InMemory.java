@@ -27,11 +27,9 @@ package sh.props.source.impl;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
 import sh.props.source.Source;
-import sh.props.source.SourceFactory;
 
 /** Useful for tests, when the implementation requires overriding values. */
 public class InMemory extends Source {
@@ -118,31 +116,5 @@ public class InMemory extends Source {
    */
   public void remove(String key) {
     this.put(key, null);
-  }
-
-  /** Factory implementation. */
-  public static class Factory implements SourceFactory<InMemory> {
-
-    /**
-     * Initializes an {@link InMemory} object from the specified id.
-     *
-     * @param id the identifier representing this source
-     * @return a constructed Source object
-     */
-    @Override
-    public InMemory create(String id) {
-      @SuppressWarnings("StringSplitter")
-      String[] parts = id.split("=");
-      if (parts.length > 2 || !InMemory.ID.equals(parts[0])) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
-      }
-
-      // construct a manually updating, in-memory source
-      if (parts.length == 2 && Objects.equals("manual", parts[1].toLowerCase())) {
-        return new InMemory(InMemory.UPDATE_REGISTRY_MANUALLY);
-      }
-
-      return new InMemory(InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE);
-    }
   }
 }
