@@ -23,51 +23,20 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
-import java.util.Map;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
-
-/** Retrieves all environment variables. */
-public class Environment extends Source {
-  public static final String ID = "env";
-
+/**
+ * Interface for {@link Source} factories.
+ *
+ * @param <T> the source subclass
+ */
+@FunctionalInterface
+public interface SourceFactory<T extends Source> {
   /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
+   * Constructs a {@link Source} object from the specified id.
    *
-   * @return an unique id
+   * @param id the identifier representing this source
+   * @return a constructed Source object
    */
-  @Override
-  public String id() {
-    return ID;
-  }
-
-  /**
-   * Retrieves all environment variables.
-   *
-   * @return a map containing all env. variables
-   */
-  @Override
-  public Map<String, String> get() {
-    return System.getenv();
-  }
-
-  /** Factory implementation. */
-  public static class Factory implements SourceFactory<Environment> {
-    /**
-     * Initializes an {@link Environment} object from the specified id.
-     *
-     * @param id the identifier representing this source
-     * @return a constructed Source object
-     */
-    @Override
-    public Environment create(String id) {
-      if (!Environment.ID.equals(id)) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
-      }
-
-      return new Environment();
-    }
-  }
+  T create(String id);
 }

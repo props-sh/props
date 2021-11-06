@@ -23,51 +23,37 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.testhelpers;
 
 import java.util.Map;
+import java.util.Objects;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
-/** Retrieves all environment variables. */
-public class Environment extends Source {
-  public static final String ID = "env";
+/** Creates a source used for tests, which only defines a key=value entry. */
+public class TestSource extends Source {
+  public static final String ID = "test-source";
 
-  /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
-   *
-   * @return an unique id
-   */
   @Override
   public String id() {
-    return ID;
+    return "test-source";
   }
 
-  /**
-   * Retrieves all environment variables.
-   *
-   * @return a map containing all env. variables
-   */
   @Override
   public Map<String, String> get() {
-    return System.getenv();
+    return Map.of("key", "value");
   }
 
-  /** Factory implementation. */
-  public static class Factory implements SourceFactory<Environment> {
-    /**
-     * Initializes an {@link Environment} object from the specified id.
-     *
-     * @param id the identifier representing this source
-     * @return a constructed Source object
-     */
+  /** Defines a source factory used in tests. */
+  public static class Factory implements SourceFactory<TestSource> {
+
     @Override
-    public Environment create(String id) {
-      if (!Environment.ID.equals(id)) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    public TestSource create(String id) {
+      if (!Objects.equals(TestSource.ID, id)) {
+        throw new IllegalArgumentException("Invalid id: " + id);
       }
 
-      return new Environment();
+      return new TestSource();
     }
   }
 }

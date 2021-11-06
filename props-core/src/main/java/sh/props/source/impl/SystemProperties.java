@@ -27,13 +27,15 @@ package sh.props.source.impl;
 
 import java.util.Map;
 import sh.props.source.Source;
+import sh.props.source.SourceFactory;
 
 /** Retrieves system properties. */
 public class SystemProperties extends Source {
+  public static final String ID = "system";
 
   @Override
   public String id() {
-    return "system";
+    return ID;
   }
 
   /**
@@ -44,5 +46,24 @@ public class SystemProperties extends Source {
   @Override
   public Map<String, String> get() {
     return Source.readPropertiesToMap(System.getProperties());
+  }
+
+  /** Factory implementation. */
+  public static class Factory implements SourceFactory<SystemProperties> {
+
+    /**
+     * Initializes a {@link SystemProperties} object from the specified id.
+     *
+     * @param id the identifier representing this source
+     * @return a constructed Source object
+     */
+    @Override
+    public SystemProperties create(String id) {
+      if (!SystemProperties.ID.equals(id)) {
+        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+      }
+
+      return new SystemProperties();
+    }
   }
 }

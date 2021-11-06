@@ -34,10 +34,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.source.Source;
+import sh.props.source.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends Source {
-
+  public static final String ID = "classpath";
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;
 
@@ -52,7 +53,7 @@ public class ClasspathPropertyFile extends Source {
 
   @Override
   public String id() {
-    return "classpath://" + this.location;
+    return ID + "://" + this.location;
   }
 
   @Override
@@ -73,5 +74,26 @@ public class ClasspathPropertyFile extends Source {
     }
 
     return Collections.emptyMap();
+  }
+
+  /** Factory implementation. */
+  public static class Factory implements SourceFactory<ClasspathPropertyFile> {
+
+    /**
+     * Initializes a {@link ClasspathPropertyFile} object from the specified id.
+     *
+     * @param id the identifier representing this source
+     * @return a constructed Source object
+     */
+    @Override
+    public ClasspathPropertyFile create(String id) {
+      @SuppressWarnings("StringSplitter")
+      String[] parts = id.split("=");
+      if (parts.length != 2 || !ClasspathPropertyFile.ID.equals(parts[0])) {
+        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+      }
+
+      return new ClasspathPropertyFile(parts[1]);
+    }
   }
 }

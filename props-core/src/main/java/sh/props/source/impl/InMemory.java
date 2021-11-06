@@ -35,6 +35,7 @@ import sh.props.source.Source;
 public class InMemory extends Source {
   public static final boolean UPDATE_REGISTRY_ON_EVERY_WRITE = true;
   public static final boolean UPDATE_REGISTRY_MANUALLY = false;
+  public static final String ID = "memory";
 
   private final ConcurrentHashMap<String, String> store = new ConcurrentHashMap<>();
 
@@ -61,7 +62,7 @@ public class InMemory extends Source {
 
   @Override
   public String id() {
-    return "memory";
+    return ID;
   }
 
   /**

@@ -30,7 +30,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import sh.props.Registry;
 import sh.props.RegistryBuilder;
 import sh.props.source.impl.InMemory;
+import sh.props.testhelpers.TestFileUtil;
 
 @SuppressWarnings("NullAway")
 class TypedPropsTest {
@@ -291,11 +291,9 @@ class TypedPropsTest {
   @Test
   void pathprop() throws IOException {
     // ARRANGE
-    Path tempFile = Files.createTempFile("test-path-prop", "");
-    tempFile.toFile().deleteOnExit();
-
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
+    Path tempFile = TestFileUtil.createTempFilePath("input.properties");
     source.put("key", tempFile.toString());
 
     Registry registry = new RegistryBuilder(source).build();

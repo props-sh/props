@@ -42,6 +42,7 @@ import sh.props.converter.Cast;
 import sh.props.source.refresh.FileWatchSvc;
 import sh.props.source.refresh.Scheduler;
 import sh.props.testhelpers.AwaitAssertionTest;
+import sh.props.testhelpers.TestFileUtil;
 import sh.props.typed.BooleanProp;
 
 public class RefreshedSourcesTest extends AwaitAssertionTest {
@@ -49,15 +50,13 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
   @Test
   void propertyFileWithFileWatcher() throws IOException {
     // ARRANGE
-    Path tmpDir = Files.createTempDirectory("test-types");
-    tmpDir.toFile().deleteOnExit();
+    Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
     // load existing test properties
     InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
     assertThat("Could not find test data, cannot proceed", testData, notNullValue());
 
     // define the source
-    Path propFile = tmpDir.resolve("input.properties");
     var source = new PropertyFile(propFile);
 
     // initialize the registry and bind a prop
@@ -83,15 +82,13 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
   @Test
   void propertyFileWithScheduler() throws IOException {
     // ARRANGE
-    Path tmpDir = Files.createTempDirectory("test-types");
-    tmpDir.toFile().deleteOnExit();
+    Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
     // load existing test properties
     InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
     assertThat("Could not find test data, cannot proceed", testData, notNullValue());
 
     // define the source
-    Path propFile = tmpDir.resolve("input.properties");
     var source = new PropertyFile(propFile);
 
     // initialize the registry and bind a prop
