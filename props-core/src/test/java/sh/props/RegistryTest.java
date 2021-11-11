@@ -193,4 +193,20 @@ class RegistryTest extends AwaitAssertionTest {
     await().until(localValue1::get, equalTo(2));
     await().until(localValue2::get, equalTo(2));
   }
+
+  @Test
+  void customPropCreatedWithBuilder() {
+    // ARRANGE
+    InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
+
+    Registry registry = new RegistryBuilder(source).build();
+
+    var prop = registry.builder(Cast.asInteger()).defaultValue(1).build("key");
+
+    // ACT / ASSERT
+    assertThat(prop.get(), equalTo(1));
+
+    source.put("key", "2");
+    await().until(prop::get, equalTo(2));
+  }
 }

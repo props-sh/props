@@ -5,16 +5,16 @@ echo "==> Running the pre-push git hook..."
 
 # stash any unstaged changes
 git stash --keep-index --include-untracked | grep -vi "No local changes to save"
-stashed=$?
+STASHED=$?
 
 # run tests with the gradle wrapper
-./gradlew check test --daemon
+./gradlew test --daemon
 
 # store the last exit code in a variable
 RESULT=$?
 
 # unstash the unstashed changes
-if [ "$stashed" -eq 0 ]; then
+if [ "$STASHED" -eq 0 ]; then
   git stash pop -q
 fi
 
