@@ -16,5 +16,12 @@ if [ "$STASHED" -eq 0 ]; then
   git stash pop -q
 fi
 
-# return the './gradlew spotlessCheck' exit code
+if [ "$RESULT" -ne 0 ]; then
+  echo
+  echo "If you are seeing spotless failures, run:"
+  echo "./gradlew spotlessApply"
+  echo
+fi
+
+# return the './gradlew check' exit code
 exit $RESULT
