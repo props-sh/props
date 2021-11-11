@@ -81,6 +81,10 @@ public class Registry implements Notifiable {
    * Keep the implementation performant by reducing the number of Prop objects registered for the
    * same key!
    *
+   * <p>NOTE 2: There is nothing stopping a caller from binding the same Prop object to multiple
+   * Registries. This is an experimental and untested feature that may be developed in the future,
+   * or depending on feedback might be disallowed. Mileage may vary, use at your own risk! ;)
+   *
    * @param prop the prop object to bind
    * @param <T> the prop's type
    * @param <PropT> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
@@ -117,12 +121,28 @@ public class Registry implements Notifiable {
   }
 
   /**
-   * Retrieves the value for the specified key.
+   * Convenience method that retrieves the string representation of the value associated with the
+   * given key. If the underlying value is not actually a {@link String}, this method will
+   * effectively call {@link Converter#encode(Object)}, which by default is implemented as {@link
+   * Object#toString()}.
+   *
+   * @param key the key to retrieve
+   * @return the effective value, or <code>null</code> if not found
+   */
+  @Nullable
+  public String get(String key) {
+    return this.get(key, Cast.asString());
+  }
+
+  /**
+   * Convenience method that retrieves the value associated with the given key.
    *
    * <p>Since this method retrieves the value directly from the underlying {@link Datastore}, it is
-   * the fastest way to observe a changed value. Any bound {@link Prop} objects will have to wait
-   * for {@link Registry#sendUpdate(String, String, Layer)} to finish executing asynchronously
-   * before observing any changes.
+   * the fastest way to observe a changed value.
+   *
+   * <p>It differs from any bound {@link Prop} objects in that they will have to wait for {@link
+   * Registry#sendUpdate(String, String, Layer)} to asynchronously finish executing before observing
+   * any changes.
    *
    * @param key the key to retrieve
    * @param converter the type converter used to cast the value to its appropriate type
@@ -145,20 +165,14 @@ public class Registry implements Notifiable {
   }
 
   /**
-   * Convenience method that retrieves the serialized value for the specified key.
+   * Initializes a {@link CustomPropBuilder} which can be used to initialize custom Props, without
+   * the user needing to extend {@link CustomProp}.
    *
-   * <p>This method is mostly useful in the following two cases:
-   *
-   * <ul>
-   *   <li>- the property represented by the specified key is a <code>String</code>
-   *   <li>- the calling code wants to deserialize the value using a different mechanism
-   * </ul>
-   *
-   * @param key the key to retrieve
-   * @return the effective value, or <code>null</code> if not found
+   * @param converter the type converter used to cast the created custom Props
+   * @param <T> the type of the Props that will be built by the returned builder
+   * @return a builder object
    */
-  @Nullable
-  public String get(String key) {
-    return this.get(key, Cast.asString());
+  public <T> CustomPropBuilder<T> builder(Converter<T> converter) {
+    return new CustomPropBuilder<>(this, converter);
   }
 }

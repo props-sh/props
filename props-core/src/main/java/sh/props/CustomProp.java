@@ -30,6 +30,7 @@ import static java.util.Objects.isNull;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
 import sh.props.exceptions.InvalidReadOpException;
@@ -91,7 +92,9 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
   /**
    * Validates any updates to a property's value.
    *
-   * <p>This method can be overridden for more advanced validation requirements.
+   * <p>This method can be overridden for more advanced validation requirements. If you override
+   * this method, please be aware that any exceptions thrown by this method will only be observed by
+   * error consumers, registered to the prop object with {@link #subscribe(Consumer, Consumer)}.
    *
    * @param value the value to validate
    * @throws InvalidUpdateOpException when the validation fails

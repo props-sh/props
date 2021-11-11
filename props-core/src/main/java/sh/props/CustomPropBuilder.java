@@ -34,55 +34,53 @@ import sh.props.converter.Converter;
  * @param <T> the type of the prop
  */
 public class CustomPropBuilder<T> {
+
+  private final Registry registry;
+  private final Converter<T> converter;
   @Nullable String description;
   @Nullable private T defaultValue;
   private boolean isRequired;
   private boolean isSecret;
 
   /**
-   * Creates a new {@link CustomProp} based on the provided arguments. If any <code>registries
-   * </code> are specified, the resulting Prop will be bound
+   * Default constructor.
    *
-   * @param key the Prop's key; this parameter is required and cannot be null
+   * @param registry the registry to which the created object will be bound
    * @param converter the type converter that can serialize/deserialize the Prop's value
-   * @param registries if any registries that the Prop will be bound to.
-   * @return an initialized Prop object
    */
-  public CustomProp<T> build(String key, Converter<T> converter, Registry... registries) {
-    CustomProp<T> prop = this.build(key, converter);
-    if (registries == null) {
-      throw new IllegalArgumentException("You must pass at least one non-null registry");
+  public CustomPropBuilder(Registry registry, Converter<T> converter) {
+    if (registry == null) {
+      throw new IllegalArgumentException("The registry cannot be null");
     }
+    this.registry = registry;
 
-    // bind the prop to all the specified registries
-    for (Registry registry : registries) {
-      registry.bind(prop);
+    if (converter == null) {
+      throw new IllegalArgumentException("The converter cannot be null");
     }
-    return prop;
+    this.converter = converter;
   }
 
   /**
    * Creates a new {@link CustomProp} based on the provided arguments.
    *
    * @param key the Prop's key; this parameter is required and cannot be null
-   * @param converter the type converter that can serialize/deserialize the Prop's value
    * @return an initialized Prop object
    */
-  public CustomProp<T> build(String key, Converter<T> converter) {
-    return new CustomProp<>(
-        key, this.defaultValue, this.description, this.isRequired, this.isSecret) {
-      @Override
-      @Nullable
-      public T decode(String value) {
-        return converter.decode(value);
-      }
+  public CustomProp<T> build(String key) {
+    return this.registry.bind(
+        new CustomProp<>(key, this.defaultValue, this.description, this.isRequired, this.isSecret) {
+          @Override
+          @Nullable
+          public T decode(String value) {
+            return CustomPropBuilder.this.converter.decode(value);
+          }
 
-      @Override
-      @Nullable
-      public String encode(@Nullable T value) {
-        return converter.encode(value);
-      }
-    };
+          @Override
+          @Nullable
+          public String encode(@Nullable T value) {
+            return CustomPropBuilder.this.converter.encode(value);
+          }
+        });
   }
 
   /**
@@ -91,8 +89,9 @@ public class CustomPropBuilder<T> {
    *
    * @param defaultValue this Prop's default value
    */
-  public void defaultValue(T defaultValue) {
+  public CustomPropBuilder<T> defaultValue(T defaultValue) {
     this.defaultValue = defaultValue;
+    return this;
   }
 
   /**
@@ -101,8 +100,9 @@ public class CustomPropBuilder<T> {
    *
    * @param required true if the Prop must have a value, false if having a value is optional
    */
-  public void required(boolean required) {
+  public CustomPropBuilder<T> required(boolean required) {
     this.isRequired = required;
+    return this;
   }
 
   /**
@@ -110,8 +110,9 @@ public class CustomPropBuilder<T> {
    *
    * @param secret true if the Prop represents a secret
    */
-  public void secret(boolean secret) {
+  public CustomPropBuilder<T> secret(boolean secret) {
     this.isSecret = secret;
+    return this;
   }
 
   /**
@@ -120,7 +121,8 @@ public class CustomPropBuilder<T> {
    *
    * @param description the Prop's description
    */
-  public void description(String description) {
+  public CustomPropBuilder<T> description(String description) {
     this.description = description;
+    return this;
   }
 }
