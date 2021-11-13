@@ -39,19 +39,26 @@ import software.amazon.awssdk.services.secretsmanager.model.SecretListEntry;
 import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 
 public class SecretsManagerSource extends Source {
+  public static final String ID = "aws-secretsmanager";
   private final List<Region> regions;
   private final List<SecretsManagerClient> clients;
 
   /**
    * Class constructor.
    *
-   * <p>Specifying more than one region is useful when dealing with multi-region secrets ({@see
-   * https://docs.aws.amazon.com/secretsmanager/latest/userguide/create-manage-multi-region-secrets.html},
-   * if you want to load balance operations across these regions.
+   * <p>Specifying more than one region is useful when dealing with multi-region secrets, if you
+   * want to load balance operations across these regions.
    *
+   * @see <a
+   *     href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/create-manage-multi-region-secrets.html">AWS
+   *     Multi Region Secrets</a>
    * @param regions the AWS region (or regions) to use for retrieving values.
    */
   public SecretsManagerSource(String... regions) {
+    if (regions == null || regions.length == 0) {
+      throw new IllegalArgumentException("Need to specify at least one region");
+    }
+
     this.regions = Stream.of(regions).map(Region::of).collect(toList());
     this.clients = this.regions.stream().map(this::buildClient).collect(toList());
   }
@@ -68,16 +75,13 @@ public class SecretsManagerSource extends Source {
 
   @Override
   public String id() {
-    return "aws";
+    return ID;
   }
 
-  // TODO: finish the impl
   @Override
   public Map<String, String> get() {
-    // list secrets
-    // parallelize retrieving secrets
-    // handle throttling
-    return Map.of();
+    var definedSecrets = listSecrets(clients.get(0));
+    return getSecrets(definedSecrets);
   }
 
   List<String> listSecrets(SecretsManagerClient client) throws SecretsManagerException {
@@ -85,5 +89,12 @@ public class SecretsManagerSource extends Source {
     List<SecretListEntry> secrets = secretsResponse.secretList();
 
     return secrets.stream().map(SecretListEntry::name).collect(Collectors.toList());
+  }
+
+  // TODO: finish the impl
+  Map<String, String> getSecrets(List<String> secrets) {
+    // parallelize retrieving secrets
+    // handle throttling
+    return Map.of();
   }
 }
