@@ -88,6 +88,7 @@ public class CustomPropBuilder<T> {
    * of the bound registries.
    *
    * @param defaultValue this Prop's default value
+   * @return the current builder, providing a fluent interface
    */
   public CustomPropBuilder<T> defaultValue(T defaultValue) {
     this.defaultValue = defaultValue;
@@ -99,6 +100,7 @@ public class CustomPropBuilder<T> {
    * non-null value or default value.
    *
    * @param required true if the Prop must have a value, false if having a value is optional
+   * @return the current builder, providing a fluent interface
    */
   public CustomPropBuilder<T> required(boolean required) {
     this.isRequired = required;
@@ -109,6 +111,7 @@ public class CustomPropBuilder<T> {
    * Designates this Prop as a secret. Its value will be redacted when printing it
    *
    * @param secret true if the Prop represents a secret
+   * @return the current builder, providing a fluent interface
    */
   public CustomPropBuilder<T> secret(boolean secret) {
     this.isSecret = secret;
@@ -120,6 +123,7 @@ public class CustomPropBuilder<T> {
    * teams can easily understand what a Prop was intended for.
    *
    * @param description the Prop's description
+   * @return the current builder, providing a fluent interface
    */
   public CustomPropBuilder<T> description(String description) {
     this.description = description;

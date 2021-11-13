@@ -1,6 +1,7 @@
 rootProject.name = "props"
 
 include("props-core")
+include("props-aws")
 
 pluginManagement {
     repositories {
@@ -27,7 +28,7 @@ dependencyResolutionManagement {
             version("mockito", "3.12.4")
             version("awaitility", "4.1.0")
 
-            alias("errorprone-core").to("com.google.errorprone", "error_prone_core")
+            alias("errorprone").to("com.google.errorprone", "error_prone_core")
                 .version("2.9.0")
             alias("nullaway").to("com.uber.nullaway", "nullaway").version("0.9.2")
 
