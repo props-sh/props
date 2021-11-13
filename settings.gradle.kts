@@ -22,11 +22,8 @@ enableFeaturePreview("VERSION_CATALOGS")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("junit", "5.7.2")
             version("checkstyle", "9.0")
-            version("hamcrest", "2.2")
-            version("mockito", "3.12.4")
-            version("awaitility", "4.1.0")
+            version("junit", "5.7.2")
 
             alias("errorprone").to("com.google.errorprone", "error_prone_core")
                 .version("2.9.0")
@@ -36,12 +33,12 @@ dependencyResolutionManagement {
                 .versionRef("junit")
             alias("junit-jupiter-engine").to("org.junit.jupiter", "junit-jupiter-engine")
                 .versionRef("junit")
-            alias("org-hamcrest-core").to("org.hamcrest", "hamcrest-core").versionRef("hamcrest")
-            alias("org-mockito-core").to("org.mockito", "mockito-core").versionRef("mockito")
-            alias("org-awaitility-awaitility").to("org.awaitility", "awaitility")
-                .versionRef("awaitility")
+            alias("org-hamcrest-core").to("org.hamcrest:hamcrest-core:2.2")
+            alias("org-mockito-core").to("org.mockito:mockito-core:3.12.4")
+            alias("org-awaitility-awaitility").to("org.awaitility:awaitility:4.1.0")
 
             alias("guava").to("com.google.guava:guava:30.1.1-jre")
+            alias("aws").to("software.amazon.awssdk:bom:2.15.0")
         }
     }
 }
