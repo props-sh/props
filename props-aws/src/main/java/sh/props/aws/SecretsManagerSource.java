@@ -25,17 +25,65 @@
 
 package sh.props.aws;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import sh.props.source.Source;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.ListSecretsResponse;
+import software.amazon.awssdk.services.secretsmanager.model.SecretListEntry;
+import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 
 public class SecretsManagerSource extends Source {
+  private final List<Region> regions;
+  private final List<SecretsManagerClient> clients;
+
+  /**
+   * Class constructor.
+   *
+   * <p>Specifying more than one region is useful when dealing with multi-region secrets ({@see
+   * https://docs.aws.amazon.com/secretsmanager/latest/userguide/create-manage-multi-region-secrets.html},
+   * if you want to load balance operations across these regions.
+   *
+   * @param regions the AWS region (or regions) to use for retrieving values.
+   */
+  public SecretsManagerSource(String... regions) {
+    this.regions = Stream.of(regions).map(Region::of).collect(toList());
+    this.clients = this.regions.stream().map(this::buildClient).collect(toList());
+  }
+
+  /**
+   * Initializes a client.
+   *
+   * @param region the region that the client should use
+   * @return an initialized object
+   */
+  SecretsManagerClient buildClient(Region region) {
+    return SecretsManagerClient.builder().region(region).build();
+  }
+
   @Override
   public String id() {
     return "aws";
   }
 
+  // TODO: finish the impl
   @Override
   public Map<String, String> get() {
+    // list secrets
+    // parallelize retrieving secrets
+    // handle throttling
     return Map.of();
+  }
+
+  List<String> listSecrets(SecretsManagerClient client) throws SecretsManagerException {
+    ListSecretsResponse secretsResponse = client.listSecrets();
+    List<SecretListEntry> secrets = secretsResponse.secretList();
+
+    return secrets.stream().map(SecretListEntry::name).collect(Collectors.toList());
   }
 }
