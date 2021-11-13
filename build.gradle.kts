@@ -38,7 +38,6 @@ allprojects {
     }
 
     apply(plugin = "java-library")
-    apply<JavaPlugin>()
     java {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(JavaVersion.VERSION_11.toString()))
@@ -77,14 +76,12 @@ allprojects {
     }
 
     apply(plugin = "checkstyle")
-    apply<JavaPlugin>()
     checkstyle {
         // will use the version declared in the catalog
         toolVersion = rootProject.libs.versions.checkstyle.get()
     }
 
     apply(plugin = "com.diffplug.spotless")
-    apply<JavaPlugin>()
     spotless {
         format("misc") {
             target("*.gradle", "*.md", ".gitignore")
