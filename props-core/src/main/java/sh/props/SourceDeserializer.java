@@ -44,7 +44,14 @@ import sh.props.source.impl.Environment;
 import sh.props.source.impl.PropertyFile;
 import sh.props.source.impl.SystemProperties;
 
-/** Allows reading and deserializing {@link Source} configuration from an input stream. */
+/**
+ * Allows reading and deserializing {@link Source} configuration from an input stream.
+ *
+ * <p>The syntax for defining a list of sources in a configuration file is: <code>KEY=options</code>
+ * . The key is used to identify the appropriate {@link SourceFactory} that can instantiate the
+ * desired source. The configuration line is then passed to the factory object, allowing it to
+ * appropriately parse it and construct the {@link Source}.
+ */
 public class SourceDeserializer {
 
   /**
@@ -53,6 +60,7 @@ public class SourceDeserializer {
    *
    * @param key the key to register; must not have been previously bound
    * @param factory the {@link Source} this key should be instantiated to
+   * @param <T> the type of the Source associated with the specified key
    */
   public static <T extends Source> void register(String key, SourceFactory<T> factory) {
     if (factory == null) {
