@@ -38,7 +38,6 @@ dependencyResolutionManagement {
             alias("org-awaitility-awaitility").to("org.awaitility:awaitility:4.1.0")
 
             alias("guava").to("com.google.guava:guava:30.1.1-jre")
-            alias("aws").to("software.amazon.awssdk:bom:2.15.0")
         }
     }
 }

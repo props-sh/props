@@ -106,7 +106,7 @@ allprojects {
             googleJavaFormat("1.10.0")
             trimTrailingWhitespace()
             endWithNewline()
-            licenseHeaderFile(rootProject.file("props.license.kt"))
+            licenseHeaderFile(rootProject.file("props.license.kt")).updateYearWithLatest(true)
         }
     }
 

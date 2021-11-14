@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectTasksOptions">
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="spotlessApply -PspotlessIdeHook=$FileName$" />
+      <option name="arguments" value="spotlessApply -PspotlessIdeHook=$FilePath$" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
-      <option name="exitCodeBehavior" value="ERROR" />
+      <option name="exitCodeBehavior" value="ALWAYS" />
       <option name="fileExtension" value="java" />
       <option name="immediateSync" value="true" />
       <option name="name" value="Spotless" />
