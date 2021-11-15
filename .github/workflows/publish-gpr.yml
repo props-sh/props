@@ -2,7 +2,7 @@ name: Publish a package to GitHub Package Repo
 
 on:
   push:
-    branches: ['main']
+    branches: [ 'main' ]
 
 jobs:
   build-and-publish-package:
@@ -24,11 +24,19 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Build the project
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'eu-west-1'
+        run: ./gradlew build check test
 
-      - name: Test
-        run: ./gradlew check test
+      - name: Store the build report
+        uses: actions/upload-artifact@v2
+        with:
+          name: '[props-sh] build report'
+          path: ./**/build/reports
+          retention-days: 5
 
       - name: Publish
         run: ./gradlew publish
