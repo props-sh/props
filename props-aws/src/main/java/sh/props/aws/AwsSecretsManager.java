@@ -30,10 +30,13 @@ import static java.util.stream.Collectors.toList;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -133,16 +136,16 @@ public class AwsSecretsManager extends Source {
     return builder.build();
   }
 
-  @Override
-  public String id() {
-    return ID;
-  }
-
-  @Override
-  public Map<String, String> get() {
-    var definedSecrets = listSecrets(clients.get(0));
-    scheduleSecretsRetrieval(definedSecrets);
-    return secrets;
+  /**
+   * Uses the provided client to retrieve a secret by its id.
+   *
+   * @param client the client which will execute the operation
+   * @param id the secret to retrive
+   * @return a {@link CompletableFuture} that, when completed, will return the secret's value
+   */
+  static CompletableFuture<GetSecretValueResponse> getSecretValue(
+      SecretsManagerAsyncClient client, String id) {
+    return client.getSecretValue(GetSecretValueRequest.builder().secretId(id).build());
   }
 
   /**
@@ -153,7 +156,7 @@ public class AwsSecretsManager extends Source {
    * @return a list of defined secrets
    * @throws SecretsManagerException if the operation fails
    */
-  List<String> listSecrets(SecretsManagerAsyncClient client) throws SecretsManagerException {
+  static List<String> listSecrets(SecretsManagerAsyncClient client) throws SecretsManagerException {
     return client
         .listSecrets()
         .thenApply(ListSecretsResponse::secretList)
@@ -161,16 +164,16 @@ public class AwsSecretsManager extends Source {
         .join();
   }
 
-  /**
-   * Uses the provided client to retrieve a secret by its id.
-   *
-   * @param client the client which will execute the operation
-   * @param id the secret to retrive
-   * @return a {@link CompletableFuture} that, when completed, will return the secret's value
-   */
-  CompletableFuture<GetSecretValueResponse> getSecretValue(
-      SecretsManagerAsyncClient client, String id) {
-    return client.getSecretValue(GetSecretValueRequest.builder().secretId(id).build());
+  @Override
+  public String id() {
+    return ID;
+  }
+
+  @Override
+  public Map<String, String> get() {
+    var definedSecrets = listSecrets(clients.get(0));
+    scheduleSecretsRetrieval(definedSecrets);
+    return secrets;
   }
 
   /**
@@ -192,8 +195,19 @@ public class AwsSecretsManager extends Source {
               .whenComplete(
                   (response, throwable) -> {
                     if (response != null) {
-                      // when the secret is retrieved successfully, store it
-                      this.secrets.put(secretId, response.secretString());
+                      // Decrypts secret using the associated KMS CMK.
+                      // Depending on whether the secret is a string or binary, one of these fields
+                      // will be populated.
+                      if (response.secretString() != null) {
+                        this.secrets.put(secretId, response.secretString());
+                      } else {
+                        this.secrets.put(
+                            secretId,
+                            new String(
+                                Base64.getDecoder()
+                                    .decode(response.secretBinary().asByteBuffer())
+                                    .array()));
+                      }
                       return;
                     }
 
@@ -215,6 +229,16 @@ public class AwsSecretsManager extends Source {
       } catch (Exception e) {
         log.log(Level.WARNING, e, () -> "Unexpected exception while retrieving a secret");
       }
+    }
+  }
+
+  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
+  // TODO: look at implementing this method disconnected from this.get()
+  @Override
+  public void updateSubscribers() {
+    Map<String, String> data = Collections.unmodifiableMap(this.get());
+    for (Consumer<Map<String, String>> subscriber : this.subscribers) {
+      subscriber.accept(data);
     }
   }
 }

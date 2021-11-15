@@ -29,6 +29,8 @@ import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -36,13 +38,14 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import sh.props.CustomProp;
 import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
+import software.amazon.awssdk.services.secretsmanager.model.CreateSecretRequest;
+import software.amazon.awssdk.services.secretsmanager.model.CreateSecretResponse;
 import software.amazon.awssdk.services.secretsmanager.model.DeleteSecretRequest;
-import software.amazon.awssdk.services.secretsmanager.model.PutSecretValueRequest;
-import software.amazon.awssdk.services.secretsmanager.model.PutSecretValueResponse;
 
 @SuppressWarnings("NullAway")
 class AwsSecretsManagerIntTest {
@@ -52,8 +55,8 @@ class AwsSecretsManagerIntTest {
       format("secret1.%s.%s", System.nanoTime(), UUID.randomUUID());
   private static final String secret2 =
       format("secret2.%s.%s", System.nanoTime(), UUID.randomUUID());
-  private static CompletableFuture<PutSecretValueResponse> putSecret1;
-  private static CompletableFuture<PutSecretValueResponse> putSecret2;
+  private static CompletableFuture<CreateSecretResponse> putSecret1;
+  private static CompletableFuture<CreateSecretResponse> putSecret2;
   private static SecretsManagerAsyncClient client;
 
   @BeforeAll
@@ -63,30 +66,55 @@ class AwsSecretsManagerIntTest {
 
     // submit requests to asynchronously create secrets
     putSecret1 =
-        client.putSecretValue(
-            PutSecretValueRequest.builder().secretId(secret1).secretString(SECRET_VALUE).build());
+        client.createSecret(
+            CreateSecretRequest.builder().name(secret1).secretString(SECRET_VALUE).build());
     putSecret2 =
-        client.putSecretValue(
-            PutSecretValueRequest.builder().secretId(secret2).secretString(SECRET_VALUE).build());
+        client.createSecret(
+            CreateSecretRequest.builder().name(secret2).secretString(SECRET_VALUE).build());
   }
 
   /** Wait for the futures responsible for creating secrets for the test environment to complete. */
   static void waitForSecretsToBeCreated() {
     putSecret1.join();
     putSecret2.join();
+
+    // ensure the secrets can be retrieved and listed
+    await()
+        .timeout(Duration.ofSeconds(5))
+        .pollDelay(Duration.ofMillis(500))
+        .pollInterval(Duration.ofSeconds(1))
+        .until(
+            () -> AwsSecretsManager.getSecretValue(client, secret1).join().secretString(),
+            notNullValue());
+    await()
+        .timeout(Duration.ofSeconds(5))
+        .pollInterval(Duration.ofSeconds(1))
+        .until(
+            () -> AwsSecretsManager.getSecretValue(client, secret2).join().secretString(),
+            notNullValue());
+    await()
+        .timeout(Duration.ofSeconds(5))
+        .pollDelay(Duration.ofSeconds(1))
+        .pollInterval(Duration.ofSeconds(1))
+        .until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
   }
 
   @AfterAll
   static void afterAll() {
     // before completing the test, ensure the secrets are deleted
-    client.deleteSecret(DeleteSecretRequest.builder().secretId(secret1).build()).join();
-    client.deleteSecret(DeleteSecretRequest.builder().secretId(secret2).build()).join();
+    client.deleteSecret(deleteRequest(secret1)).join();
+    client.deleteSecret(deleteRequest(secret2)).join();
 
     // then close the client
     client.close();
   }
 
+  private static DeleteSecretRequest deleteRequest(String id) {
+    return DeleteSecretRequest.builder().secretId(id).forceDeleteWithoutRecovery(true).build();
+  }
+
   @Test
+  @Timeout(value = 15)
   void secretsCanBeRetrievedFromSecretsManager() {
     // ARRANGE
     waitForSecretsToBeCreated();
