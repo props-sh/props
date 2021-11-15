@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public abstract class Source implements Supplier<Map<String, String>>, Subscribable {
 
-  private final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
+  protected final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}

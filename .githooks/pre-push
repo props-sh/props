@@ -8,7 +8,7 @@ git stash --keep-index --include-untracked | grep -vi "No local changes to save"
 STASHED=$?
 
 # run tests with the gradle wrapper
-./gradlew test --daemon
+./gradlew build test
 
 # store the last exit code in a variable
 RESULT=$?
@@ -18,5 +18,5 @@ if [ "$STASHED" -eq 0 ]; then
   git stash pop -q
 fi
 
-# return the './gradlew test' exit code
+# return Gradle's exit code
 exit $RESULT

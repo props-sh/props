@@ -1,0 +1,6 @@
+module sh.props.aws {
+  requires java.base;
+  requires java.logging;
+
+  exports sh.props.aws;
+}

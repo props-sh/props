@@ -2,6 +2,7 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     `java-library`
+    idea
     checkstyle
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
@@ -35,6 +36,14 @@ allprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+    }
+
+    apply(plugin = "idea")
+    idea {
+        module {
+            isDownloadJavadoc = true
+            isDownloadSources = true
+        }
     }
 
     apply(plugin = "java-library")
@@ -97,7 +106,7 @@ allprojects {
             googleJavaFormat("1.10.0")
             trimTrailingWhitespace()
             endWithNewline()
-            licenseHeaderFile(rootProject.file("props.license.kt"))
+            licenseHeaderFile(rootProject.file("props.license.kt")).updateYearWithLatest(true)
         }
     }
 

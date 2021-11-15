@@ -8,7 +8,7 @@ git stash --keep-index --include-untracked | grep -vi "No local changes to save"
 STASHED=$?
 
 # run all checks before committing
-./gradlew check --daemon
+./gradlew check
 RESULT=$?
 
 # unstash any stashed changes
@@ -23,5 +23,5 @@ if [ "$RESULT" -ne 0 ]; then
   echo
 fi
 
-# return the './gradlew check' exit code
+# return Gradle's exit code
 exit $RESULT
