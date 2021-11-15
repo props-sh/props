@@ -21,13 +21,13 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: "eu-west-1"
+          AWS_REGION: 'eu-west-1'
         run: ./gradlew build check test
 
       - name: Store the build report
         uses: actions/upload-artifact@v2
         with:
-          name: Build Report
+          name: '[props-sh] build report'
           path: ./**/build/reports
           retention-days: 5
 
