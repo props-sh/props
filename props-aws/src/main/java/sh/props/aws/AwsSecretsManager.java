@@ -28,6 +28,7 @@ package sh.props.aws;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -206,7 +207,8 @@ public class AwsSecretsManager extends Source {
                             new String(
                                 Base64.getDecoder()
                                     .decode(response.secretBinary().asByteBuffer())
-                                    .array()));
+                                    .array(),
+                                Charset.defaultCharset()));
                       }
                       return;
                     }
