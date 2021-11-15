@@ -38,14 +38,7 @@ allprojects {
         gradlePluginPortal()
     }
 
-    apply(plugin = "idea")
-    idea {
-        module {
-            isDownloadJavadoc = true
-            isDownloadSources = true
-        }
-    }
-
+    // Java configuration
     apply(plugin = "java-library")
     java {
         toolchain {
@@ -60,16 +53,64 @@ allprojects {
         options.isFork = true
         options.isFailOnError = true
     }
-    tasks.getByName<Test>("test") {
-        useJUnitPlatform()
 
+    // Tests
+    tasks.getByName<Test>("test") {
         // https://docs.gradle.org/7.2/userguide/java_testing.html#sec:test_execution
+        useJUnitPlatform()
         maxHeapSize = "1G"
     }
+    dependencies {
+        testImplementation(rootProject.libs.junit.jupiter.api)
+        testImplementation(rootProject.libs.org.hamcrest.core)
+        testImplementation(rootProject.libs.org.mockito.core)
+        testImplementation(rootProject.libs.org.awaitility.awaitility)
 
-    // tasks.jar
+        testRuntimeOnly(rootProject.libs.junit.jupiter.engine)
+    }
+
+    // Integration Tests
+    tasks.withType<Copy>().all {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+    sourceSets {
+        create("intTest") {
+            java.srcDir("src/intTest/java")
+            resources.srcDir("src/intTest/resources")
+            compileClasspath += sourceSets.main.get().output
+            runtimeClasspath += sourceSets.main.get().output
+        }
+    }
+    val intTestImplementation by configurations.getting {
+        extendsFrom(configurations.implementation.get())
+    }
+    val intTestRuntimeOnly by configurations.getting {
+        extendsFrom(configurations.runtimeOnly.get())
+    }
+    dependencies {
+        intTestImplementation(rootProject.libs.junit.jupiter.api)
+        intTestImplementation(rootProject.libs.org.hamcrest.core)
+        intTestImplementation(rootProject.libs.org.mockito.core)
+        intTestImplementation(rootProject.libs.org.awaitility.awaitility)
+
+        intTestRuntimeOnly(rootProject.libs.junit.jupiter.engine)
+    }
+    val integrationTest = task<Test>("integrationTest") {
+        // https://docs.gradle.org/7.2/userguide/java_testing.html#sec:test_execution
+        useJUnitPlatform()
+        maxHeapSize = "1G"
+
+        description = "Runs integration tests."
+        group = "verification"
+
+        testClassesDirs = sourceSets["intTest"].output.classesDirs
+        classpath = sourceSets["intTest"].runtimeClasspath
+        shouldRunAfter("test")
+    }
+    tasks.check { dependsOn(integrationTest) }
+
+    // JARs
     tasks.named<Jar>("jar") {
-        archiveFileName.set("foo.jar")
         manifest {
             attributes(
                 "Name" to "sh/props/",
@@ -79,17 +120,14 @@ allprojects {
         }
     }
 
-    tasks.create<Zip>("docZip") {
-        archiveFileName.set("doc.zip")
-        from("doc")
-    }
-
+    // Checkstyle
     apply(plugin = "checkstyle")
     checkstyle {
         // will use the version declared in the catalog
         toolVersion = rootProject.libs.versions.checkstyle.get()
     }
 
+    // Spotless
     apply(plugin = "com.diffplug.spotless")
     spotless {
         format("misc") {
@@ -110,7 +148,12 @@ allprojects {
         }
     }
 
+    // ErrorProne
     apply(plugin = "net.ltgt.errorprone")
+    dependencies {
+        errorprone(rootProject.libs.errorprone)
+        errorprone(rootProject.libs.nullaway)
+    }
     tasks.withType<JavaCompile>().configureEach {
         shouldRunAfter("spotlessJava")
         shouldRunAfter("spotlessApply")
@@ -141,15 +184,15 @@ allprojects {
         )
     }
 
-    dependencies {
-        errorprone(rootProject.libs.errorprone)
-        errorprone(rootProject.libs.nullaway)
+    // IntelliJ IDE
+    apply(plugin = "idea")
+    idea {
+        module {
+            isDownloadJavadoc = true
+            isDownloadSources = true
 
-        testImplementation(rootProject.libs.junit.jupiter.api)
-        testImplementation(rootProject.libs.org.hamcrest.core)
-        testImplementation(rootProject.libs.org.mockito.core)
-        testImplementation(rootProject.libs.org.awaitility.awaitility)
-
-        testRuntimeOnly(rootProject.libs.junit.jupiter.engine)
+            testSourceDirs.addAll(java.sourceSets["intTest"].java.srcDirs)
+            testSourceDirs.addAll(java.sourceSets["intTest"].resources.srcDirs)
+        }
     }
 }
