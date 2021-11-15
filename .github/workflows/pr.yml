@@ -27,7 +27,7 @@ jobs:
       - name: Store the build report
         uses: actions/upload-artifact@v2
         with:
-          name: 'props.sh build report $GITHUB_RUN_ID ($GITHUB_SHA)'
+          name: "props.sh build report $GITHUB_RUN_ID (${{ GITHUB_SHA }})"
           path: ./**/build/reports
           retention-days: 5
 
