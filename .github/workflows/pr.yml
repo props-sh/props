@@ -25,6 +25,7 @@ jobs:
         run: ./gradlew build check test integrationTest
 
       - name: Store the build report
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: '[props-sh] build report'
@@ -32,6 +33,7 @@ jobs:
           retention-days: 5
 
       - name: Cleanup Gradle Cache
+        if: always()
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
         # Restoring these files from a GitHub Actions cache might cause problems for future builds.
         run: |
