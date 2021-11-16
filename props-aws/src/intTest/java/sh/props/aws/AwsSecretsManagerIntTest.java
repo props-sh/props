@@ -86,24 +86,18 @@ class AwsSecretsManagerIntTest {
     putSecret2.join();
 
     // ensure the secrets can be retrieved and listed
+    // the secrets don't immediately become available in AWS SecretsManager
+    // and as such, we much first wait and ensure they are properly set-up by the test
     await()
-        .timeout(Duration.ofSeconds(5))
-        .pollDelay(Duration.ofMillis(500))
-        .pollInterval(Duration.ofSeconds(1))
         .until(
             () -> AwsSecretsManager.getSecretValue(client, secret1).join().secretString(),
             notNullValue());
     await()
-        .timeout(Duration.ofSeconds(5))
-        .pollInterval(Duration.ofSeconds(1))
+        .pollDelay(Duration.ZERO)
         .until(
             () -> AwsSecretsManager.getSecretValue(client, secret2).join().secretString(),
             notNullValue());
-    await()
-        .timeout(Duration.ofSeconds(5))
-        .pollDelay(Duration.ofSeconds(1))
-        .pollInterval(Duration.ofSeconds(1))
-        .until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
+    await().until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
   }
 
   @AfterAll
@@ -140,11 +134,11 @@ class AwsSecretsManagerIntTest {
 
     // ASSERT
     await()
-        .timeout(Duration.ofSeconds(5))
+        .pollDelay(Duration.ZERO)
         .pollInterval(Duration.ofNanos(100))
         .until(prop1::get, equalTo(SECRET_VALUE));
     await()
-        .timeout(Duration.ofSeconds(5))
+        .pollDelay(Duration.ZERO)
         .pollInterval(Duration.ofNanos(100))
         .until(prop2::get, equalTo(SECRET_VALUE));
 
