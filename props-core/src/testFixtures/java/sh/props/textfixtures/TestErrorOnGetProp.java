@@ -23,14 +23,22 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
-import java.util.function.Consumer;
+import sh.props.annotations.Nullable;
+import sh.props.exceptions.InvalidReadOpException;
+import sh.props.typed.IntegerProp;
 
-/** Test-only implementation. */
-public class DummyConsumer<T> implements Consumer<T> {
+public class TestErrorOnGetProp extends IntegerProp {
+
+  public TestErrorOnGetProp(String key, @Nullable Integer defaultValue) {
+    super(key, defaultValue, null, false, false);
+  }
+
   @Override
-  public void accept(T t) {
-    // do nothing
+  protected void validateBeforeGet(@Nullable Integer value) {
+    if (value != null && value > 1) {
+      throw new InvalidReadOpException("unretrievable value");
+    }
   }
 }

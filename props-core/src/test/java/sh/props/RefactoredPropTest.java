@@ -38,10 +38,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.DummyConsumer;
-import sh.props.testhelpers.TestErrorOnGetProp;
-import sh.props.testhelpers.TestIntProp;
-import sh.props.testhelpers.TestStringProp;
+import sh.props.textfixtures.DummyConsumer;
+import sh.props.textfixtures.TestErrorOnGetProp;
+import sh.props.textfixtures.TestIntProp;
+import sh.props.textfixtures.TestStringProp;
 
 @SuppressWarnings("NullAway")
 class RefactoredPropTest {

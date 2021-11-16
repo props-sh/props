@@ -26,6 +26,8 @@
 package sh.props.aws;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,6 +37,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -71,6 +74,10 @@ class AwsSecretsManagerIntTest {
     putSecret2 =
         client.createSecret(
             CreateSecretRequest.builder().name(secret2).secretString(SECRET_VALUE).build());
+
+    Awaitility.setDefaultTimeout(5, SECONDS);
+    Awaitility.setDefaultPollDelay(500, MILLISECONDS);
+    Awaitility.setDefaultPollInterval(1, SECONDS);
   }
 
   /** Wait for the futures responsible for creating secrets for the test environment to complete. */

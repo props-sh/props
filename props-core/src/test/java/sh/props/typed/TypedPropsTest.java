@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 import sh.props.Registry;
 import sh.props.RegistryBuilder;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.TestFileUtil;
+import sh.props.textfixtures.TestFileUtil;
 
 @SuppressWarnings("NullAway")
 class TypedPropsTest {

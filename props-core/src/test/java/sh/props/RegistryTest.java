@@ -35,8 +35,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.AwaitAssertionTest;
-import sh.props.testhelpers.TestIntProp;
+import sh.props.textfixtures.AwaitAssertionTest;
+import sh.props.textfixtures.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class RegistryTest extends AwaitAssertionTest {

@@ -44,8 +44,8 @@ import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
 import sh.props.source.Source;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.TestFileUtil;
-import sh.props.testhelpers.TestSource;
+import sh.props.textfixtures.TestFileUtil;
+import sh.props.textfixtures.TestSource;
 
 @SuppressWarnings("NullAway")
 class SourceDeserializerTest {

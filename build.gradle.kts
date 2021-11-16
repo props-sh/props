@@ -2,6 +2,7 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     `java-library`
+    `java-test-fixtures`
     idea
     checkstyle
     id("com.diffplug.spotless")
@@ -69,6 +70,19 @@ allprojects {
         testRuntimeOnly(rootProject.libs.junit.jupiter.engine)
     }
 
+    // Test Fixtures
+    // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
+    apply(plugin = "java-test-fixtures")
+    dependencies {
+        // If test fixtures are needed as deps, see:
+        // https://docs.gradle.org/current/userguide/java_testing.html#consuming_test_fixtures_of_another_project
+
+        testFixturesImplementation(rootProject.libs.junit.jupiter.api)
+        testFixturesImplementation(rootProject.libs.org.hamcrest.core)
+        testFixturesImplementation(rootProject.libs.org.mockito.core)
+        testFixturesImplementation(rootProject.libs.org.awaitility.awaitility)
+    }
+
     // Integration Tests
     tasks.withType<Copy>().all {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -107,7 +121,6 @@ allprojects {
         classpath = sourceSets["intTest"].runtimeClasspath
         shouldRunAfter("test")
     }
-    tasks.check { dependsOn(integrationTest) }
 
     // JARs
     tasks.named<Jar>("jar") {

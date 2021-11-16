@@ -23,22 +23,37 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
-import sh.props.annotations.Nullable;
-import sh.props.exceptions.InvalidReadOpException;
-import sh.props.typed.IntegerProp;
+import java.util.Map;
+import java.util.Objects;
+import sh.props.source.Source;
+import sh.props.source.SourceFactory;
 
-public class TestErrorOnGetProp extends IntegerProp {
+/** Creates a source used for tests, which only defines a key=value entry. */
+public class TestSource extends Source {
+  public static final String ID = "test-source";
 
-  public TestErrorOnGetProp(String key, @Nullable Integer defaultValue) {
-    super(key, defaultValue, null, false, false);
+  @Override
+  public String id() {
+    return "test-source";
   }
 
   @Override
-  protected void validateBeforeGet(@Nullable Integer value) {
-    if (value != null && value > 1) {
-      throw new InvalidReadOpException("unretrievable value");
+  public Map<String, String> get() {
+    return Map.of("key", "value");
+  }
+
+  /** Defines a source factory used in tests. */
+  public static class Factory implements SourceFactory<TestSource> {
+
+    @Override
+    public TestSource create(String id) {
+      if (!Objects.equals(TestSource.ID, id)) {
+        throw new IllegalArgumentException("Invalid id: " + id);
+      }
+
+      return new TestSource();
     }
   }
 }

@@ -23,22 +23,40 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.exceptions.InvalidUpdateOpException;
-import sh.props.typed.IntegerProp;
 
-public class TestErrorOnSetProp extends IntegerProp {
+/** Test-only implementation. */
+public class StoreAllValuesConsumer<T> implements Consumer<T> {
 
-  public TestErrorOnSetProp(String key, @Nullable Integer defaultValue) {
-    super(key, defaultValue, null, false, false);
-  }
+  private final LinkedHashSet<T> store = new LinkedHashSet<>();
 
   @Override
-  protected void validateBeforeSet(@Nullable Integer value) throws InvalidUpdateOpException {
-    if (value != null && value > 1) {
-      throw new InvalidUpdateOpException("invalid value");
+  public synchronized void accept(T t) {
+    this.store.add(t);
+  }
+
+  public synchronized ArrayDeque<T> get() {
+    return new ArrayDeque<>(this.store);
+  }
+
+  /**
+   * Retrieves the last value accepted by this consumer.
+   *
+   * @return the last accepted value, or null if none were accepted
+   */
+  @Nullable
+  public synchronized T getLast() {
+    T val = null;
+    Iterator<T> it = this.store.iterator();
+    while (it.hasNext()) {
+      val = it.next();
     }
+    return val;
   }
 }
