@@ -23,37 +23,14 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
-import java.util.Map;
-import java.util.Objects;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
+import sh.props.annotations.Nullable;
 
-/** Creates a source used for tests, which only defines a key=value entry. */
-public class TestSource extends Source {
-  public static final String ID = "test-source";
+/** Test-only implementation. */
+public class TestStringProp extends sh.props.typed.StringProp {
 
-  @Override
-  public String id() {
-    return "test-source";
-  }
-
-  @Override
-  public Map<String, String> get() {
-    return Map.of("key", "value");
-  }
-
-  /** Defines a source factory used in tests. */
-  public static class Factory implements SourceFactory<TestSource> {
-
-    @Override
-    public TestSource create(String id) {
-      if (!Objects.equals(TestSource.ID, id)) {
-        throw new IllegalArgumentException("Invalid id: " + id);
-      }
-
-      return new TestSource();
-    }
+  public TestStringProp(String key, @Nullable String defaultValue) {
+    super(key, defaultValue, null, false, false);
   }
 }

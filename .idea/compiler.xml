@@ -31,7 +31,10 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jgit/org.eclipse.jgit/4.4.1.201607150455-r/63998ced66e425d9e8bcd0c59f710c98f0c021ff/org.eclipse.jgit-4.4.1.201607150455-r.jar" />
         </processorPath>
         <module name="props.props-aws.intTest" />
+        <module name="props.testFixtures" />
+        <module name="props.props-aws.testFixtures" />
         <module name="props.test" />
+        <module name="props.props-core.testFixtures" />
         <module name="props.props-core.jmh" />
         <module name="props.props-core.main" />
         <module name="props.main" />

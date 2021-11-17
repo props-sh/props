@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

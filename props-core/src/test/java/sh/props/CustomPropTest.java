@@ -40,7 +40,7 @@ import sh.props.converter.Cast;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.exceptions.InvalidUpdateOpException;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.TestErrorOnSetProp;
+import sh.props.textfixtures.TestErrorOnSetProp;
 
 @SuppressWarnings("NullAway")
 class CustomPropTest {

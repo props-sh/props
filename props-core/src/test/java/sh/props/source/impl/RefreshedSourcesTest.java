@@ -41,8 +41,8 @@ import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
 import sh.props.source.refresh.FileWatchSvc;
 import sh.props.source.refresh.Scheduler;
-import sh.props.testhelpers.AwaitAssertionTest;
-import sh.props.testhelpers.TestFileUtil;
+import sh.props.textfixtures.AwaitAssertionTest;
+import sh.props.textfixtures.TestFileUtil;
 import sh.props.typed.BooleanProp;
 
 public class RefreshedSourcesTest extends AwaitAssertionTest {

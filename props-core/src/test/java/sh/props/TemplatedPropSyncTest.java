@@ -32,7 +32,7 @@ import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 import org.junit.jupiter.api.Test;
 import sh.props.group.TemplatedProp;
 import sh.props.source.impl.InMemory;
-import sh.props.testhelpers.TestIntProp;
+import sh.props.textfixtures.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropSyncTest {

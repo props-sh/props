@@ -23,14 +23,14 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
-import sh.props.annotations.Nullable;
+import java.util.function.Consumer;
 
 /** Test-only implementation. */
-public class TestStringProp extends sh.props.typed.StringProp {
-
-  public TestStringProp(String key, @Nullable String defaultValue) {
-    super(key, defaultValue, null, false, false);
+public class DummyConsumer<T> implements Consumer<T> {
+  @Override
+  public void accept(T t) {
+    // do nothing
   }
 }

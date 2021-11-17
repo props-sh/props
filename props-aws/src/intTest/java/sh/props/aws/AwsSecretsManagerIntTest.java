@@ -26,6 +26,8 @@
 package sh.props.aws;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,6 +37,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -71,6 +74,10 @@ class AwsSecretsManagerIntTest {
     putSecret2 =
         client.createSecret(
             CreateSecretRequest.builder().name(secret2).secretString(SECRET_VALUE).build());
+
+    Awaitility.setDefaultTimeout(5, SECONDS);
+    Awaitility.setDefaultPollDelay(500, MILLISECONDS);
+    Awaitility.setDefaultPollInterval(1, SECONDS);
   }
 
   /** Wait for the futures responsible for creating secrets for the test environment to complete. */
@@ -79,24 +86,18 @@ class AwsSecretsManagerIntTest {
     putSecret2.join();
 
     // ensure the secrets can be retrieved and listed
+    // the secrets don't immediately become available in AWS SecretsManager
+    // and as such, we much first wait and ensure they are properly set-up by the test
     await()
-        .timeout(Duration.ofSeconds(5))
-        .pollDelay(Duration.ofMillis(500))
-        .pollInterval(Duration.ofSeconds(1))
         .until(
             () -> AwsSecretsManager.getSecretValue(client, secret1).join().secretString(),
             notNullValue());
     await()
-        .timeout(Duration.ofSeconds(5))
-        .pollInterval(Duration.ofSeconds(1))
+        .pollDelay(Duration.ZERO)
         .until(
             () -> AwsSecretsManager.getSecretValue(client, secret2).join().secretString(),
             notNullValue());
-    await()
-        .timeout(Duration.ofSeconds(5))
-        .pollDelay(Duration.ofSeconds(1))
-        .pollInterval(Duration.ofSeconds(1))
-        .until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
+    await().until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
   }
 
   @AfterAll
@@ -133,11 +134,11 @@ class AwsSecretsManagerIntTest {
 
     // ASSERT
     await()
-        .timeout(Duration.ofSeconds(5))
+        .pollDelay(Duration.ZERO)
         .pollInterval(Duration.ofNanos(100))
         .until(prop1::get, equalTo(SECRET_VALUE));
     await()
-        .timeout(Duration.ofSeconds(5))
+        .pollDelay(Duration.ZERO)
         .pollInterval(Duration.ofNanos(100))
         .until(prop2::get, equalTo(SECRET_VALUE));
 

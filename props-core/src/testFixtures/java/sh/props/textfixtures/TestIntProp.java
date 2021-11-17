@@ -23,19 +23,15 @@
  *
  */
 
-package sh.props.testhelpers;
+package sh.props.textfixtures;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import sh.props.annotations.Nullable;
+import sh.props.typed.IntegerProp;
 
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeAll;
+/** Test-only implementation. */
+public class TestIntProp extends IntegerProp {
 
-public class AwaitAssertionTest {
-
-  @BeforeAll
-  static void beforeAll() {
-    Awaitility.setDefaultTimeout(5, SECONDS);
-    Awaitility.setDefaultPollInterval(100, NANOSECONDS);
+  public TestIntProp(String key, @Nullable Integer defaultValue) {
+    super(key, defaultValue, null, false, false);
   }
 }

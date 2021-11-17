@@ -41,8 +41,8 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
-import sh.props.testhelpers.AwaitAssertionTest;
-import sh.props.testhelpers.TestFileUtil;
+import sh.props.textfixtures.AwaitAssertionTest;
+import sh.props.textfixtures.TestFileUtil;
 import sh.props.typed.BooleanProp;
 
 @SuppressWarnings("NullAway")
