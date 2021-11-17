@@ -92,7 +92,7 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
    * @return a new object with the value updated
    */
   private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFirst(T value) {
-    return prev -> prev.updateFirst(value);
+    return prev -> prev != null ? prev.updateFirst(value) : Tuple.of(value, null, null, null);
   }
 
   /**
@@ -106,7 +106,7 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
    * @return a new object with the value updated
    */
   private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateSecond(U value) {
-    return prev -> prev.updateSecond(value);
+    return prev -> prev != null ? prev.updateSecond(value) : Tuple.of(null, value, null, null);
   }
 
   /**
@@ -120,7 +120,7 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
    * @return a new object with the value updated
    */
   private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateThird(V value) {
-    return prev -> prev.updateThird(value);
+    return prev -> prev != null ? prev.updateThird(value) : Tuple.of(null, null, value, null);
   }
 
   /**
@@ -134,7 +134,7 @@ class SynchronizedQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>>
    * @return a new object with the value updated
    */
   private static <T, U, V, W> UnaryOperator<Quad<T, U, V, W>> updateFourth(W value) {
-    return prev -> prev.updateFourth(value);
+    return prev -> prev != null ? prev.updateFourth(value) : Tuple.of(null, null, null, value);
   }
 
   /**
