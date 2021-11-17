@@ -141,6 +141,9 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
       return new Holder<>(this.epoch + 1, value, null);
     }
 
+    // TODO(mihaibojin): this behaviour is inconsistent, as it can erase a previously existing
+    //                   error. Need to figure out how to only clear errors when a previously
+    //                   errored Tuple element receives a good value
     public Holder<TupleT> value(UnaryOperator<TupleT> op) {
       return new Holder<>(this.epoch + 1, op.apply(this.value), null);
     }

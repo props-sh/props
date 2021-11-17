@@ -98,7 +98,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFirst(T value) {
-    return prev -> prev.updateFirst(value);
+    return prev -> prev != null ? prev.updateFirst(value) : Tuple.of(value, null, null, null, null);
   }
 
   /**
@@ -113,7 +113,8 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateSecond(U value) {
-    return prev -> prev.updateSecond(value);
+    return prev ->
+        prev != null ? prev.updateSecond(value) : Tuple.of(null, value, null, null, null);
   }
 
   /**
@@ -128,7 +129,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateThird(V value) {
-    return prev -> prev.updateThird(value);
+    return prev -> prev != null ? prev.updateThird(value) : Tuple.of(null, null, value, null, null);
   }
 
   /**
@@ -143,7 +144,8 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFourth(W value) {
-    return prev -> prev.updateFourth(value);
+    return prev ->
+        prev != null ? prev.updateFourth(value) : Tuple.of(null, null, null, value, null);
   }
 
   /**
@@ -158,7 +160,7 @@ class SynchronizedTuple<T, U, V, W, X> extends AbstractPropGroup<Tuple<T, U, V, 
    * @return a new object with the value updated
    */
   private static <T, U, V, W, X> UnaryOperator<Tuple<T, U, V, W, X>> updateFifth(X value) {
-    return prev -> prev.updateFifth(value);
+    return prev -> prev != null ? prev.updateFifth(value) : Tuple.of(null, null, null, null, value);
   }
 
   /**
