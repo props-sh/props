@@ -41,3 +41,4 @@ dependencyResolutionManagement {
         }
     }
 }
+include("props-mongodb")

@@ -33,12 +33,16 @@
         <module name="props.props-aws.intTest" />
         <module name="props.testFixtures" />
         <module name="props.props-aws.testFixtures" />
+        <module name="props.props-mongodb.test" />
         <module name="props.test" />
         <module name="props.props-core.testFixtures" />
         <module name="props.props-core.jmh" />
         <module name="props.props-core.main" />
+        <module name="props.props-mongodb.intTest" />
         <module name="props.main" />
         <module name="props.intTest" />
+        <module name="props.props-mongodb.testFixtures" />
+        <module name="props.props-mongodb.main" />
         <module name="props.props-core.test" />
         <module name="props.props-aws.main" />
         <module name="props.props-core.intTest" />
