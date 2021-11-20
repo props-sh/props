@@ -29,7 +29,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static sh.props.mongodb.MongoDbStore.connect;
 
-import com.mongodb.reactivestreams.client.MongoCollection;
+import com.mongodb.client.MongoCollection;
 import java.util.Base64;
 import java.util.Random;
 import org.bson.Document;
@@ -44,18 +44,29 @@ class MongoDbStoreTest {
   private static final String PROPS = "props";
   private static final String CONN_STRING = "mongodb://127.0.0.1:27017/?connectTimeoutMS=2000";
   private static String DB_NAME;
+  private static MongoCollection<Document> collection;
 
   @BeforeAll
   static void beforeAll() {
     DB_NAME = generateRandomAlphanum();
 
-    MongoCollection<Document> collection = connect(CONN_STRING, DB_NAME, PROPS);
+    collection = connect(CONN_STRING, DB_NAME, PROPS);
 
     // create one object
-    Document prop1 = new Document();
-    prop1.put("_id", "my.prop");
-    prop1.put("value", "value");
-    collection.insertOne(prop1);
+    collection.insertOne(createProp("my.prop", "value"));
+  }
+
+  private static Document createFilter(String key) {
+    Document doc = new Document();
+    doc.put("_id", key);
+    return doc;
+  }
+
+  private static Document createProp(String key, String value) {
+    Document doc = new Document();
+    doc.put("_id", key);
+    doc.put("value", value);
+    return doc;
   }
 
   private static String generateRandomAlphanum() {
@@ -76,5 +87,11 @@ class MongoDbStoreTest {
 
     // ASSERT
     await().until(() -> registry.get("my.prop"), equalTo("value"));
+
+    collection.insertOne(createProp("my.prop2", "value"));
+    await().until(() -> registry.get("my.prop2"), equalTo("value"));
+
+    collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
+    await().until(() -> registry.get("my.prop2"), equalTo("value2"));
   }
 }

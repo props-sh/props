@@ -25,27 +25,25 @@
 
 package sh.props.mongodb;
 
-import static java.lang.String.format;
-
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import com.mongodb.reactivestreams.client.FindPublisher;
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.MongoCollection;
-import com.mongodb.reactivestreams.client.MongoDatabase;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.FullDocument;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bson.Document;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 import sh.props.source.Source;
+import sh.props.util.BackgroundExecutorFactory;
 
 public class MongoDbStore extends Source {
   public static final String ID = "mongodb";
@@ -60,34 +58,31 @@ public class MongoDbStore extends Source {
    * @param connectionString a valid MongoDB connection string (e.g.
    *     "mongodb://[::1]:27017/defaultDatabase")
    */
+  @SuppressWarnings("FutureReturnValueIgnored")
   public MongoDbStore(String connectionString, String database, String collection) {
     MongoCollection<Document> coll = connect(connectionString, database, collection);
-    FindPublisher<Document> documents = coll.find();
-    documents.subscribe(
-        new Subscriber<>() {
-          @Override
-          public void onSubscribe(Subscription s) {
-            log.log(Level.INFO, () -> format("Subscribed to: %s", MongoDbStore.this));
-          }
 
-          @Override
-          public void onNext(Document document) {
-            store.put(document.getString("_id"), document.getString("value"));
-          }
+    // open a change stream to capture any changes
+    ChangeStreamIterable<Document> it = coll.watch().fullDocument(FullDocument.UPDATE_LOOKUP);
 
-          @Override
-          public void onError(Throwable t) {
-            log.log(
-                Level.SEVERE,
-                t,
-                () -> "Unexpected exception while retrieving change stream values");
-          }
+    // load the initial elements
+    for (Document document : coll.find()) {
+      store.put(document.getString("_id"), document.getString("value"));
+    }
 
-          @Override
-          public void onComplete() {
-            log.log(Level.INFO, () -> format("Stream completed: %s", MongoDbStore.this));
-          }
-        });
+    // schedule the async processing of the change stream
+    BackgroundExecutorFactory.create(1)
+        .submit(
+            () -> {
+              for (ChangeStreamDocument<Document> event : it) {
+                Document document = event.getFullDocument();
+                if (document == null) {
+                  log.warning("Invalid change stream event. Skipping!");
+                  continue;
+                }
+                store.put(document.getString("_id"), document.getString("value"));
+              }
+            });
 
     // TODO: cast to specific document type
     //       (https://docs.mongodb.com/manual/reference/change-events/)
@@ -113,6 +108,7 @@ public class MongoDbStore extends Source {
             .applyConnectionString(new ConnectionString(connectionString))
             .build();
     MongoClient mongoClient = MongoClients.create(settings);
+
     MongoDatabase db = mongoClient.getDatabase(database);
     return db.getCollection(collection)
         .withReadPreference(ReadPreference.primaryPreferred())
