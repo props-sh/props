@@ -27,8 +27,8 @@ package sh.props.mongodb;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static sh.props.mongodb.MongoDbStore.getCollection;
-import static sh.props.mongodb.MongoDbStore.initClient;
 import static sh.props.mongodb.testfixtures.Fixtures.connectionString;
 import static sh.props.mongodb.testfixtures.Fixtures.createFilter;
 import static sh.props.mongodb.testfixtures.Fixtures.createProp;
@@ -37,40 +37,55 @@ import static sh.props.mongodb.testfixtures.Fixtures.generateRandomAlphanum;
 import com.mongodb.client.MongoCollection;
 import java.time.Duration;
 import org.bson.Document;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import sh.props.Registry;
 import sh.props.RegistryBuilder;
 
+@Testcontainers
 @SuppressWarnings("NullAway")
-class MongoDbStoreTest {
+class MongoDbStoreIntTest {
+  @Container
+  private static final MongoDBContainer mongoDBContainer =
+      new MongoDBContainer(DockerImageName.parse("mongo:5.0.4-focal")).withExposedPorts(27017);
+
   private static final String PROPS = "props";
-  private static final String CONN_STRING = connectionString();
-  private static String DB_NAME;
-  private static MongoCollection<Document> collection;
+  private String connString;
+  private String dbName;
+  private MongoCollection<Document> collection;
 
   @BeforeAll
   static void beforeAll() {
-    Assertions.assertDoesNotThrow(
-        MongoDbStoreTest::canConnect, "This test needs a valid MongoDB cluster");
-
-    DB_NAME = generateRandomAlphanum();
-    collection = getCollection(CONN_STRING, DB_NAME, PROPS);
-
-    // create one object
-    collection.insertOne(createProp("my.prop", "value"));
+    mongoDBContainer.start();
+    assertThat(mongoDBContainer.isRunning(), equalTo(true));
   }
 
-  private static void canConnect() {
-    var client = initClient(CONN_STRING);
-    client.startSession();
+  @AfterAll
+  static void afterAll() {
+    mongoDBContainer.stop();
+  }
+
+  @BeforeEach
+  void setUp() {
+    // initialize the connection string and database name for this test
+    connString = connectionString(mongoDBContainer.getMappedPort(27017));
+    dbName = generateRandomAlphanum();
+
+    // create database prop(s)
+    collection = getCollection(connString, dbName, PROPS);
+    collection.insertOne(createProp("my.prop", "value"));
   }
 
   @Test
   void mongoDbStore() {
     // ARRANGE
-    var source = new MongoDbStore(CONN_STRING, DB_NAME, PROPS);
+    var source = new MongoDbStore(connString, dbName, PROPS);
 
     // ACT
     Registry registry = new RegistryBuilder(source).build();

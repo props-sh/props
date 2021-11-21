@@ -27,6 +27,8 @@ package sh.props.mongodb.testfixtures;
 
 import static java.lang.String.format;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import java.util.Base64;
 import java.util.Random;
 import org.bson.Document;
@@ -38,12 +40,17 @@ public class Fixtures {
    *
    * @return a connection string
    */
-  public static String connectionString() {
+  public static String connectionString(int port) {
     String connString =
-        "mongodb://%s/?maxPoolSize=2&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000"
+        "mongodb://127.0.0.1:%d/?maxPoolSize=2&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000"
             + "&socketTimeoutMS=2000&w=majority&readPreference=primaryPreferred";
-    String hosts = System.getProperty("hosts", "127.0.0.1:27017");
-    return format(connString, hosts);
+    return format(connString, port);
+  }
+
+  /** Initializes a replica set. */
+  public static Document initiateReplicaset(MongoClient client) {
+    MongoDatabase admin = client.getDatabase("admin");
+    return admin.runCommand(new Document("replSetInitiate", 1));
   }
 
   /**
