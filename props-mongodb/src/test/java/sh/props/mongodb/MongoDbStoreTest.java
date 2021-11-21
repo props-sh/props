@@ -25,16 +25,19 @@
 
 package sh.props.mongodb;
 
+import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static sh.props.mongodb.MongoDbStore.connect;
+import static sh.props.mongodb.MongoDbStore.getCollection;
+import static sh.props.mongodb.MongoDbStore.initClient;
 
 import com.mongodb.client.MongoCollection;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Random;
 import org.bson.Document;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import sh.props.Registry;
 import sh.props.RegistryBuilder;
@@ -42,15 +45,17 @@ import sh.props.RegistryBuilder;
 @SuppressWarnings("NullAway")
 class MongoDbStoreTest {
   private static final String PROPS = "props";
-  private static final String CONN_STRING = "mongodb://127.0.0.1:27017/?connectTimeoutMS=2000";
+  private static final String CONN_STRING = connectionString();
   private static String DB_NAME;
   private static MongoCollection<Document> collection;
 
   @BeforeAll
   static void beforeAll() {
-    DB_NAME = generateRandomAlphanum();
+    Assertions.assertDoesNotThrow(
+        MongoDbStoreTest::canConnect, "This test needs a valid MongoDB cluster");
 
-    collection = connect(CONN_STRING, DB_NAME, PROPS);
+    DB_NAME = generateRandomAlphanum();
+    collection = getCollection(CONN_STRING, DB_NAME, PROPS);
 
     // create one object
     collection.insertOne(createProp("my.prop", "value"));
@@ -69,6 +74,20 @@ class MongoDbStoreTest {
     return doc;
   }
 
+  /**
+   * Creates a connection string using any values provided via System Properties (<code>hosts</code>
+   * ); defaults to <code>127.0.0.1:27017</code>.
+   *
+   * @return a connection string
+   */
+  private static String connectionString() {
+    String connString =
+        "mongodb://%s/?maxPoolSize=2&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000"
+            + "&socketTimeoutMS=2000&w=majority&readPreference=primaryPreferred";
+    String hosts = System.getProperties().getProperty("hosts", "127.0.0.1:27017");
+    return format(connString, hosts);
+  }
+
   private static String generateRandomAlphanum() {
     byte[] data = new byte[7];
     new Random().nextBytes(data);
@@ -76,8 +95,12 @@ class MongoDbStoreTest {
     return encoded.replaceAll("(?i)[^a-z0-9]+", "").toLowerCase();
   }
 
+  private static void canConnect() {
+    var client = initClient(CONN_STRING);
+    client.startSession();
+  }
+
   @Test
-  @Disabled
   void mongoDbStore() {
     // ARRANGE
     var source = new MongoDbStore(CONN_STRING, DB_NAME, PROPS);
@@ -89,7 +112,7 @@ class MongoDbStoreTest {
     await().until(() -> registry.get("my.prop"), equalTo("value"));
 
     collection.insertOne(createProp("my.prop2", "value"));
-    await().until(() -> registry.get("my.prop2"), equalTo("value"));
+    await().timeout(Duration.ofSeconds(30)).until(() -> registry.get("my.prop2"), equalTo("value"));
 
     collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
     await().until(() -> registry.get("my.prop2"), equalTo("value2"));

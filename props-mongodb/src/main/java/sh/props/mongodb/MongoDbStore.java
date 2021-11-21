@@ -26,20 +26,20 @@
 package sh.props.mongodb;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.FullDocument;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.bson.Document;
 import sh.props.source.Source;
@@ -50,6 +50,7 @@ public class MongoDbStore extends Source {
   private static final Logger log = Logger.getLogger(MongoDbStore.class.getName());
 
   private static final Map<String, String> store = new ConcurrentHashMap<>();
+  private static final int THRESHOLD = 100;
 
   /**
    * Class constructor that initializes the MongoDB database that will provide key,value pairs.
@@ -58,12 +59,11 @@ public class MongoDbStore extends Source {
    * @param connectionString a valid MongoDB connection string (e.g.
    *     "mongodb://[::1]:27017/defaultDatabase")
    */
-  @SuppressWarnings("FutureReturnValueIgnored")
   public MongoDbStore(String connectionString, String database, String collection) {
-    MongoCollection<Document> coll = connect(connectionString, database, collection);
+    MongoCollection<Document> coll = getCollection(connectionString, database, collection);
 
     // open a change stream to capture any changes
-    ChangeStreamIterable<Document> it = coll.watch().fullDocument(FullDocument.UPDATE_LOOKUP);
+    ChangeStreamIterable<Document> events = coll.watch().fullDocument(FullDocument.UPDATE_LOOKUP);
 
     // load the initial elements
     for (Document document : coll.find()) {
@@ -71,18 +71,37 @@ public class MongoDbStore extends Source {
     }
 
     // schedule the async processing of the change stream
-    BackgroundExecutorFactory.create(1)
-        .submit(
-            () -> {
-              for (ChangeStreamDocument<Document> event : it) {
-                Document document = event.getFullDocument();
-                if (document == null) {
-                  log.warning("Invalid change stream event. Skipping!");
-                  continue;
-                }
-                store.put(document.getString("_id"), document.getString("value"));
-              }
-            });
+    @SuppressWarnings("FutureReturnValueIgnored")
+    Future<?> future =
+        BackgroundExecutorFactory.create(1)
+            .submit(
+                () -> {
+                  boolean shouldUpdate = false;
+                  int currentUpdates = 0;
+                  try (MongoCursor<ChangeStreamDocument<Document>> cursor = events.iterator()) {
+                    while (!Thread.currentThread().isInterrupted()) {
+                      Document doc = cursor.next().getFullDocument();
+                      if (doc != null) {
+                        store.put(doc.getString("_id"), doc.getString("value"));
+                        shouldUpdate = true;
+                        currentUpdates++;
+                      } else {
+                        log.warning("Invalid change stream event. Skipping!");
+                      }
+
+                      // if at least one valid update was registered
+                      // and there aren't more updates in-flight
+                      // or we've reached the update threshold
+                      if (shouldUpdate && (cursor.available() == 0 || currentUpdates > THRESHOLD)) {
+                        // reset flags
+                        shouldUpdate = false;
+                        currentUpdates = 0;
+                        // and process the updates
+                        updateSubscribers();
+                      }
+                    }
+                  }
+                });
 
     // TODO: cast to specific document type
     //       (https://docs.mongodb.com/manual/reference/change-events/)
@@ -101,19 +120,24 @@ public class MongoDbStore extends Source {
    * @param collection the collection to use
    * @return an initialized object
    */
-  static MongoCollection<Document> connect(
+  static MongoCollection<Document> getCollection(
       String connectionString, String database, String collection) {
-    MongoClientSettings settings =
-        MongoClientSettings.builder()
-            .applyConnectionString(new ConnectionString(connectionString))
-            .build();
-    MongoClient mongoClient = MongoClients.create(settings);
+    MongoClient mongoClient = initClient(connectionString);
 
     MongoDatabase db = mongoClient.getDatabase(database);
     return db.getCollection(collection)
         .withReadPreference(ReadPreference.primaryPreferred())
-        .withReadConcern(ReadConcern.MAJORITY)
-        .withWriteConcern(WriteConcern.MAJORITY);
+        .withReadConcern(ReadConcern.MAJORITY);
+  }
+
+  /**
+   * Initializes a {@link MongoClient} from the specified connection string.
+   *
+   * @param connectionString the MongoDB connection string
+   * @return an initialized connection to a valid cluster
+   */
+  static MongoClient initClient(String connectionString) {
+    return MongoClients.create(new ConnectionString(connectionString));
   }
 
   @Override
