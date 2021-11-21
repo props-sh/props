@@ -25,16 +25,17 @@
 
 package sh.props.mongodb;
 
-import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static sh.props.mongodb.MongoDbStore.getCollection;
 import static sh.props.mongodb.MongoDbStore.initClient;
+import static sh.props.mongodb.testfixtures.Fixtures.connectionString;
+import static sh.props.mongodb.testfixtures.Fixtures.createFilter;
+import static sh.props.mongodb.testfixtures.Fixtures.createProp;
+import static sh.props.mongodb.testfixtures.Fixtures.generateRandomAlphanum;
 
 import com.mongodb.client.MongoCollection;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.Random;
 import org.bson.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,40 +60,6 @@ class MongoDbStoreTest {
 
     // create one object
     collection.insertOne(createProp("my.prop", "value"));
-  }
-
-  private static Document createFilter(String key) {
-    Document doc = new Document();
-    doc.put("_id", key);
-    return doc;
-  }
-
-  private static Document createProp(String key, String value) {
-    Document doc = new Document();
-    doc.put("_id", key);
-    doc.put("value", value);
-    return doc;
-  }
-
-  /**
-   * Creates a connection string using any values provided via System Properties (<code>hosts</code>
-   * ); defaults to <code>127.0.0.1:27017</code>.
-   *
-   * @return a connection string
-   */
-  private static String connectionString() {
-    String connString =
-        "mongodb://%s/?maxPoolSize=2&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000"
-            + "&socketTimeoutMS=2000&w=majority&readPreference=primaryPreferred";
-    String hosts = System.getProperties().getProperty("hosts", "127.0.0.1:27017");
-    return format(connString, hosts);
-  }
-
-  private static String generateRandomAlphanum() {
-    byte[] data = new byte[7];
-    new Random().nextBytes(data);
-    String encoded = Base64.getMimeEncoder().encodeToString(data);
-    return encoded.replaceAll("(?i)[^a-z0-9]+", "").toLowerCase();
   }
 
   private static void canConnect() {
