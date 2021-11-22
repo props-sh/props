@@ -50,20 +50,16 @@ public class MongoDbStore extends Source {
   private static final Logger log = Logger.getLogger(MongoDbStore.class.getName());
 
   private static final Map<String, String> store = new ConcurrentHashMap<>();
-  private static final int THRESHOLD = 100;
+  private static final int BATCH_SIZE = 100;
 
   /**
    * Class constructor that initializes the MongoDB database that will provide key,value pairs.
    * TODO: document https://docs.mongodb.com/manual/changeStreams/#access-control
    *
-   * @param connectionString a valid MongoDB connection string (e.g.
-   *     "mongodb://[::1]:27017/defaultDatabase")
+   * @param connectionString a valid MongoDB connection string (e.g. "mongodb://[::1]:27017/")
    */
   public MongoDbStore(String connectionString, String database, String collection) {
     MongoCollection<Document> coll = getCollection(connectionString, database, collection);
-
-    // open a change stream to capture any changes
-    ChangeStreamIterable<Document> events = coll.watch().fullDocument(FullDocument.UPDATE_LOOKUP);
 
     // load the initial elements
     for (Document document : coll.find()) {
@@ -72,44 +68,7 @@ public class MongoDbStore extends Source {
 
     // schedule the async processing of the change stream
     @SuppressWarnings("FutureReturnValueIgnored")
-    Future<?> future =
-        BackgroundExecutorFactory.create(1)
-            .submit(
-                () -> {
-                  boolean shouldUpdate = false;
-                  int currentUpdates = 0;
-                  try (MongoCursor<ChangeStreamDocument<Document>> cursor = events.iterator()) {
-                    while (!Thread.currentThread().isInterrupted()) {
-                      Document doc = cursor.next().getFullDocument();
-                      if (doc != null) {
-                        store.put(doc.getString("_id"), doc.getString("value"));
-                        shouldUpdate = true;
-                        currentUpdates++;
-                      } else {
-                        log.warning("Invalid change stream event. Skipping!");
-                      }
-
-                      // if at least one valid update was registered
-                      // and there aren't more updates in-flight
-                      // or we've reached the update threshold
-                      if (shouldUpdate && (cursor.available() == 0 || currentUpdates > THRESHOLD)) {
-                        // reset flags
-                        shouldUpdate = false;
-                        currentUpdates = 0;
-                        // and process the updates
-                        updateSubscribers();
-                      }
-                    }
-                  }
-                });
-
-    // TODO: cast to specific document type
-    //       (https://docs.mongodb.com/manual/reference/change-events/)
-
-    // TODO: read all existing documents
-
-    // TODO: initialize change stream
-    //    ChangeStreamPublisher<Document> watch = coll.watch();
+    Future<?> future = BackgroundExecutorFactory.create(1).submit(new ChangeStreamWatcher(coll));
   }
 
   /**
@@ -148,5 +107,52 @@ public class MongoDbStore extends Source {
   @Override
   public Map<String, String> get() {
     return Collections.unmodifiableMap(store);
+  }
+
+  /** Processes change stream events. */
+  private class ChangeStreamWatcher implements Runnable {
+    private final MongoCollection<Document> collection;
+
+    private ChangeStreamWatcher(MongoCollection<Document> collection) {
+      this.collection = collection;
+    }
+
+    // TODO (mihaibojin): Handle transient failures and resuming the change stream watcher
+    @Override
+    public void run() {
+      // open a change stream to capture any changes on the provided collection
+      ChangeStreamIterable<Document> events =
+          collection.watch().fullDocument(FullDocument.UPDATE_LOOKUP);
+
+      boolean shouldUpdate = false;
+      int currentUpdates = 0;
+      try (MongoCursor<ChangeStreamDocument<Document>> cursor = events.iterator()) {
+        // stop processing if the current thread is interrupted (i.e., the app is shutting down)
+        while (!Thread.currentThread().isInterrupted()) {
+          // this code ensures that we avoid calling updateSubscribers() for every change stream
+          // event
+          // and instead we batch these calls, processing multiple events at once, no more than
+          // BATCH_SIZE at a time
+
+          if (shouldUpdate && (cursor.available() == 0 || currentUpdates >= BATCH_SIZE)) {
+            // reset the flags
+            shouldUpdate = false;
+            currentUpdates = 0;
+
+            // and process the updates
+            updateSubscribers();
+          }
+
+          Document doc = cursor.next().getFullDocument();
+          if (doc == null) {
+            log.warning("Invalid change stream event. Skipping!");
+            continue;
+          }
+          store.put(doc.getString("_id"), doc.getString("value"));
+          shouldUpdate = true;
+          currentUpdates++;
+        }
+      }
+    }
   }
 }
