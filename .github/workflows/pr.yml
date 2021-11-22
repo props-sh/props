@@ -3,7 +3,7 @@ on:
   - push
 jobs:
   pre-merge-checks:
-    runs-on: macos-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out code
         uses: actions/checkout@v2
