@@ -67,7 +67,7 @@ public class MongoDbStore extends Source {
     }
 
     // schedule the async processing of the change stream
-    @SuppressWarnings("FutureReturnValueIgnored")
+    @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
     Future<?> future = BackgroundExecutorFactory.create(1).submit(new ChangeStreamWatcher(coll));
   }
 
