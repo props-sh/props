@@ -28,6 +28,7 @@ package sh.props.mongodb;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static sh.props.mongodb.MongoDbStore.WATCH_CHANGE_STREAM;
 import static sh.props.mongodb.MongoDbStore.getCollection;
 import static sh.props.mongodb.testfixtures.Fixtures.connectionString;
 import static sh.props.mongodb.testfixtures.Fixtures.createFilter;
@@ -85,7 +86,7 @@ class MongoDbStoreIntTest {
   @Test
   void mongoDbStore() {
     // ARRANGE
-    var source = new MongoDbStore(connString, dbName, PROPS);
+    var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
 
     // ACT
     Registry registry = new RegistryBuilder(source).build();
