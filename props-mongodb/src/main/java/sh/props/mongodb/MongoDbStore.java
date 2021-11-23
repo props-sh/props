@@ -248,11 +248,9 @@ public class MongoDbStore extends Source {
       try (MongoCursor<ChangeStreamDocument<Document>> cursor = changeStream.iterator()) {
         // stop processing if the current thread is interrupted (i.e., the app is shutting down)
         while (!Thread.currentThread().isInterrupted()) {
-          // this code ensures that we avoid calling updateSubscribers() for every change stream
-          // event and instead we batch these calls, processing multiple events at once, no more
-          // than
-          // BATCH_SIZE at a time
-
+          // ensure that we avoid calling updateSubscribers() for every change stream
+          // event; we will, however, batch these events into no more than BATCH_SIZE per
+          // subscriber update
           if (shouldUpdate && (cursor.available() == 0 || currentUpdates >= BATCH_SIZE)) {
             // reset the flags
             shouldUpdate = false;
@@ -272,6 +270,7 @@ public class MongoDbStore extends Source {
             // e.g., this is a collection rename
             continue;
           }
+
           @SuppressWarnings("NullAway") // the document key should always have an _id field
           final var id = key.get(Schema.ID).asString().getValue();
           final var op = event.getOperationType();
