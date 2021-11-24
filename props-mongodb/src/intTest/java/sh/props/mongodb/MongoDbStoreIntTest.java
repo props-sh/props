@@ -29,11 +29,11 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static sh.props.mongodb.MongoDbStore.WATCH_CHANGE_STREAM;
-import static sh.props.mongodb.MongoDbStore.getCollection;
 import static sh.props.mongodb.testfixtures.Fixtures.connectionString;
 import static sh.props.mongodb.testfixtures.Fixtures.createFilter;
 import static sh.props.mongodb.testfixtures.Fixtures.createProp;
 import static sh.props.mongodb.testfixtures.Fixtures.generateRandomAlphanum;
+import static sh.props.mongodb.testfixtures.Fixtures.getCollection;
 
 import com.mongodb.client.MongoCollection;
 import java.time.Duration;
@@ -100,4 +100,10 @@ class MongoDbStoreIntTest {
     collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
     await().until(() -> registry.get("my.prop2"), equalTo("value2"));
   }
+
+  // TODO(mihaibojin): LOAD_ALL_ON_DEMAND test
+  // TODO(mihaibojin): drop collection / stream restart test
+  // TODO(mihaibojin): rename collection / stream restart test
+  // TODO(mihaibojin): exceptionally exiting change stream / stream restart test
+  // TODO(mihaibojin): primary failover / stream restart test
 }

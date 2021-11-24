@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bson.BsonDocument;
@@ -60,10 +59,12 @@ public class MongoDbStore extends Source {
   public static final boolean LOAD_ALL_ON_DEMAND = false;
   private static final int BATCH_SIZE = 100;
   private static final Logger log = Logger.getLogger(MongoDbStore.class.getName());
-
   private static final Map<String, String> store = new ConcurrentHashMap<>();
-  private final Supplier<MongoCollection<Document>> collectionSupplier;
-  private final boolean changeStreamEnabled;
+  protected final String connectionString;
+  protected final String dbName;
+  protected final String collectionName;
+  protected final boolean changeStreamEnabled;
+  protected final MongoClient mongoClient;
 
   /**
    * Class constructor that initializes the MongoDB database that will provide key,value pairs.
@@ -74,24 +75,27 @@ public class MongoDbStore extends Source {
    * @see <a href="https://docs.mongodb.com/manual/changeStreams/#access-control">Change Streams
    *     Access Control</a>
    * @param connectionString a valid MongoDB connection string (e.g. "mongodb://[::1]:27017/")
-   * @param database the database to connect to
-   * @param collection the collection that holds the key,value pairs
+   * @param dbName the database to connect to
+   * @param collectionName the collection that holds the key,value pairs
    * @param changeStreamEnabled if <code>true</code>, the implementation will load all Props once
    *     and then open a change stream and watch for any insert/update/delete operations. The stream
    *     will be restarted on errors and invalidate operations; if <code>false</code>, the full list
    *     of Props will be synchronously re-read on every {@link #get()} operation.
    */
   public MongoDbStore(
-      String connectionString, String database, String collection, boolean changeStreamEnabled) {
+      String connectionString, String dbName, String collectionName, boolean changeStreamEnabled) {
+    this.connectionString = connectionString;
+    this.dbName = dbName;
+    this.collectionName = collectionName;
     this.changeStreamEnabled = changeStreamEnabled;
-    collectionSupplier = () -> getCollection(connectionString, database, collection);
-    MongoCollection<Document> coll = collectionSupplier.get();
+
+    mongoClient = initClient(connectionString);
 
     // store the starting time, ensuring that we catch any operations that are not returned by the
     // query
     var changeStreamStartTime = new BsonTimestamp(Instant.now().toEpochMilli());
 
-    store.putAll(loadAllKeyValuesFrom(coll));
+    store.putAll(loadAllKeyValues());
 
     if (changeStreamEnabled) {
       // schedule the async processing of the change stream
@@ -103,19 +107,15 @@ public class MongoDbStore extends Source {
   }
 
   /**
-   * Initializes a {@link MongoCollection} using the provided parameters.
+   * Initializes a {@link MongoCollection}.
    *
-   * @param connectionString the connection string to use
-   * @param database the database to use
-   * @param collection the collection to use
+   * <p>This method can be overwritten by a subclass, if a different configuration is required.
+   *
    * @return an initialized object
    */
-  static MongoCollection<Document> getCollection(
-      String connectionString, String database, String collection) {
-    MongoClient mongoClient = initClient(connectionString);
-
-    MongoDatabase db = mongoClient.getDatabase(database);
-    return db.getCollection(collection)
+  protected MongoCollection<Document> getCollection() {
+    MongoDatabase db = mongoClient.getDatabase(dbName);
+    return db.getCollection(collectionName)
         .withReadPreference(ReadPreference.primaryPreferred())
         .withReadConcern(ReadConcern.MAJORITY);
   }
@@ -123,10 +123,13 @@ public class MongoDbStore extends Source {
   /**
    * Initializes a {@link MongoClient} from the specified connection string.
    *
+   * <p>This method can be overwritten by a subclass, if a more advanced client configuration is
+   * required.
+   *
    * @param connectionString the MongoDB connection string
    * @return an initialized connection to a valid cluster
    */
-  static MongoClient initClient(String connectionString) {
+  protected MongoClient initClient(String connectionString) {
     return MongoClients.create(new ConnectionString(connectionString));
   }
 
@@ -134,13 +137,12 @@ public class MongoDbStore extends Source {
    * Initializes the {@link #store} with all the currently defined props in the underlying
    * collection.
    *
-   * @param collection the collection that holds the (key,value) pairs
    * @return an unmodifiable map that contains all the key,value pairs found in the provided
    *     collection
    */
-  private Map<String, String> loadAllKeyValuesFrom(MongoCollection<Document> collection) {
+  private Map<String, String> loadAllKeyValues() {
     Map<String, String> results = new HashMap<>();
-    collection
+    getCollection()
         .find()
         .forEach(doc -> results.put(doc.getString(Schema.ID), doc.getString(Schema.VALUE)));
     return Collections.unmodifiableMap(results);
@@ -167,7 +169,7 @@ public class MongoDbStore extends Source {
     if (changeStreamEnabled) {
       return Collections.unmodifiableMap(store);
     } else {
-      return loadAllKeyValuesFrom(collectionSupplier.get());
+      return loadAllKeyValues();
     }
   }
 
@@ -217,8 +219,7 @@ public class MongoDbStore extends Source {
         try {
           // open a change stream to capture any changes on the provided collection
           var changeStream =
-              collectionSupplier
-                  .get()
+              getCollection()
                   .watch()
                   .startAtOperationTime(startAtOperationTime)
                   .fullDocument(FullDocument.UPDATE_LOOKUP);

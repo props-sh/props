@@ -27,6 +27,13 @@ package sh.props.mongodb.testfixtures;
 
 import static java.lang.String.format;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.ReadConcern;
+import com.mongodb.ReadPreference;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import java.util.Base64;
 import java.util.Random;
 import org.bson.Document;
@@ -43,6 +50,34 @@ public class Fixtures {
         "mongodb://127.0.0.1:%d/?maxPoolSize=2&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000"
             + "&socketTimeoutMS=2000&w=majority&readPreference=primaryPreferred";
     return format(connString, port);
+  }
+
+  /**
+   * Initializes a {@link MongoClient} from the specified connection string.
+   *
+   * @param connectionString the MongoDB connection string
+   * @return an initialized connection to a valid cluster
+   */
+  static MongoClient initClient(String connectionString) {
+    return MongoClients.create(new ConnectionString(connectionString));
+  }
+
+  /**
+   * Initializes a {@link MongoCollection} using the provided parameters.
+   *
+   * @param connectionString the connection string which will be used to init the client
+   * @param database the database to connect to
+   * @param collection the collection to use
+   * @return an initialized object
+   */
+  public static MongoCollection<Document> getCollection(
+      String connectionString, String database, String collection) {
+    MongoClient mongoClient = initClient(connectionString);
+
+    MongoDatabase db = mongoClient.getDatabase(database);
+    return db.getCollection(collection)
+        .withReadPreference(ReadPreference.primaryPreferred())
+        .withReadConcern(ReadConcern.MAJORITY);
   }
 
   /**
