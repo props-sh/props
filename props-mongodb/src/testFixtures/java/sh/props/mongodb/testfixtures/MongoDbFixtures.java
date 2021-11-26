@@ -38,7 +38,8 @@ import java.util.Base64;
 import java.util.Random;
 import org.bson.Document;
 
-public class Fixtures {
+public class MongoDbFixtures {
+
   /**
    * Creates a connection string using any values provided via System Properties (<code>hosts</code>
    * ); defaults to <code>127.0.0.1:27017</code>.

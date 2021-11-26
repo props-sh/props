@@ -29,11 +29,11 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static sh.props.mongodb.MongoDbStore.WATCH_CHANGE_STREAM;
-import static sh.props.mongodb.testfixtures.Fixtures.connectionString;
-import static sh.props.mongodb.testfixtures.Fixtures.createFilter;
-import static sh.props.mongodb.testfixtures.Fixtures.createProp;
-import static sh.props.mongodb.testfixtures.Fixtures.generateRandomAlphanum;
-import static sh.props.mongodb.testfixtures.Fixtures.getCollection;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.connectionString;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.createFilter;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.createProp;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.generateRandomAlphanum;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.getCollection;
 
 import com.mongodb.client.MongoCollection;
 import java.time.Duration;

@@ -39,10 +39,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.client.model.changestream.FullDocument;
 import com.mongodb.client.model.changestream.OperationType;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -84,26 +85,98 @@ public class MongoDbStore extends Source {
    */
   public MongoDbStore(
       String connectionString, String dbName, String collectionName, boolean changeStreamEnabled) {
+    // ensure the client connection is valid
+    mongoClient = initClient(connectionString);
+
     this.connectionString = connectionString;
     this.dbName = dbName;
     this.collectionName = collectionName;
-    this.changeStreamEnabled = changeStreamEnabled;
 
-    mongoClient = initClient(connectionString);
-
-    // store the starting time, ensuring that we catch any operations that are not returned by the
-    // query
-    var changeStreamStartTime = new BsonTimestamp(Instant.now().toEpochMilli());
+    // change streams do not work without an oplog
+    Document replSetStatus = getReplSetStatus(mongoClient);
+    boolean clientSupportsChangeStreams =
+        isReplicaSet(replSetStatus) || isShardedCluster(mongoClient);
+    if (!clientSupportsChangeStreams && changeStreamEnabled) {
+      // print a warning in case the user assumes change streams will function
+      log.warning(
+          () ->
+              format(
+                  "%s did not connect to a replica set or cluster; change streams cannot be enabled",
+                  connectionString));
+    }
+    this.changeStreamEnabled = changeStreamEnabled && clientSupportsChangeStreams;
 
     store.putAll(loadAllKeyValues());
 
     if (changeStreamEnabled) {
       // schedule the async processing of the change stream
+      // starting at the cluster time reported by the initial status call
       @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
       Future<?> future =
           BackgroundExecutorFactory.create(1)
-              .submit(new ChangeStreamWatcher(changeStreamStartTime));
+              .submit(new ChangeStreamWatcher(getClusterTime(replSetStatus)));
     }
+  }
+
+  /**
+   * Retrieves the replica set status on the provided client.
+   *
+   * @param client the client connection
+   * @return the results of <code>rs.status()</code>
+   */
+  static Document getReplSetStatus(MongoClient client) {
+    return client.getDatabase("admin").runCommand(new Document("replSetGetStatus", 1));
+  }
+
+  /**
+   * Determines if the client is connected to a replica set.
+   *
+   * @param status the result of {@link #getReplSetStatus(MongoClient)}
+   * @return true if the provided status indicates a replicaset
+   */
+  static boolean isReplicaSet(Document status) {
+    // if the answer does not indicate success
+    if (status.getLong("ok") != 0L || status.containsKey("errmsg")) {
+      // stop here
+      return false;
+    }
+
+    // we should have at least one primary
+    List<Document> members = status.getList("members", Document.class);
+    return members.stream()
+        .map(m -> m.getString("stateStr"))
+        .anyMatch(s -> Objects.equals(s, "PRIMARY"));
+  }
+
+  /**
+   * Retrieves the current cluster time of the provided status operation.
+   *
+   * @param status the result of {@link #getReplSetStatus(MongoClient)}
+   * @return a {@link BsonTimestamp} indicating the cluster's time
+   */
+  static BsonTimestamp getClusterTime(Document status) {
+    Document data = status.get("$clusterTime", Document.class);
+    return data.get("clusterTime", BsonTimestamp.class);
+  }
+
+  /**
+   * Determines if the client is connected to a sharded cluster.
+   *
+   * @param client the client connection
+   * @return true if the connection points to a sharded cluster
+   */
+  static boolean isShardedCluster(MongoClient client) {
+    MongoDatabase configDB = client.getDatabase("config");
+    Document version = configDB.getCollection("version").find().limit(1).first();
+
+    // if we're not running this command against a MongoS
+    if (version == null) {
+      // stop here
+      return false;
+    }
+
+    // we should have at least one shard
+    return configDB.getCollection("shards").countDocuments() > 0;
   }
 
   /**
@@ -114,8 +187,9 @@ public class MongoDbStore extends Source {
    * @return an initialized object
    */
   protected MongoCollection<Document> getCollection() {
-    MongoDatabase db = mongoClient.getDatabase(dbName);
-    return db.getCollection(collectionName)
+    return mongoClient
+        .getDatabase(dbName)
+        .getCollection(collectionName)
         .withReadPreference(ReadPreference.primaryPreferred())
         .withReadConcern(ReadConcern.MAJORITY);
   }
