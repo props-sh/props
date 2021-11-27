@@ -180,7 +180,7 @@ public class Registry implements Notifiable {
       CompletableFuture.allOf(
               layers.stream()
                   .filter(Layer::loadOnDemand)
-                  .map(layer -> layer.registerKey(key))
+                  .map(layer -> layer.registerKey(key)) // TODO: needs to wait for retrieval
                   .toArray(CompletableFuture[]::new))
           .join();
     } catch (CompletionException e) {

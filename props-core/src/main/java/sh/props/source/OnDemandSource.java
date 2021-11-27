@@ -98,13 +98,10 @@ public abstract class OnDemandSource extends Source {
   @Override
   public CompletableFuture<String> registerKey(String key) {
     // register the key
-    if (!keys.add(key)) {
-      // if the key was already registered, return a completed future with the current value
-      return CompletableFuture.completedFuture(this.cache.get(key));
-    }
+    keys.add(key);
 
-    // otherwise, asynchronously retrieve the associated value and update the subscribers on success
-    return retrieveKeyAsync(key).whenComplete(updateSubscribersWhenKeyRetrieved());
+    // and retrieve its value, updating the underlying Layer on completion
+    return retrieveKeyAsync(key).thenApply(this::updateLayer);
   }
 
   /**
@@ -115,7 +112,8 @@ public abstract class OnDemandSource extends Source {
    *     if the value can be retrieved, it will also be cached
    */
   private CompletableFuture<String> retrieveKeyAsync(String key) {
-    return CompletableFuture.supplyAsync(() -> loadKey(key)).whenComplete(cacheKeyValueResult(key));
+    return CompletableFuture.supplyAsync(() -> loadKey(key))
+        .whenComplete(cacheKeyValueResult(key)); // TODO: might need to refactor to thenApply
   }
 
   /**
@@ -147,18 +145,14 @@ public abstract class OnDemandSource extends Source {
   }
 
   /**
-   * Calls {@link #updateSubscribers(Map)} and passes the {@link #cache}.
+   * Calls {@link #updateSubscribers(Map)} and passes the {@link #cache}, thus updating the
+   * associated {@link sh.props.Layer} with the most recent data.
    *
-   * @return a {@link BiConsumer} that only updates subscribers if an error was not observed
+   * @return the specified input, unchanged
    */
-  private BiConsumer<String, Throwable> updateSubscribersWhenKeyRetrieved() {
-    return (val, err) -> {
-      // if the retrieval completed successfully
-      if (err == null) {
-        // send an update to all underlying subscribers
-        updateSubscribers(Collections.unmodifiableMap(this.cache));
-      }
-    };
+  private String updateLayer(String value) {
+    updateSubscribers(Collections.unmodifiableMap(this.cache));
+    return value;
   }
 
   /**

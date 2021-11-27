@@ -34,6 +34,7 @@ import static sh.props.converter.Cast.asString;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import sh.props.RegistryBuilder;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestOnDemandSource;
@@ -41,14 +42,28 @@ import sh.props.textfixtures.TestOnDemandSource;
 @SuppressWarnings({"NullAway", "VariableDeclarationUsageDistance"})
 class LoadOnDemandTest extends AwaitAssertionTest {
 
-  @RepeatedTest(value = 1)
-  void loadPropOnDemand() {
+  @RepeatedTest(100)
+  void testLoadPropOnDemandSuperFast() {
+    internalOnDemandSourceTest(10L);
+  }
+
+  @RepeatedTest(20)
+  void testLoadPropOnDemandFast() {
+    internalOnDemandSourceTest(50L);
+  }
+
+  @Test
+  void testLoadPropOnDemandSlow() {
+    internalOnDemandSourceTest(500L);
+  }
+
+  private void internalOnDemandSourceTest(long sleepMillis) {
     // ARRANGE
     Map<String, String> data = new HashMap<>();
     data.put("key1", "value1");
     data.put("key2", "value2");
 
-    var source = new TestOnDemandSource(data, 50L);
+    var source = new TestOnDemandSource(data, sleepMillis);
 
     var registry = new RegistryBuilder(source).build();
     var prop = registry.builder(asString()).build("key1");
