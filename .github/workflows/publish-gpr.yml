@@ -32,6 +32,7 @@ jobs:
         run: ./gradlew build check test integrationTest
 
       - name: Store the build report
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: '[props-sh] build report'
