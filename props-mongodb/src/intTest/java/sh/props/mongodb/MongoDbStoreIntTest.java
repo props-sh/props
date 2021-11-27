@@ -27,18 +27,22 @@ package sh.props.mongodb;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static sh.props.mongodb.MongoDbStore.RELOAD_ON_DEMAND;
 import static sh.props.mongodb.MongoDbStore.WATCH_CHANGE_STREAM;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.connectionString;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.createFilter;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.createProp;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.generateRandomAlphanum;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.getCollection;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.initClient;
 
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import java.time.Duration;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +61,7 @@ class MongoDbStoreIntTest {
       new MongoDBContainer(DockerImageName.parse("mongo:5.0.4-focal")).withExposedPorts(27017);
 
   private static final String PROPS = "props";
+  private MongoClient mongoClient;
   private String connString;
   private String dbName;
   private MongoCollection<Document> collection;
@@ -77,14 +82,20 @@ class MongoDbStoreIntTest {
     // initialize the connection string and database name for this test
     connString = connectionString(mongoDBContainer.getMappedPort(27017));
     dbName = generateRandomAlphanum();
+    mongoClient = initClient(connString);
 
     // create database prop(s)
-    collection = getCollection(connString, dbName, PROPS);
+    collection = getCollection(mongoClient, dbName, PROPS);
     collection.insertOne(createProp("my.prop", "value"));
   }
 
+  @AfterEach
+  void tearDown() {
+    mongoClient.close();
+  }
+
   @Test
-  void mongoDbStore() {
+  void watchCollectionChangeStream() {
     // ARRANGE
     var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
 
@@ -95,13 +106,53 @@ class MongoDbStoreIntTest {
     await().until(() -> registry.get("my.prop"), equalTo("value"));
 
     collection.insertOne(createProp("my.prop2", "value"));
-    await().timeout(Duration.ofSeconds(30)).until(() -> registry.get("my.prop2"), equalTo("value"));
+    await().until(() -> registry.get("my.prop2"), equalTo("value"));
 
     collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
     await().until(() -> registry.get("my.prop2"), equalTo("value2"));
   }
 
-  // TODO(mihaibojin): LOAD_ALL_ON_DEMAND test
+  @Test
+  void reloadAllDataFromCollection() {
+    // ARRANGE
+    var source = new MongoDbStore(connString, dbName, PROPS, RELOAD_ON_DEMAND);
+
+    // ACT
+    Registry registry = new RegistryBuilder(source).build();
+
+    // ASSERT
+    await().until(() -> registry.get("my.prop"), equalTo("value"));
+
+    collection.insertOne(createProp("my.prop2", "value"));
+    assertThat(registry.get("my.prop2"), nullValue());
+
+    source.updateSubscribers();
+    assertThat(registry.get("my.prop2"), equalTo("value"));
+
+    collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
+    assertThat(registry.get("my.prop2"), equalTo("value"));
+
+    source.updateSubscribers();
+    assertThat(registry.get("my.prop2"), equalTo("value2"));
+  }
+
+  @Test
+  void backingCollectionDrop() {
+    // ARRANGE
+    var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
+    Registry registry = new RegistryBuilder(source).build();
+
+    // ACT
+    assertThat(registry.get("my.prop"), equalTo("value"));
+    mongoClient.getDatabase(dbName).drop();
+
+    // ASSERT
+    await().until(() -> registry.get("my.prop"), nullValue());
+
+    collection.insertOne(createProp("my.prop", "value"));
+    await().until(() -> registry.get("my.prop"), equalTo("value"));
+  }
+
   // TODO(mihaibojin): drop collection / stream restart test
   // TODO(mihaibojin): rename collection / stream restart test
   // TODO(mihaibojin): exceptionally exiting change stream / stream restart test

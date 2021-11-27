@@ -57,7 +57,7 @@ import sh.props.util.BackgroundExecutorFactory;
 public class MongoDbStore extends Source {
   public static final String ID = "mongodb";
   public static final boolean WATCH_CHANGE_STREAM = true;
-  public static final boolean LOAD_ALL_ON_DEMAND = false;
+  public static final boolean RELOAD_ON_DEMAND = false;
   private static final int BATCH_SIZE = 100;
   private static final Logger log = Logger.getLogger(MongoDbStore.class.getName());
   private static final Map<String, String> store = new ConcurrentHashMap<>();
@@ -104,11 +104,11 @@ public class MongoDbStore extends Source {
                   "%s did not connect to a replica set or cluster; change streams cannot be enabled",
                   connectionString));
     }
-    this.changeStreamEnabled = changeStreamEnabled && clientSupportsChangeStreams;
 
     store.putAll(loadAllKeyValues());
 
-    if (changeStreamEnabled) {
+    this.changeStreamEnabled = changeStreamEnabled && clientSupportsChangeStreams;
+    if (this.changeStreamEnabled) {
       // schedule the async processing of the change stream
       // starting at the cluster time reported by the initial status call
       @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
@@ -136,7 +136,7 @@ public class MongoDbStore extends Source {
    */
   static boolean isReplicaSet(Document status) {
     // if the answer does not indicate success
-    if (status.getLong("ok") != 0L || status.containsKey("errmsg")) {
+    if (status.getDouble("ok") != 1d || status.containsKey("errmsg")) {
       // stop here
       return false;
     }
@@ -267,7 +267,6 @@ public class MongoDbStore extends Source {
 
   /** Holds the field names used by this implementation. */
   private static class Schema {
-    public static final String CLUSTER_TIME = "clusterTime";
     private static final String ID = "_id";
     private static final String VALUE = "value";
   }
@@ -319,10 +318,14 @@ public class MongoDbStore extends Source {
       boolean shouldUpdate = false;
       int currentUpdates = 0;
 
+      // initialize last op time as current cluster time
+      BsonTimestamp lastOpClusterTime = getClusterTime(getReplSetStatus(mongoClient));
+      BsonDocument resumeToken = null;
+
       // iterate over the change stream and ensure the cursor is closed before returning
       try (MongoCursor<ChangeStreamDocument<Document>> cursor = changeStream.iterator()) {
         // stop processing if the current thread is interrupted (i.e., the app is shutting down)
-        while (!Thread.currentThread().isInterrupted()) {
+        while (cursor.available() > 0) {
           // ensure that we avoid calling updateSubscribers() for every change stream
           // event; we will, however, batch these events into no more than BATCH_SIZE per
           // subscriber update
@@ -336,27 +339,39 @@ public class MongoDbStore extends Source {
           }
 
           // wait for and retrieve the next change stream event
-          ChangeStreamDocument<Document> event = cursor.next();
+          ChangeStreamDocument<Document> event;
+          try {
+            event = cursor.next();
+          } catch (RuntimeException e) {
+            // if the stream fails for any reason, restart after the last successful op
+            return lastOpClusterTime;
+          }
+
+          final var op = event.getOperationType();
+          resumeToken = event.getResumeToken();
+
+          // check for invalidations
+          if (op == OperationType.INVALIDATE) {
+            // in the case of an invalidate operation, return the cluster time
+            // and restart the stream from that point
+            return event.getClusterTime();
+          }
+
+          // mark the last successful op's cluster time
+          lastOpClusterTime = event.getClusterTime();
 
           // retrieve the document's id
           BsonDocument key = event.getDocumentKey();
           if (key == null) {
             // nothing to do, not related to a single document
-            // e.g., this is a collection rename
+            // e.g., this is a collection rename or drop
             continue;
           }
 
           @SuppressWarnings("NullAway") // the document key should always have an _id field
           final var id = key.get(Schema.ID).asString().getValue();
-          final var op = event.getOperationType();
 
-          if (op == OperationType.INVALIDATE) {
-            // in the case of an invalidate operation, return the cluster time, so that we can
-            // restart the stream from that point
-            Document doc = getNonNullDocument(event, op, id);
-            return doc.get(Schema.CLUSTER_TIME, BsonTimestamp.class);
-
-          } else if (op == OperationType.INSERT
+          if (op == OperationType.INSERT
               || op == OperationType.UPDATE
               || op == OperationType.REPLACE) {
             Document doc = getNonNullDocument(event, op, id);
@@ -374,6 +389,12 @@ public class MongoDbStore extends Source {
             log.log(
                 Level.WARNING, () -> format("Nothing to do for op %s (_id=%s)", op.getValue(), id));
           }
+        }
+      } finally {
+        // if any updates were stored before exiting, ensure we send them to subscribers before
+        // returning
+        if (shouldUpdate) {
+          updateSubscribers();
         }
       }
 

@@ -33,7 +33,6 @@ import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import java.util.Base64;
 import java.util.Random;
 import org.bson.Document;
@@ -59,24 +58,23 @@ public class MongoDbFixtures {
    * @param connectionString the MongoDB connection string
    * @return an initialized connection to a valid cluster
    */
-  static MongoClient initClient(String connectionString) {
+  public static MongoClient initClient(String connectionString) {
     return MongoClients.create(new ConnectionString(connectionString));
   }
 
   /**
    * Initializes a {@link MongoCollection} using the provided parameters.
    *
-   * @param connectionString the connection string which will be used to init the client
+   * @param client the client connection
    * @param database the database to connect to
    * @param collection the collection to use
    * @return an initialized object
    */
   public static MongoCollection<Document> getCollection(
-      String connectionString, String database, String collection) {
-    MongoClient mongoClient = initClient(connectionString);
-
-    MongoDatabase db = mongoClient.getDatabase(database);
-    return db.getCollection(collection)
+      MongoClient client, String database, String collection) {
+    return client
+        .getDatabase(database)
+        .getCollection(collection)
         .withReadPreference(ReadPreference.primaryPreferred())
         .withReadConcern(ReadConcern.MAJORITY);
   }
