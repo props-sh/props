@@ -35,6 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Prop;
 import sh.props.source.Source;
 
 public class Layer implements Consumer<Map<String, String>> {
@@ -107,6 +108,16 @@ public class Layer implements Consumer<Map<String, String>> {
   @Nullable
   public String get(String key) {
     return this.store.get(key);
+  }
+
+  /**
+   * Delegates to the underlying source's {@link Source#bindProp(String)}, notifying it that the
+   * specified key was bound by a {@link Registry}.
+   *
+   * @param prop the Prop to bind
+   */
+  protected <T> void bindProp(Prop<T> prop) {
+    this.source.bindProp(prop.key());
   }
 
   public int priority() {

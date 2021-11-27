@@ -92,6 +92,10 @@ public class Registry implements Notifiable {
    * @throws IllegalArgumentException if a previously bound prop is passed
    */
   public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
+    // notify all layers that the specified prop was bound
+    layers.forEach(layer -> layer.bindProp(prop));
+
+    // and compute the prop's initial value
     this.notifications.compute(
         prop.key(),
         (s, current) -> {

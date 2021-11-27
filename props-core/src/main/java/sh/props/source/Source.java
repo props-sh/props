@@ -98,6 +98,8 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   @Override
   public abstract Map<String, String> get();
 
+  public abstract void bindProp(String key);
+
   /**
    * Registers a new downstream subscriber.
    *
