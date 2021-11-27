@@ -37,7 +37,10 @@ import static sh.props.mongodb.testfixtures.MongoDbFixtures.createProp;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.generateRandomAlphanum;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.getCollection;
 import static sh.props.mongodb.testfixtures.MongoDbFixtures.initClient;
+import static sh.props.mongodb.testfixtures.MongoDbFixtures.replicaSetPrimaryStepDown;
 
+import com.mongodb.MongoNamespace;
+import com.mongodb.MongoNotPrimaryException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
@@ -46,6 +49,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -137,7 +141,7 @@ class MongoDbStoreIntTest {
   }
 
   @Test
-  void backingCollectionDrop() {
+  void dropBackingDatabase() {
     // ARRANGE
     var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
     Registry registry = new RegistryBuilder(source).build();
@@ -145,16 +149,68 @@ class MongoDbStoreIntTest {
     // ACT
     assertThat(registry.get("my.prop"), equalTo("value"));
     mongoClient.getDatabase(dbName).drop();
+    collection.insertOne(createProp("my.prop", "value2"));
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), nullValue());
-
-    collection.insertOne(createProp("my.prop", "value"));
-    await().until(() -> registry.get("my.prop"), equalTo("value"));
+    await().until(() -> registry.get("my.prop"), equalTo("value2"));
   }
 
-  // TODO(mihaibojin): drop collection / stream restart test
-  // TODO(mihaibojin): rename collection / stream restart test
-  // TODO(mihaibojin): exceptionally exiting change stream / stream restart test
-  // TODO(mihaibojin): primary failover / stream restart test
+  @Test
+  void dropBackingCollection() {
+    // ARRANGE
+    var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
+    Registry registry = new RegistryBuilder(source).build();
+
+    // ACT
+    assertThat(registry.get("my.prop"), equalTo("value"));
+    mongoClient.getDatabase(dbName).getCollection(PROPS).drop();
+    collection.insertOne(createProp("my.prop", "value2"));
+
+    // ASSERT
+    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+  }
+
+  @Test
+  void renameBackingCollection() {
+    // ARRANGE
+    var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
+    Registry registry = new RegistryBuilder(source).build();
+
+    // ACT
+    assertThat(registry.get("my.prop"), equalTo("value"));
+    mongoClient
+        .getDatabase(dbName)
+        .getCollection(PROPS)
+        .renameCollection(new MongoNamespace(dbName, PROPS + "_renamed"));
+    collection.insertOne(createProp("my.prop", "value2"));
+
+    // ASSERT
+    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+  }
+
+  @Test
+  @Timeout(value = 5)
+  void replicaSetStepDown() throws Exception {
+    // ARRANGE
+    var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
+    Registry registry = new RegistryBuilder(source).build();
+
+    // ACT
+    assertThat(registry.get("my.prop"), equalTo("value"));
+    replicaSetPrimaryStepDown(mongoClient, 1);
+
+    boolean inserted = false;
+    while (!inserted) {
+      try {
+        collection.replaceOne(createFilter("my.prop"), createProp("my.prop", "value2"));
+        inserted = true;
+      } catch (MongoNotPrimaryException e) {
+        // while the primary is not elected
+        Thread.sleep(500);
+      }
+    }
+
+    // ASSERT
+    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+  }
 }

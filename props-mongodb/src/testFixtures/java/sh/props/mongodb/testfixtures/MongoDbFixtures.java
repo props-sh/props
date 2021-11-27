@@ -80,6 +80,20 @@ public class MongoDbFixtures {
   }
 
   /**
+   * Forces a PRIMARY step down on the provided client.
+   *
+   * @param client the client connection
+   * @param seconds the number of seconds while the current primary is ineligible for becoming
+   *     primary
+   * @return the results of <code>rs.stepDown()</code>
+   */
+  public static Document replicaSetPrimaryStepDown(MongoClient client, int seconds) {
+    Document stepDown = new Document("replSetStepDown", seconds);
+    stepDown.put("force", true);
+    return client.getDatabase("admin").runCommand(stepDown);
+  }
+
+  /**
    * Simple method that generates a short random alphanumeric string.
    *
    * @return a generated string

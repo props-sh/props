@@ -45,12 +45,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.util.BackgroundExecutorFactory;
 
@@ -111,10 +113,17 @@ public class MongoDbStore extends Source {
     if (this.changeStreamEnabled) {
       // schedule the async processing of the change stream
       // starting at the cluster time reported by the initial status call
+      var watcher = new ChangeStreamWatcher();
       @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
-      Future<?> future =
-          BackgroundExecutorFactory.create(1)
-              .submit(new ChangeStreamWatcher(getClusterTime(replSetStatus)));
+      Future<?> future = BackgroundExecutorFactory.create(1).submit(watcher);
+
+      try {
+        // ensure the stream watcher has started before returning
+        watcher.hasStarted.await();
+      } catch (InterruptedException e) {
+        // interrupted, the app is probably shutting down
+        // nothing to do
+      }
     }
   }
 
@@ -273,32 +282,25 @@ public class MongoDbStore extends Source {
 
   /** Processes change stream events. */
   private class ChangeStreamWatcher implements Runnable {
-
-    private BsonTimestamp startAtOperationTime;
-
-    /**
-     * Starts a change stream watcher, from the specified point in time.
-     *
-     * @param changeStreamStartTime the epoch time from which to start observing events
-     */
-    public ChangeStreamWatcher(BsonTimestamp changeStreamStartTime) {
-      startAtOperationTime = changeStreamStartTime;
-    }
+    private final CountDownLatch hasStarted = new CountDownLatch(1);
 
     @Override
     public void run() {
+      BsonDocument resumeToken = null;
+
       // follow the change stream until the app is shut down
       while (!Thread.currentThread().isInterrupted()) {
         try {
           // open a change stream to capture any changes on the provided collection
-          var changeStream =
-              getCollection()
-                  .watch()
-                  .startAtOperationTime(startAtOperationTime)
-                  .fullDocument(FullDocument.UPDATE_LOOKUP);
+          var changeStream = getCollection().watch().fullDocument(FullDocument.UPDATE_LOOKUP);
 
-          // if a valid BsonTimestamp is returned, ensure we restart the stream after that time
-          startAtOperationTime = followChangeStream(changeStream);
+          // if we're aware of a resume token
+          if (resumeToken != null) {
+            // (re)start the stream after that event
+            changeStream = changeStream.startAfter(resumeToken);
+          }
+
+          resumeToken = followChangeStream(changeStream);
         } catch (Exception e) {
           log.log(Level.WARNING, e, () -> "Unexpected error while processing a change stream");
         }
@@ -314,18 +316,19 @@ public class MongoDbStore extends Source {
      *     event would have occurred; if the app is shutting down, this method will return {@link
      *     Long#MAX_VALUE}
      */
-    private BsonTimestamp followChangeStream(ChangeStreamIterable<Document> changeStream) {
+    @Nullable
+    private BsonDocument followChangeStream(ChangeStreamIterable<Document> changeStream) {
       boolean shouldUpdate = false;
       int currentUpdates = 0;
-
-      // initialize last op time as current cluster time
-      BsonTimestamp lastOpClusterTime = getClusterTime(getReplSetStatus(mongoClient));
       BsonDocument resumeToken = null;
 
       // iterate over the change stream and ensure the cursor is closed before returning
       try (MongoCursor<ChangeStreamDocument<Document>> cursor = changeStream.iterator()) {
+        // count down the latch, since we have initialized a cursor to the change stream
+        hasStarted.countDown();
+
         // stop processing if the current thread is interrupted (i.e., the app is shutting down)
-        while (cursor.available() > 0) {
+        while (true) {
           // ensure that we avoid calling updateSubscribers() for every change stream
           // event; we will, however, batch these events into no more than BATCH_SIZE per
           // subscriber update
@@ -343,8 +346,8 @@ public class MongoDbStore extends Source {
           try {
             event = cursor.next();
           } catch (RuntimeException e) {
-            // if the stream fails for any reason, restart after the last successful op
-            return lastOpClusterTime;
+            // if the stream fails for any reason, return the resume token, which may be null
+            return resumeToken;
           }
 
           final var op = event.getOperationType();
@@ -352,13 +355,10 @@ public class MongoDbStore extends Source {
 
           // check for invalidations
           if (op == OperationType.INVALIDATE) {
-            // in the case of an invalidate operation, return the cluster time
-            // and restart the stream from that point
-            return event.getClusterTime();
+            // in the case of an invalidate operation,
+            // return the resumeToken, to restart the stream
+            return resumeToken;
           }
-
-          // mark the last successful op's cluster time
-          lastOpClusterTime = event.getClusterTime();
 
           // retrieve the document's id
           BsonDocument key = event.getDocumentKey();
@@ -397,11 +397,6 @@ public class MongoDbStore extends Source {
           updateSubscribers();
         }
       }
-
-      // if we have reached this point, we are most likely stopping the app (thread was interrupted)
-      // return an invalid value to prevent receiving any events, in case the calling code
-      // incorrectly continues processing
-      return new BsonTimestamp(Long.MAX_VALUE);
     }
   }
 }
