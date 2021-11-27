@@ -111,7 +111,7 @@ public class Registry implements Notifiable {
     // but do not wait for the key to be loaded
     for (Layer layer : layers) {
       @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
-      var future = layer.loadKey(key);
+      var future = layer.registerKey(key);
     }
 
     // and compute the prop's initial value
@@ -180,7 +180,7 @@ public class Registry implements Notifiable {
       CompletableFuture.allOf(
               layers.stream()
                   .filter(Layer::loadOnDemand)
-                  .map(layer -> layer.loadKey(key))
+                  .map(layer -> layer.registerKey(key))
                   .toArray(CompletableFuture[]::new))
           .join();
     } catch (CompletionException e) {

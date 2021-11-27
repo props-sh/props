@@ -33,8 +33,8 @@ import java.util.logging.Logger;
 import sh.props.source.Source;
 
 /**
- * This implementation triggers a {@link Source#updateSubscribers()} operation and ensures a single
- * concurrent execution, logging any encountered exceptions.
+ * This implementation triggers a {@link Source#refresh()} operation and ensures a single concurrent
+ * execution, logging any encountered exceptions.
  */
 class Trigger implements Runnable {
 
@@ -65,7 +65,7 @@ class Trigger implements Runnable {
     }
 
     try {
-      this.source.updateSubscribers();
+      this.source.refresh();
 
       long durationNanos = System.nanoTime() - t0;
       log.log(Level.FINE, () -> format("Refreshed %s (%d ns)", this.source, durationNanos));

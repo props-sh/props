@@ -63,7 +63,7 @@ public interface LoadOnDemand {
    * @param key the key of the Prop which was recently bound
    * @return a {@link CompletableFuture} that completes when the value is loaded
    */
-  default CompletableFuture<?> loadKey(String key) {
-    return (CompletableFuture<?>) CompletableFuture.completedStage(null);
+  default CompletableFuture<String> registerKey(String key) {
+    return CompletableFuture.completedFuture(null);
   }
 }

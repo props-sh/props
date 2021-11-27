@@ -51,7 +51,7 @@ class RegistryTest extends AwaitAssertionTest {
 
     // ACT
     source.put("key", "value2");
-    source.updateSubscribers();
+    source.refresh();
 
     // ASSERT
     assertThat(registry.get("key", Cast.asString()), equalTo("value2"));
@@ -112,7 +112,7 @@ class RegistryTest extends AwaitAssertionTest {
 
     // ACT
     source.put("key", "2");
-    source.updateSubscribers();
+    source.refresh();
 
     // ASSERT
     await().until(prop::get, equalTo(2));

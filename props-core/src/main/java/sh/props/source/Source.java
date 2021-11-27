@@ -110,8 +110,17 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
 
   /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
   @Override
-  public void updateSubscribers() {
+  public void refresh() {
     Map<String, String> data = Collections.unmodifiableMap(this.get());
+    updateSubscribers(data);
+  }
+
+  /**
+   * Sends the provided <code>data</code> to all registered subscribers.
+   *
+   * @param data the data to send to subscribers
+   */
+  protected void updateSubscribers(Map<String, String> data) {
     for (Consumer<Map<String, String>> subscriber : this.subscribers) {
       subscriber.accept(data);
     }

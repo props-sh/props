@@ -237,7 +237,7 @@ public class AwsSecretsManager extends Source {
   /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
   // TODO: look at implementing this method disconnected from this.get()
   @Override
-  public void updateSubscribers() {
+  public void refresh() {
     Map<String, String> data = Collections.unmodifiableMap(this.get());
     for (Consumer<Map<String, String>> subscriber : this.subscribers) {
       subscriber.accept(data);

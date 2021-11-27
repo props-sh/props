@@ -34,14 +34,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.source.LoadOnDemand;
 import sh.props.source.Source;
 
+/**
+ * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the
+ * effective value for each requested key.
+ */
 public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
-
-  private static final Logger log = Logger.getLogger(Layer.class.getName());
 
   private final Source source;
   private final Registry registry;
@@ -82,7 +83,7 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
     }
 
     // otherwise, update current subscribers (e.g. the current layer)
-    this.source.updateSubscribers();
+    this.source.refresh();
 
     return this;
   }
@@ -138,15 +139,15 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   }
 
   /**
-   * Delegates to the underlying source's {@link Source#loadKey(String)}, notifying it that the
+   * Delegates to the underlying source's {@link Source#registerKey(String)}, notifying it that the
    * specified key was bound by a {@link Registry}.
    *
    * @param key the key pointing to the Prop that was recently bound
    * @return the underlying source's {@link CompletableFuture}
    */
   @Override
-  public CompletableFuture<?> loadKey(String key) {
-    return this.source.loadKey(key);
+  public CompletableFuture<String> registerKey(String key) {
+    return this.source.registerKey(key);
   }
 
   public int priority() {
@@ -160,10 +161,10 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   @Override
   public void accept(Map<String, String> data) {
     // disallow more than one concurrent update from taking place
-    if (!this.lock.tryLock()) {
-      log.warning(() -> "Could not update layer while another update is taking place");
-    }
-
+    // TODO(mihaibojin): this has the potential to create a lot of contention, especially if using
+    //                   `OnDemandSource`s which rely on CompletableFutures to process updates, upon
+    //                   a new key registration (LoadOnDemand#registerKey)
+    this.lock.lock();
     try {
       // iterate over the current values
       var it = this.store.entrySet().iterator();
