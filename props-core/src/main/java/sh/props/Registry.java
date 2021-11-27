@@ -25,12 +25,18 @@
 
 package sh.props;
 
+import static java.lang.String.format;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.converter.Cast;
 import sh.props.converter.Converter;
@@ -38,6 +44,7 @@ import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 
 public class Registry implements Notifiable {
+  private static final Logger log = Logger.getLogger(Registry.class.getName());
 
   final Datastore store;
   final List<Layer> layers = new ArrayList<>();
@@ -73,6 +80,12 @@ public class Registry implements Notifiable {
    * Binds the specified {@link AbstractProp} to this registry. If the registry already contains a
    * value for this prop, it will call {@link AbstractProp#setValue(String)} to set it.
    *
+   * <p>If any of the configured {@link sh.props.source.Source}s override {@link
+   * sh.props.source.LoadOnDemand} and signal that they support on-demand loading of keys, their
+   * corresponding {@link sh.props.source.LoadOnDemand#loadOnDemand()} method will be called, but
+   * the implementation will not wait for a value to be retrieved. The logic of dealing with the
+   * asynchronous nature of receiving each value is left to the implementing Source.
+   *
    * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
    * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
    * multiple props with the same {@link Prop#key()} to be bound to the same Registry.
@@ -92,12 +105,18 @@ public class Registry implements Notifiable {
    * @throws IllegalArgumentException if a previously bound prop is passed
    */
   public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
+    final String key = prop.key();
+
     // notify all layers that the specified prop was bound
-    layers.forEach(layer -> layer.bindProp(prop));
+    // but do not wait for the key to be loaded
+    for (Layer layer : layers) {
+      @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
+      var future = layer.loadKey(key);
+    }
 
     // and compute the prop's initial value
     this.notifications.compute(
-        prop.key(),
+        key,
         (s, current) -> {
           // initialize the list if not already present
           if (current == null) {
@@ -111,7 +130,7 @@ public class Registry implements Notifiable {
           }
 
           // after the prop was bound, attempt to set its value from the registry
-          Pair<String, Layer> vl = this.store.get(prop.key());
+          Pair<String, Layer> vl = this.store.get(key);
           if (vl != null) {
             // we currently have a value; set it
             prop.setValue(vl.first);
@@ -155,6 +174,25 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
+    // notify layers that a key is being retrieved
+    try {
+      // and wait until the request is processed by all sources
+      CompletableFuture.allOf(
+              layers.stream()
+                  .filter(Layer::loadOnDemand)
+                  .map(layer -> layer.loadKey(key))
+                  .toArray(CompletableFuture[]::new))
+          .join();
+    } catch (CompletionException e) {
+      log.log(
+          Level.WARNING,
+          e,
+          () ->
+              format(
+                  "At least one layer failed to retrieve a value for %s; the returned value may be incorrect",
+                  key));
+    }
+
     // finds the value and owning layer
     Pair<String, Layer> valueLayer = this.store.get(key);
 

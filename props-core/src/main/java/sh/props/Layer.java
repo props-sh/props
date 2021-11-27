@@ -30,15 +30,16 @@ import static java.lang.String.format;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Prop;
+import sh.props.source.LoadOnDemand;
 import sh.props.source.Source;
 
-public class Layer implements Consumer<Map<String, String>> {
+public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
 
   private static final Logger log = Logger.getLogger(Layer.class.getName());
 
@@ -86,11 +87,21 @@ public class Layer implements Consumer<Map<String, String>> {
     return this;
   }
 
+  /**
+   * References the previous layer in logical order.
+   *
+   * @return a valid object, or null if the current layer is the last one
+   */
   @Nullable
   public Layer prev() {
     return this.prev;
   }
 
+  /**
+   * References the next layer in logical order.
+   *
+   * @return a valid object, or null if the current layer is the last one
+   */
   @Nullable
   public Layer next() {
     return this.next;
@@ -105,19 +116,37 @@ public class Layer implements Consumer<Map<String, String>> {
     return this.source.id();
   }
 
+  /**
+   * Retrieves the current value of the Prop identified by the specified key.
+   *
+   * @param key the key to retrieve
+   * @return a value if one exists, or <code>null</code>
+   */
   @Nullable
   public String get(String key) {
     return this.store.get(key);
   }
 
   /**
-   * Delegates to the underlying source's {@link Source#bindProp(String)}, notifying it that the
+   * Delegates to the underlying source's {@link Source#loadOnDemand()}.
+   *
+   * @return true if the {@link Source} can load values on-demand, false if it loads them in bulk.
+   */
+  @Override
+  public boolean loadOnDemand() {
+    return source.loadOnDemand();
+  }
+
+  /**
+   * Delegates to the underlying source's {@link Source#loadKey(String)}, notifying it that the
    * specified key was bound by a {@link Registry}.
    *
-   * @param prop the Prop to bind
+   * @param key the key pointing to the Prop that was recently bound
+   * @return the underlying source's {@link CompletableFuture}
    */
-  protected <T> void bindProp(Prop<T> prop) {
-    this.source.bindProp(prop.key());
+  @Override
+  public CompletableFuture<?> loadKey(String key) {
+    return this.source.loadKey(key);
   }
 
   public int priority() {

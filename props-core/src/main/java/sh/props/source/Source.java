@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * <p>This functionality is useful for triggering a single {@link Source#get()}, which can be an
  * expensive operation, and notifying multiple layers.
  */
-public abstract class Source implements Supplier<Map<String, String>>, Subscribable {
+public abstract class Source implements Supplier<Map<String, String>>, Subscribable, LoadOnDemand {
 
   protected final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
 
@@ -97,8 +97,6 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
    */
   @Override
   public abstract Map<String, String> get();
-
-  public abstract void bindProp(String key);
 
   /**
    * Registers a new downstream subscriber.
