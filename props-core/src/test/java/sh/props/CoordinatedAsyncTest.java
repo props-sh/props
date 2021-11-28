@@ -45,7 +45,7 @@ import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 public class CoordinatedAsyncTest extends AwaitAssertionTest {
-  public static final int HOW_MANY_TIMES = 1000;
+  public static final int HOW_MANY_TIMES = 100;
 
   @RepeatedTest(value = HOW_MANY_TIMES)
   void synchronizedPairOfProps() {

@@ -130,13 +130,13 @@ class MongoDbStoreIntTest {
     collection.insertOne(createProp("my.prop2", "value"));
     assertThat(registry.get("my.prop2"), nullValue());
 
-    source.updateSubscribers();
+    source.refresh();
     assertThat(registry.get("my.prop2"), equalTo("value"));
 
     collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
     assertThat(registry.get("my.prop2"), equalTo("value"));
 
-    source.updateSubscribers();
+    source.refresh();
     assertThat(registry.get("my.prop2"), equalTo("value2"));
   }
 

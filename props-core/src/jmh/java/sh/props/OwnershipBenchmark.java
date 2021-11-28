@@ -52,11 +52,11 @@ public class OwnershipBenchmark {
   public static void setUnset(ExecutionPlan plan) {
     // set
     plan.source1.put("key", "v1");
-    plan.source1.updateSubscribers();
+    plan.source1.refresh();
 
     // unset
     plan.source1.remove("key");
-    plan.source1.updateSubscribers();
+    plan.source1.refresh();
   }
 
   @Benchmark
@@ -68,19 +68,19 @@ public class OwnershipBenchmark {
     plan.source1.remove("key");
 
     // update
-    plan.source1.updateSubscribers();
+    plan.source1.refresh();
   }
 
   @Benchmark
   public static void set(ExecutionPlan plan) {
     // set
     plan.source1.put("key", "v1");
-    plan.source1.updateSubscribers();
+    plan.source1.refresh();
   }
 
   @Benchmark
   public static void noopUpdate(ExecutionPlan plan) {
-    plan.source1.updateSubscribers();
+    plan.source1.refresh();
   }
 
   @Benchmark
@@ -108,7 +108,7 @@ public class OwnershipBenchmark {
       // set initial values
       this.source1.put("key", "v1");
       this.source1.put("preset", "preset-value");
-      this.source1.updateSubscribers();
+      this.source1.refresh();
 
       // control
       this.control = new HashMap<>();

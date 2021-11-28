@@ -45,7 +45,7 @@ public class InMemory extends Source {
    * Class constructor that defaults to not notifying subscribers on {@link #put(String, String)}s.
    *
    * <p>When you want to make a series of changes final, you will have to manually call {@link
-   * #updateSubscribers()}.
+   * #refresh()}.
    */
   public InMemory() {
     this(UPDATE_REGISTRY_MANUALLY);
@@ -54,7 +54,7 @@ public class InMemory extends Source {
   /**
    * Class constructor.
    *
-   * @param updateOnEveryWrite if true, {@link #updateSubscribers()} will be called on every put.
+   * @param updateOnEveryWrite if true, {@link #refresh()} will be called on every put.
    */
   public InMemory(boolean updateOnEveryWrite) {
     this.updateOnEveryWrite = updateOnEveryWrite;
@@ -104,7 +104,7 @@ public class InMemory extends Source {
     } finally {
       if (this.updateOnEveryWrite) {
         // notify subscribers automatically on every update
-        this.updateSubscribers();
+        this.refresh();
       }
     }
   }

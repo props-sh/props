@@ -46,9 +46,9 @@ import java.util.stream.Collectors;
  * <p>This functionality is useful for triggering a single {@link Source#get()}, which can be an
  * expensive operation, and notifying multiple layers.
  */
-public abstract class Source implements Supplier<Map<String, String>>, Subscribable {
+public abstract class Source implements Supplier<Map<String, String>>, Subscribable, LoadOnDemand {
 
-  protected final List<Consumer<Map<String, String>>> subscribers = new ArrayList<>();
+  protected final List<Consumer<Map<String, String>>> layers = new ArrayList<>();
 
   /**
    * Loads a {@link Properties} object from the passed {@link InputStream} and returns a {@link Map}
@@ -99,20 +99,28 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   public abstract Map<String, String> get();
 
   /**
-   * Registers a new downstream subscriber.
+   * Registers a {@link sh.props.Layer}, allowing the Source to notify it on any updates.
    *
-   * @param subscriber a subscriber that accepts any updates this source may be sending
+   * @param subscriber a subscribing Layer that accepts any updates this source may be sending
    */
   @Override
   public void register(Consumer<Map<String, String>> subscriber) {
-    this.subscribers.add(subscriber);
+    this.layers.add(subscriber);
   }
 
-  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
+  /** Triggers a {@link #get()} call and sends all values to all subscribing layers. */
   @Override
-  public void updateSubscribers() {
-    Map<String, String> data = Collections.unmodifiableMap(this.get());
-    for (Consumer<Map<String, String>> subscriber : this.subscribers) {
+  public void refresh() {
+    sendLayerUpdate(Collections.unmodifiableMap(this.get()));
+  }
+
+  /**
+   * Sends the provided <code>data</code> to the wrapping layer.
+   *
+   * @param data the data to send to the Layer
+   */
+  protected void sendLayerUpdate(Map<String, String> data) {
+    for (Consumer<Map<String, String>> subscriber : this.layers) {
       subscriber.accept(data);
     }
   }

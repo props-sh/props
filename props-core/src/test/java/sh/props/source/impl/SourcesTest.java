@@ -120,7 +120,7 @@ class SourcesTest extends AwaitAssertionTest {
     assertThat(registry.get("key"), nullValue());
 
     // ASSERT
-    source.updateSubscribers();
+    source.refresh();
     await().until(prop::get, equalTo(true));
   }
 

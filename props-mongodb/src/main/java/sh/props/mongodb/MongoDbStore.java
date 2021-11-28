@@ -338,7 +338,7 @@ public class MongoDbStore extends Source {
             currentUpdates = 0;
 
             // and process the updates
-            updateSubscribers();
+            refresh();
           }
 
           // wait for and retrieve the next change stream event
@@ -394,7 +394,7 @@ public class MongoDbStore extends Source {
         // if any updates were stored before exiting, ensure we send them to subscribers before
         // returning
         if (shouldUpdate) {
-          updateSubscribers();
+          refresh();
         }
       }
     }

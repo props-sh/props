@@ -68,6 +68,7 @@ allprojects {
         testImplementation(rootProject.libs.org.awaitility.awaitility)
 
         testRuntimeOnly(rootProject.libs.junit.jupiter.engine)
+        testCompileOnly(rootProject.libs.junit.jupiter.params)
     }
 
     // Test Fixtures

@@ -23,20 +23,39 @@
  *
  */
 
-package sh.props.source;
+package sh.props.textfixtures;
 
+import java.util.Collections;
 import java.util.Map;
-import java.util.function.Consumer;
+import sh.props.annotations.Nullable;
+import sh.props.source.OnDemandSource;
 
-public interface Subscribable {
+public class TestOnDemandSource extends OnDemandSource {
 
-  /**
-   * Registers a new downstream subscriber.
-   *
-   * @param subscriber a subscriber that accepts any updates this source may be sending
-   */
-  void register(Consumer<Map<String, String>> subscriber);
+  private final Map<String, String> backingData;
+  private final long sleepMillis;
 
-  /** Refreshes the implementation's data and sends it to all registered subscribers. */
-  void refresh();
+  public TestOnDemandSource(Map<String, String> backingData, long sleepMillis) {
+    this.backingData = Collections.unmodifiableMap(backingData);
+    this.sleepMillis = sleepMillis;
+  }
+
+  @Nullable
+  @Override
+  protected String loadKey(String key) {
+    try {
+      // simulate a real-world scenario
+      Thread.sleep(sleepMillis);
+    } catch (InterruptedException e) {
+      // nothing to do
+    }
+
+    // retrieve the key
+    return backingData.get(key);
+  }
+
+  @Override
+  public String id() {
+    return "ON_DEMAND";
+  }
 }
