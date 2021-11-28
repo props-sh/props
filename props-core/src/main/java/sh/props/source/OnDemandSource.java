@@ -101,7 +101,28 @@ public abstract class OnDemandSource extends Source {
     keys.add(key);
 
     // and retrieve its value, updating the underlying Layer on completion
-    return retrieveKeyAsync(key).thenApply(this::updateLayer);
+    return retrieveKeyAsync(key)
+        .whenComplete(
+            (ignored, err) -> {
+              // if the value could not be retrieved
+              if (err != null) {
+                // log an error
+                logKeyUpdateErr(key, err);
+                return;
+              }
+
+              sendLayerUpdate(Collections.unmodifiableMap(this.cache));
+            });
+  }
+
+  /**
+   * Helper method that logs errors seen during key updates.
+   *
+   * @param key the referenced key
+   * @param err the encountered error
+   */
+  private void logKeyUpdateErr(String key, Throwable err) {
+    log.log(Level.WARNING, err, () -> format("Unexpected error retrieving %s from %s", key, this));
   }
 
   /**
@@ -112,8 +133,7 @@ public abstract class OnDemandSource extends Source {
    *     if the value can be retrieved, it will also be cached
    */
   private CompletableFuture<String> retrieveKeyAsync(String key) {
-    return CompletableFuture.supplyAsync(() -> loadKey(key))
-        .whenComplete(cacheKeyValueResult(key)); // TODO: might need to refactor to thenApply
+    return CompletableFuture.supplyAsync(() -> loadKey(key)).whenComplete(cacheKeyValueResult(key));
   }
 
   /**
@@ -127,9 +147,7 @@ public abstract class OnDemandSource extends Source {
     return (value, err) -> {
       // if the value could not be retrieved
       if (err != null) {
-        // log an error
-        log.log(
-            Level.WARNING, err, () -> format("Unexpected error retrieving %s from %s", key, this));
+        logKeyUpdateErr(key, err);
         return;
       }
 
@@ -142,17 +160,6 @@ public abstract class OnDemandSource extends Source {
         cache.remove(key);
       }
     };
-  }
-
-  /**
-   * Calls {@link #updateSubscribers(Map)} and passes the {@link #cache}, thus updating the
-   * associated {@link sh.props.Layer} with the most recent data.
-   *
-   * @return the specified input, unchanged
-   */
-  private String updateLayer(String value) {
-    updateSubscribers(Collections.unmodifiableMap(this.cache));
-    return value;
   }
 
   /**

@@ -58,10 +58,10 @@ public interface LoadOnDemand {
    * value was loaded from the underlying store.
    *
    * <p>To avoid having to do a full refresh, classes which override this method should load the
-   * value that corresponds to the given key and call {@link Source#updateSubscribers(Map)},
-   * providing the most up-to-date map of keys and values. If the implementation does not allow for
-   * keeping a cache, this method should simply register the key and call {@link Source#refresh()},
-   * thus reloading all registered keys.
+   * value that corresponds to the given key and call {@link Source#sendLayerUpdate(Map)}, providing
+   * the most up-to-date map of keys and values. If the implementation does not allow for keeping a
+   * cache, this method should simply register the key and call {@link Source#refresh()}, thus
+   * reloading all registered keys.
    *
    * <p>This method is not responsible for refreshing or reloading the value for the given key, it
    * merely signals the implementing {@link Source} that it might need to retrieve a value for the

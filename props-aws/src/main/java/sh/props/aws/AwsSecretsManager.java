@@ -32,12 +32,11 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -173,7 +172,7 @@ public class AwsSecretsManager extends Source {
   @Override
   public Map<String, String> get() {
     var definedSecrets = listSecrets(clients.get(0));
-    scheduleSecretsRetrieval(definedSecrets);
+    retrieveSecrets(definedSecrets);
     return secrets;
   }
 
@@ -183,7 +182,7 @@ public class AwsSecretsManager extends Source {
    *
    * @param allSecretIds the list of secret ids to retrieve
    */
-  void scheduleSecretsRetrieval(List<String> allSecretIds) {
+  void retrieveSecrets(List<String> allSecretIds) {
     List<CompletableFuture<GetSecretValueResponse>> futures = new ArrayList<>(allSecretIds.size());
 
     for (int i = 0; i < allSecretIds.size(); i++) {
@@ -223,24 +222,11 @@ public class AwsSecretsManager extends Source {
       futures.add(future);
     }
 
-    // for now, wait for all secrets to be retrieved before returning
-    // TODO: need a smarter mechanism to handle partial updates of the source
-    for (var future : futures) {
-      try {
-        future.join();
-      } catch (Exception e) {
-        log.log(Level.WARNING, e, () -> "Unexpected exception while retrieving a secret");
-      }
-    }
-  }
-
-  /** Triggers a {@link #get()} call and sends all values to the registered downstream consumers. */
-  // TODO: look at implementing this method disconnected from this.get()
-  @Override
-  public void refresh() {
-    Map<String, String> data = Collections.unmodifiableMap(this.get());
-    for (Consumer<Map<String, String>> subscriber : this.subscribers) {
-      subscriber.accept(data);
+    // wait for all secrets to be retrieved before returning
+    try {
+      CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+    } catch (CompletionException e) {
+      log.log(Level.WARNING, e, () -> "Unexpected exception while retrieving secrets");
     }
   }
 }
