@@ -28,23 +28,17 @@ package sh.props.aws;
 import static java.util.stream.Collectors.toList;
 import static sh.props.aws.AwsHelpers.buildClient;
 import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
+import static sh.props.aws.AwsHelpers.getSecretValue;
 
-import java.nio.charset.Charset;
-import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
-import sh.props.annotations.Nullable;
 import sh.props.source.OnDemandSource;
 import sh.props.source.Source;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
 /**
  * {@link Source} implementation that loads secrets from AWS SecretsManager, on-demand (only when
@@ -52,7 +46,6 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
  */
 public class AwsSecretsManagerOnDemand extends OnDemandSource {
   public static final String ID = "aws-secretsmanager-ondemand";
-  private static final Logger log = Logger.getLogger(AwsSecretsManagerOnDemand.class.getName());
   private final Random random = new Random();
 
   private final List<SecretsManagerAsyncClient> clients;
@@ -99,11 +92,6 @@ public class AwsSecretsManagerOnDemand extends OnDemandSource {
     }
   }
 
-  @Override
-  public String id() {
-    return ID;
-  }
-
   /**
    * Uses one of the configured clients to retrieve a secret by its id.
    *
@@ -112,37 +100,19 @@ public class AwsSecretsManagerOnDemand extends OnDemandSource {
    */
   @Override
   protected String loadKey(String key) {
-    // chose a client
+    // choose a client
     int i = 0;
     if (clients.size() > 1) {
       // if more than one region was provided, randomly choose one
+      // load balancing requests over all provided clients
       i = random.nextInt(clients.size());
     }
 
-    return clients
-        .get(i)
-        .getSecretValue(GetSecretValueRequest.builder().secretId(key).build())
-        .handle(this::processSecretResponse)
-        .join();
+    return getSecretValue(clients.get(i), key).handle(AwsHelpers::processSecretResponse).join();
   }
 
-  @Nullable
-  private String processSecretResponse(GetSecretValueResponse response, Throwable error) {
-    if (response != null) {
-      // Decrypts secret using the associated KMS CMK.
-      // Depending on whether the secret is a string or binary, one of these fields
-      // will be populated.
-      if (response.secretString() != null) {
-        return response.secretString();
-      } else {
-        return new String(
-            Base64.getDecoder().decode(response.secretBinary().asByteBuffer()).array(),
-            Charset.defaultCharset());
-      }
-    }
-
-    // log the exception
-    log.log(Level.WARNING, error, () -> "Unexpected exception while retrieving the secret's value");
-    return null;
+  @Override
+  public String id() {
+    return ID;
   }
 }

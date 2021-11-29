@@ -27,9 +27,13 @@ package sh.props.aws;
 
 import static java.util.stream.Collectors.toList;
 
+import java.nio.charset.Charset;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.retry.RetryPolicy;
@@ -43,6 +47,9 @@ import software.amazon.awssdk.services.secretsmanager.model.SecretListEntry;
 import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 
 class AwsHelpers {
+
+  private static final Logger log = Logger.getLogger(AwsHelpers.class.getName());
+
   /**
    * Default implementation for AWS's client configuration, that set a default timeout of 5 seconds
    * and will retry calls failed due to throttling up to 5 times (see {@link
@@ -103,5 +110,32 @@ class AwsHelpers {
         .thenApply(ListSecretsResponse::secretList)
         .thenApply(secrets -> secrets.stream().map(SecretListEntry::name).collect(toList()))
         .join();
+  }
+
+  /**
+   * Processes a {@link GetSecretValueResponse} and retrieves the secret as a String.
+   *
+   * @param response the response from a GetSecretValue op.
+   * @param error an error that might have been thrown during the retrieval
+   * @return the secret as a string, or <code>null</code> if not found or an error was encountered
+   */
+  @Nullable
+  static String processSecretResponse(GetSecretValueResponse response, Throwable error) {
+    if (response != null) {
+      // Decrypts secret using the associated KMS CMK.
+      // Depending on whether the secret is a string or binary, one of these fields
+      // will be populated.
+      if (response.secretString() != null) {
+        return response.secretString();
+      } else {
+        return new String(
+            Base64.getDecoder().decode(response.secretBinary().asByteBuffer()).array(),
+            Charset.defaultCharset());
+      }
+    }
+
+    // log the exception
+    log.log(Level.WARNING, error, () -> "Unexpected exception while retrieving the secret's value");
+    return null;
   }
 }
