@@ -29,29 +29,25 @@ import static java.util.stream.Collectors.toList;
 import static sh.props.aws.AwsHelpers.buildClient;
 import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
 import static sh.props.aws.AwsHelpers.getSecretValue;
-import static sh.props.aws.AwsHelpers.listSecrets;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import sh.props.source.OnDemandSource;
 import sh.props.source.Source;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 
-/** {@link Source} implementation that loads secrets from AWS SecretsManager. */
-public class AwsSecretsManager extends Source {
-  public static final String ID = "aws-secretsmanager";
-  private static final Logger log = Logger.getLogger(AwsSecretsManager.class.getName());
-  private final Map<String, String> secrets = new ConcurrentHashMap<>();
+/**
+ * {@link Source} implementation that loads secrets from AWS SecretsManager, on-demand (only when
+ * they are requested by a {@link sh.props.Registry}.
+ */
+public class AwsSecretsManagerOnDemand extends OnDemandSource {
+  public static final String ID = "aws-secretsmanager-ondemand";
+  private final Random random = new Random();
 
-  private final List<Region> regions;
   private final List<SecretsManagerAsyncClient> clients;
 
   /**
@@ -72,7 +68,7 @@ public class AwsSecretsManager extends Source {
    *     Region Selection</a>
    * @param regions the AWS region (or regions) to use for retrieving values.
    */
-  public AwsSecretsManager(String... regions) {
+  public AwsSecretsManagerOnDemand(String... regions) {
     this(defaultClientConfiguration(), regions);
   }
 
@@ -82,55 +78,41 @@ public class AwsSecretsManager extends Source {
    * @param configuration the configuration to pass when building the client
    * @param regions the AWS region (or regions) to use for retrieving values.
    */
-  public AwsSecretsManager(ClientOverrideConfiguration configuration, String... regions) {
+  public AwsSecretsManagerOnDemand(ClientOverrideConfiguration configuration, String... regions) {
     if (regions == null || regions.length == 0) {
       // if no region is specified, use the default, as determined by AWS's implementation
-      this.regions = List.of();
       this.clients = List.of(buildClient(configuration, null));
     } else {
       // otherwise, create one client for each specified region
-      this.regions = Stream.of(regions).map(Region::of).collect(toList());
       this.clients =
-          this.regions.stream().map(region -> buildClient(configuration, region)).collect(toList());
+          Stream.of(regions)
+              .map(Region::of)
+              .map(region -> buildClient(configuration, region))
+              .collect(toList());
     }
+  }
+
+  /**
+   * Uses one of the configured clients to retrieve a secret by its id.
+   *
+   * @param key the secret to retrieve
+   * @return a {@link CompletableFuture} that, when completed, will return the secret's value
+   */
+  @Override
+  protected String loadKey(String key) {
+    // choose a client
+    int i = 0;
+    if (clients.size() > 1) {
+      // if more than one region was provided, randomly choose one
+      // load balancing requests over all provided clients
+      i = random.nextInt(clients.size());
+    }
+
+    return getSecretValue(clients.get(i), key).handle(AwsHelpers::processSecretResponse).join();
   }
 
   @Override
   public String id() {
     return ID;
-  }
-
-  @Override
-  public Map<String, String> get() {
-    var definedSecrets = listSecrets(clients.get(0));
-    retrieveSecrets(definedSecrets);
-    return secrets;
-  }
-
-  /**
-   * Uses {@link SecretsManagerAsyncClient} to schedule the retrieval of all the defined secrets.
-   * Whenever a secret is retrieved, the underlying store ({@link #secrets}) will be updated.
-   *
-   * @param allSecretIds the list of secret ids to retrieve
-   */
-  void retrieveSecrets(List<String> allSecretIds) {
-    var futures =
-        IntStream.range(0, allSecretIds.size())
-            .mapToObj(
-                i -> {
-                  var client = clients.get(i % clients.size());
-                  var secretId = allSecretIds.get(i);
-                  return getSecretValue(client, secretId)
-                      .handle(AwsHelpers::processSecretResponse)
-                      .thenAccept(value -> this.secrets.put(secretId, value));
-                })
-            .toArray(CompletableFuture[]::new);
-
-    // wait for all secrets to be retrieved before returning
-    try {
-      CompletableFuture.allOf(futures).join();
-    } catch (CompletionException e) {
-      log.log(Level.WARNING, e, () -> "Unexpected exception while retrieving secrets");
-    }
   }
 }

@@ -33,10 +33,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static sh.props.aws.AwsHelpers.buildClient;
+import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
+import static sh.props.aws.AwsHelpers.getSecretValue;
+import static sh.props.aws.AwsHelpers.listSecrets;
 
 import java.time.Duration;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,7 +51,6 @@ import sh.props.RegistryBuilder;
 import sh.props.converter.Cast;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 import software.amazon.awssdk.services.secretsmanager.model.CreateSecretRequest;
-import software.amazon.awssdk.services.secretsmanager.model.CreateSecretResponse;
 import software.amazon.awssdk.services.secretsmanager.model.DeleteSecretRequest;
 
 @SuppressWarnings("NullAway")
@@ -58,46 +61,32 @@ class AwsSecretsManagerIntTest {
       format("secret1.%s.%s", System.nanoTime(), UUID.randomUUID());
   private static final String secret2 =
       format("secret2.%s.%s", System.nanoTime(), UUID.randomUUID());
-  private static CompletableFuture<CreateSecretResponse> putSecret1;
-  private static CompletableFuture<CreateSecretResponse> putSecret2;
   private static SecretsManagerAsyncClient client;
 
   @BeforeAll
   static void beforeAll() {
     // initialize the client
-    client = AwsSecretsManager.buildClient(AwsSecretsManager.defaultClientConfiguration(), null);
+    client = buildClient(defaultClientConfiguration(), null);
 
-    // submit requests to asynchronously create secrets
-    putSecret1 =
-        client.createSecret(
-            CreateSecretRequest.builder().name(secret1).secretString(SECRET_VALUE).build());
-    putSecret2 =
-        client.createSecret(
-            CreateSecretRequest.builder().name(secret2).secretString(SECRET_VALUE).build());
+    // create secrets for the test env.
+    var key1 = CreateSecretRequest.builder().name(secret1).secretString(SECRET_VALUE).build();
+    client.createSecret(key1).join();
+
+    var key2 = CreateSecretRequest.builder().name(secret2).secretString(SECRET_VALUE).build();
+    client.createSecret(key2).join();
 
     Awaitility.setDefaultTimeout(5, SECONDS);
     Awaitility.setDefaultPollDelay(500, MILLISECONDS);
     Awaitility.setDefaultPollInterval(1, SECONDS);
-  }
-
-  /** Wait for the futures responsible for creating secrets for the test environment to complete. */
-  static void waitForSecretsToBeCreated() {
-    putSecret1.join();
-    putSecret2.join();
 
     // ensure the secrets can be retrieved and listed
     // the secrets don't immediately become available in AWS SecretsManager
     // and as such, we much first wait and ensure they are properly set-up by the test
-    await()
-        .until(
-            () -> AwsSecretsManager.getSecretValue(client, secret1).join().secretString(),
-            notNullValue());
+    await().until(() -> getSecretValue(client, secret1).join().secretString(), notNullValue());
     await()
         .pollDelay(Duration.ZERO)
-        .until(
-            () -> AwsSecretsManager.getSecretValue(client, secret2).join().secretString(),
-            notNullValue());
-    await().until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
+        .until(() -> getSecretValue(client, secret2).join().secretString(), notNullValue());
+    await().until(() -> listSecrets(client), hasSize(equalTo(2)));
   }
 
   @AfterAll
@@ -115,22 +104,18 @@ class AwsSecretsManagerIntTest {
   }
 
   @Test
-  @Timeout(value = 15)
+  @Timeout(value = 5)
   void secretsCanBeRetrievedFromSecretsManager() {
     // ARRANGE
-    waitForSecretsToBeCreated();
-
     var secretsManager = new AwsSecretsManager();
     var registry = new RegistryBuilder(secretsManager).build();
+
+    var invalidKey = "someInvalidSecretName" + UUID.randomUUID();
 
     // ACT
     CustomProp<String> prop1 = registry.builder(Cast.asString()).secret(true).build(secret1);
     CustomProp<String> prop2 = registry.builder(Cast.asString()).secret(true).build(secret2);
-    CustomProp<String> prop3 =
-        registry
-            .builder(Cast.asString())
-            .secret(true)
-            .build("someInvalidSecretName" + UUID.randomUUID());
+    CustomProp<String> prop3 = registry.builder(Cast.asString()).secret(true).build(invalidKey);
 
     // ASSERT
     await()
@@ -143,5 +128,28 @@ class AwsSecretsManagerIntTest {
         .until(prop2::get, equalTo(SECRET_VALUE));
 
     assertThat(prop3.get(), equalTo(null));
+  }
+
+  @Test
+  @Timeout(value = 5)
+  void loadSecretsOnDemand() {
+    // ARRANGE
+    var secretsManager = new AwsSecretsManagerOnDemand();
+    var registry = new RegistryBuilder(secretsManager).build();
+
+    var invalidKey = "someInvalidSecretName" + UUID.randomUUID();
+
+    // ACT
+    CustomProp<String> prop1 = registry.builder(Cast.asString()).secret(true).build(secret1);
+    String value2 = registry.get(secret2, Cast.asString());
+    String invalid = registry.get(invalidKey, Cast.asString());
+
+    // ASSERT
+    await()
+        .pollDelay(Duration.ZERO)
+        .pollInterval(Duration.ofNanos(100))
+        .until(prop1::get, equalTo(SECRET_VALUE));
+    assertThat(value2, equalTo(SECRET_VALUE));
+    assertThat(invalid, nullValue());
   }
 }
