@@ -27,9 +27,12 @@ package sh.props.aws;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static sh.props.aws.AwsHelpers.buildClient;
+import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
+import static sh.props.aws.AwsHelpers.getSecretValue;
+import static sh.props.aws.AwsHelpers.listSecrets;
 
 import java.nio.charset.Charset;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -40,19 +43,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.core.retry.backoff.BackoffStrategy;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
-import software.amazon.awssdk.services.secretsmanager.model.ListSecretsResponse;
-import software.amazon.awssdk.services.secretsmanager.model.SecretListEntry;
-import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 
+/** {@link Source} implementation that loads secrets from AWS SecretsManager. */
 public class AwsSecretsManager extends Source {
   public static final String ID = "aws-secretsmanager";
   private static final Logger log = Logger.getLogger(AwsSecretsManager.class.getName());
@@ -100,68 +97,6 @@ public class AwsSecretsManager extends Source {
       this.clients =
           this.regions.stream().map(region -> buildClient(configuration, region)).collect(toList());
     }
-  }
-
-  /**
-   * Default implementation for AWS's client configuration, that set a default timeout of 5 seconds
-   * and will retry calls failed due to throttling up to 5 times (see {@link
-   * BackoffStrategy#defaultThrottlingStrategy()}).
-   *
-   * @return a valid AWS configuration
-   */
-  static ClientOverrideConfiguration defaultClientConfiguration() {
-    return ClientOverrideConfiguration.builder()
-        .apiCallAttemptTimeout(Duration.ofSeconds(5))
-        .retryPolicy(
-            RetryPolicy.builder()
-                .backoffStrategy(BackoffStrategy.defaultThrottlingStrategy())
-                .numRetries(5)
-                .build())
-        .build();
-  }
-
-  /**
-   * Initializes a client.
-   *
-   * @param config the AWS client configuration
-   * @param region the region that the client should use; if null, the implementation will choose
-   * @return an initialized object
-   */
-  static SecretsManagerAsyncClient buildClient(
-      ClientOverrideConfiguration config, @Nullable Region region) {
-    var builder = SecretsManagerAsyncClient.builder().overrideConfiguration(config);
-    if (region != null) {
-      builder.region(region);
-    }
-    return builder.build();
-  }
-
-  /**
-   * Uses the provided client to retrieve a secret by its id.
-   *
-   * @param client the client which will execute the operation
-   * @param id the secret to retrieve
-   * @return a {@link CompletableFuture} that, when completed, will return the secret's value
-   */
-  static CompletableFuture<GetSecretValueResponse> getSecretValue(
-      SecretsManagerAsyncClient client, String id) {
-    return client.getSecretValue(GetSecretValueRequest.builder().secretId(id).build());
-  }
-
-  /**
-   * Retrieves a list of all the defined secrets. We need to wait for this operation to complete, as
-   * we need the list of secrets before retrieving their values.
-   *
-   * @param client the client which will execute the operation
-   * @return a list of defined secrets
-   * @throws SecretsManagerException if the operation fails
-   */
-  static List<String> listSecrets(SecretsManagerAsyncClient client) throws SecretsManagerException {
-    return client
-        .listSecrets()
-        .thenApply(ListSecretsResponse::secretList)
-        .thenApply(secrets -> secrets.stream().map(SecretListEntry::name).collect(toList()))
-        .join();
   }
 
   @Override

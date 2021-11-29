@@ -34,7 +34,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static sh.props.aws.AwsSecretsManager.getSecretValue;
+import static sh.props.aws.AwsHelpers.buildClient;
+import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
+import static sh.props.aws.AwsHelpers.getSecretValue;
+import static sh.props.aws.AwsHelpers.listSecrets;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -63,7 +66,7 @@ class AwsSecretsManagerIntTest {
   @BeforeAll
   static void beforeAll() {
     // initialize the client
-    client = AwsSecretsManager.buildClient(AwsSecretsManager.defaultClientConfiguration(), null);
+    client = buildClient(defaultClientConfiguration(), null);
 
     // create secrets for the test env.
     var key1 = CreateSecretRequest.builder().name(secret1).secretString(SECRET_VALUE).build();
@@ -83,7 +86,7 @@ class AwsSecretsManagerIntTest {
     await()
         .pollDelay(Duration.ZERO)
         .until(() -> getSecretValue(client, secret2).join().secretString(), notNullValue());
-    await().until(() -> AwsSecretsManager.listSecrets(client), hasSize(equalTo(2)));
+    await().until(() -> listSecrets(client), hasSize(equalTo(2)));
   }
 
   @AfterAll
@@ -104,7 +107,7 @@ class AwsSecretsManagerIntTest {
   @Timeout(value = 5)
   void secretsCanBeRetrievedFromSecretsManager() {
     // ARRANGE
-    var secretsManager = new AwsSecretsManager();
+    var secretsManager = new AwsSecretsManagerOnDemand();
     var registry = new RegistryBuilder(secretsManager).build();
 
     var invalidKey = "someInvalidSecretName" + UUID.randomUUID();

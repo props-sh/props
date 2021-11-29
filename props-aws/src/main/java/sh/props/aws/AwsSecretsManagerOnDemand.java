@@ -26,9 +26,10 @@
 package sh.props.aws;
 
 import static java.util.stream.Collectors.toList;
+import static sh.props.aws.AwsHelpers.buildClient;
+import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
 
 import java.nio.charset.Charset;
-import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
@@ -38,14 +39,17 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import sh.props.annotations.Nullable;
 import sh.props.source.OnDemandSource;
+import sh.props.source.Source;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.core.retry.backoff.BackoffStrategy;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
+/**
+ * {@link Source} implementation that loads secrets from AWS SecretsManager, on-demand (only when
+ * they are requested by a {@link sh.props.Registry}.
+ */
 public class AwsSecretsManagerOnDemand extends OnDemandSource {
   public static final String ID = "aws-secretsmanager-ondemand";
   private static final Logger log = Logger.getLogger(AwsSecretsManagerOnDemand.class.getName());
@@ -93,40 +97,6 @@ public class AwsSecretsManagerOnDemand extends OnDemandSource {
               .map(region -> buildClient(configuration, region))
               .collect(toList());
     }
-  }
-
-  /**
-   * Default implementation for AWS's client configuration, that set a default timeout of 5 seconds
-   * and will retry calls failed due to throttling up to 5 times (see {@link
-   * BackoffStrategy#defaultThrottlingStrategy()}).
-   *
-   * @return a valid AWS configuration
-   */
-  static ClientOverrideConfiguration defaultClientConfiguration() {
-    return ClientOverrideConfiguration.builder()
-        .apiCallAttemptTimeout(Duration.ofSeconds(5))
-        .retryPolicy(
-            RetryPolicy.builder()
-                .backoffStrategy(BackoffStrategy.defaultThrottlingStrategy())
-                .numRetries(5)
-                .build())
-        .build();
-  }
-
-  /**
-   * Initializes a client.
-   *
-   * @param config the AWS client configuration
-   * @param region the region that the client should use; if null, the implementation will choose
-   * @return an initialized object
-   */
-  static SecretsManagerAsyncClient buildClient(
-      ClientOverrideConfiguration config, @Nullable Region region) {
-    var builder = SecretsManagerAsyncClient.builder().overrideConfiguration(config);
-    if (region != null) {
-      builder.region(region);
-    }
-    return builder.build();
   }
 
   @Override
