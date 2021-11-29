@@ -119,10 +119,11 @@ public class AwsSecretsManager extends Source {
             .mapToObj(
                 i -> {
                   var client = clients.get(i % clients.size());
-                  var secretId = allSecretIds.get(i);
-                  return getSecretValue(client, secretId)
-                      .handle(AwsHelpers::processSecretResponse)
-                      .thenAccept(value -> this.secrets.put(secretId, value));
+                  var key = allSecretIds.get(i);
+                  return getSecretValue(client, key)
+                      .handle(
+                          (response, err) -> AwsHelpers.processSecretResponse(response, err, key))
+                      .thenAccept(value -> this.secrets.put(key, value));
                 })
             .toArray(CompletableFuture[]::new);
 

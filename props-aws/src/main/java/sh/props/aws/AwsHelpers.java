@@ -25,6 +25,7 @@
 
 package sh.props.aws;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 import java.nio.charset.Charset;
@@ -120,22 +121,39 @@ class AwsHelpers {
    * @return the secret as a string, or <code>null</code> if not found or an error was encountered
    */
   @Nullable
-  static String processSecretResponse(GetSecretValueResponse response, Throwable error) {
+  static String processSecretResponse(
+      GetSecretValueResponse response, Throwable error, String secretId) {
     if (response != null) {
-      // Decrypts secret using the associated KMS CMK.
-      // Depending on whether the secret is a string or binary, one of these fields
-      // will be populated.
-      if (response.secretString() != null) {
-        return response.secretString();
-      } else {
-        return new String(
-            Base64.getDecoder().decode(response.secretBinary().asByteBuffer()).array(),
-            Charset.defaultCharset());
-      }
+      return processSecretResponse(response);
     }
 
     // log the exception
-    log.log(Level.WARNING, error, () -> "Unexpected exception while retrieving the secret's value");
+    log.log(Level.WARNING, error, () -> format("Could not get secret %s", secretId));
     return null;
+  }
+
+  /**
+   * Processes a {@link GetSecretValueResponse} and retrieves the secret as a String.
+   *
+   * @param response the response from a GetSecretValue op.
+   * @return the secret as a string, or <code>null</code> if not found or an error was encountered
+   */
+  @Nullable
+  static String processSecretResponse(GetSecretValueResponse response) {
+    if (response == null) {
+      // nothing to do
+      return null;
+    }
+
+    // Decrypts secret using the associated KMS CMK.
+    // Depending on whether the secret is a string or binary, one of these fields
+    // will be populated.
+    if (response.secretString() != null) {
+      return response.secretString();
+    } else {
+      return new String(
+          Base64.getDecoder().decode(response.secretBinary().asByteBuffer()).array(),
+          Charset.defaultCharset());
+    }
   }
 }

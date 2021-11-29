@@ -108,7 +108,9 @@ public class AwsSecretsManagerOnDemand extends OnDemandSource {
       i = random.nextInt(clients.size());
     }
 
-    return getSecretValue(clients.get(i), key).handle(AwsHelpers::processSecretResponse).join();
+    return getSecretValue(clients.get(i), key)
+        .handle((response, err) -> AwsHelpers.processSecretResponse(response, err, key))
+        .join();
   }
 
   @Override
