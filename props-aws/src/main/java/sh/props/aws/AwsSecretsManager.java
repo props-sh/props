@@ -25,16 +25,12 @@
 
 package sh.props.aws;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static sh.props.aws.AwsHelpers.buildClient;
 import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
 import static sh.props.aws.AwsHelpers.getSecretValue;
 import static sh.props.aws.AwsHelpers.listSecrets;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -42,12 +38,12 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import sh.props.source.Source;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
 /** {@link Source} implementation that loads secrets from AWS SecretsManager. */
 public class AwsSecretsManager extends Source {
@@ -118,48 +114,21 @@ public class AwsSecretsManager extends Source {
    * @param allSecretIds the list of secret ids to retrieve
    */
   void retrieveSecrets(List<String> allSecretIds) {
-    List<CompletableFuture<GetSecretValueResponse>> futures = new ArrayList<>(allSecretIds.size());
-
-    for (int i = 0; i < allSecretIds.size(); i++) {
-      // load balance secret retrieval over the configured clients
-      var client = clients.get(i % clients.size());
-
-      String secretId = allSecretIds.get(i);
-      var future =
-          getSecretValue(client, secretId)
-              .whenComplete(
-                  (response, throwable) -> {
-                    if (response != null) {
-                      // Decrypts secret using the associated KMS CMK.
-                      // Depending on whether the secret is a string or binary, one of these fields
-                      // will be populated.
-                      if (response.secretString() != null) {
-                        this.secrets.put(secretId, response.secretString());
-                      } else {
-                        this.secrets.put(
-                            secretId,
-                            new String(
-                                Base64.getDecoder()
-                                    .decode(response.secretBinary().asByteBuffer())
-                                    .array(),
-                                Charset.defaultCharset()));
-                      }
-                      return;
-                    }
-
-                    // log the exception
-                    log.log(
-                        Level.WARNING,
-                        throwable,
-                        () ->
-                            format("Unexpected exception while retrieving value for %s", secretId));
-                  });
-      futures.add(future);
-    }
+    var futures =
+        IntStream.range(0, allSecretIds.size())
+            .mapToObj(
+                i -> {
+                  var client = clients.get(i % clients.size());
+                  var secretId = allSecretIds.get(i);
+                  return getSecretValue(client, secretId)
+                      .handle(AwsHelpers::processSecretResponse)
+                      .thenAccept(value -> this.secrets.put(secretId, value));
+                })
+            .toArray(CompletableFuture[]::new);
 
     // wait for all secrets to be retrieved before returning
     try {
-      CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+      CompletableFuture.allOf(futures).join();
     } catch (CompletionException e) {
       log.log(Level.WARNING, e, () -> "Unexpected exception while retrieving secrets");
     }
