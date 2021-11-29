@@ -107,7 +107,7 @@ class AwsSecretsManagerIntTest {
   @Timeout(value = 5)
   void secretsCanBeRetrievedFromSecretsManager() {
     // ARRANGE
-    var secretsManager = new AwsSecretsManagerOnDemand();
+    var secretsManager = new AwsSecretsManager();
     var registry = new RegistryBuilder(secretsManager).build();
 
     var invalidKey = "someInvalidSecretName" + UUID.randomUUID();
@@ -134,7 +134,7 @@ class AwsSecretsManagerIntTest {
   @Timeout(value = 5)
   void loadSecretsOnDemand() {
     // ARRANGE
-    var secretsManager = new AwsSecretsManager();
+    var secretsManager = new AwsSecretsManagerOnDemand();
     var registry = new RegistryBuilder(secretsManager).build();
 
     var invalidKey = "someInvalidSecretName" + UUID.randomUUID();
