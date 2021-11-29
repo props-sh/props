@@ -46,6 +46,17 @@ interface Datastore {
   Pair<String, Layer> get(String key);
 
   /**
+   * Retrieves a value for the specified key, from the specified layer.
+   *
+   * @param key the key to look for
+   * @param layer the layer to retrieve the value from
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
+   *     </code>
+   */
+  @Nullable
+  Pair<String, Layer> get(String key, Layer layer);
+
+  /**
    * Updates a value and its originating layer, for the specified key.
    *
    * @param key the key to update

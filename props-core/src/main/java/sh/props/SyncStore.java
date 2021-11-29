@@ -171,6 +171,7 @@ class SyncStore implements Datastore {
    * @return a {@link Pair} containing the value and defining layer if found, or <code>null
    *     </code>
    */
+  @Override
   @Nullable
   public Pair<String, Layer> get(String key, Layer layer) {
     Pair<String, Layer> effective = this.effectiveValues.get(key);

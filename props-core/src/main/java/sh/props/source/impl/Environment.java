@@ -34,16 +34,6 @@ public class Environment extends Source {
   public static final String ID = "env";
 
   /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
-   *
-   * @return an unique id
-   */
-  @Override
-  public String id() {
-    return ID;
-  }
-
-  /**
    * Retrieves all environment variables.
    *
    * @return a map containing all env. variables

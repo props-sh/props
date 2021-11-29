@@ -96,11 +96,6 @@ public class AwsSecretsManager extends Source {
   }
 
   @Override
-  public String id() {
-    return ID;
-  }
-
-  @Override
   public Map<String, String> get() {
     var definedSecrets = listSecrets(clients.get(0));
     retrieveSecrets(definedSecrets);

@@ -162,7 +162,8 @@ public class SourceDeserializer {
 
     static {
       // define the core source implementations
-      MAP.put(ClasspathPropertyFile.ID, new ClasspathPropertyFile.Factory());
+      // TODO: define IDs
+      MAP.put("classpath", new ClasspathPropertyFile.Factory());
       MAP.put(Environment.ID, new Environment.Factory());
       MAP.put(PropertyFile.ID, new PropertyFile.Factory());
       MAP.put(SystemProperties.ID, new SystemProperties.Factory());

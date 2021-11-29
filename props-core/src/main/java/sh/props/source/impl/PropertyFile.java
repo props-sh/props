@@ -74,16 +74,6 @@ public class PropertyFile extends Source implements FileWatchable {
   }
 
   /**
-   * Returns an unique identifier designating this property file.
-   *
-   * @return an unique id pointing to the property file on disk
-   */
-  @Override
-  public String id() {
-    return ID + "://" + this.location.toString();
-  }
-
-  /**
    * The location of the property file backing this source.
    *
    * @return a valid path to the backing file, on disk

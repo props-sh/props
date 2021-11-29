@@ -33,11 +33,6 @@ import sh.props.source.SourceFactory;
 public class SystemProperties extends Source {
   public static final String ID = "system";
 
-  @Override
-  public String id() {
-    return ID;
-  }
-
   /**
    * Retrieves all system properties.
    *

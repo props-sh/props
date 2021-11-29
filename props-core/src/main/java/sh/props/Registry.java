@@ -194,8 +194,37 @@ public class Registry implements Notifiable {
     }
 
     // finds the value and owning layer
-    Pair<String, Layer> valueLayer = this.store.get(key);
+    var valueLayer = this.store.get(key);
+    return getFromValueLayer(valueLayer, converter);
+  }
 
+  /**
+   * Retrieves a value for the specified key, from the specified layer.
+   *
+   * @param key the key to look for
+   * @param converter the type converter used to cast the value to its appropriate type
+   * @param layer the layer to retrieve the value from
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
+   *     </code>
+   */
+  @Nullable
+  public <T> T get(String key, Converter<T> converter, Layer layer) {
+    // TODO(mihaibojin): implement get from layer tests
+    var valueLayer = store.get(key, layer);
+    return getFromValueLayer(valueLayer, converter);
+  }
+
+  /**
+   * Returns the value, converted to the appropriate type, if a value exists in the specified layer.
+   *
+   * @param <T> the type of the returned type
+   * @param valueLayer the value,layer pair from which the value should be extracted
+   * @param converter the type converter used to cast the value to its appropriate type
+   * @return a value cast to the appropriate type, or null if not found
+   */
+  @Nullable
+  private <T> T getFromValueLayer(
+      @Nullable Pair<String, Layer> valueLayer, Converter<T> converter) {
     // no value found, the key does not exist in the registry
     // or the value is null
     if (valueLayer == null || valueLayer.first == null) {

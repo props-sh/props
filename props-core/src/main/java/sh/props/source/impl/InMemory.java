@@ -60,11 +60,6 @@ public class InMemory extends Source {
     this.updateOnEveryWrite = updateOnEveryWrite;
   }
 
-  @Override
-  public String id() {
-    return ID;
-  }
-
   /**
    * Retrieves an unmodifiable map containing all (key,value) pairs defined in the {@link #store}.
    *

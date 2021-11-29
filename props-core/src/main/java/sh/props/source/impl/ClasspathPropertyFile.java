@@ -52,11 +52,6 @@ public class ClasspathPropertyFile extends Source {
   }
 
   @Override
-  public String id() {
-    return ID + "://" + this.location;
-  }
-
-  @Override
   public Map<String, String> get() {
     try (InputStream stream = this.getClass().getResourceAsStream(this.location)) {
       if (stream != null) {

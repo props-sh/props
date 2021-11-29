@@ -84,13 +84,6 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   }
 
   /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
-   *
-   * @return an unique id
-   */
-  public abstract String id();
-
-  /**
    * Reads all known (key,value) pairs from the source.
    *
    * @return an updated {@link Map} containing all known key,value pairs
@@ -127,6 +120,6 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
 
   @Override
   public String toString() {
-    return format("Source(%s)", this.id());
+    return format("Source(%s)", this.getClass().getSimpleName());
   }
 }

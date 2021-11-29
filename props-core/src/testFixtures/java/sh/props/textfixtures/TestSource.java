@@ -35,11 +35,6 @@ public class TestSource extends Source {
   public static final String ID = "test-source";
 
   @Override
-  public String id() {
-    return "test-source";
-  }
-
-  @Override
   public Map<String, String> get() {
     return Map.of("key", "value");
   }

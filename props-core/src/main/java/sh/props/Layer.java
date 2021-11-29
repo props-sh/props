@@ -88,6 +88,10 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
     return this;
   }
 
+  public String id() {
+    return ""; // TODO(mihaibojin): complete this / take id in constructor
+  }
+
   /**
    * References the previous layer in logical order.
    *
@@ -106,15 +110,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   @Nullable
   public Layer next() {
     return this.next;
-  }
-
-  /**
-   * Delegates to {@link Source#id()}.
-   *
-   * @return the id of the underlying source
-   */
-  public String id() {
-    return this.source.id();
   }
 
   /**
@@ -217,6 +212,8 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
 
   @Override
   public String toString() {
-    return format("Layer(id=%s, priority=%d)", this.id(), this.priority);
+    return format(
+        "Layer(%s, id=%s, priority=%d)",
+        this.source.getClass().getSimpleName(), this.id(), this.priority);
   }
 }
