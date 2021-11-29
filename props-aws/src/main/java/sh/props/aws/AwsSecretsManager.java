@@ -25,12 +25,13 @@
 
 package sh.props.aws;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static sh.props.aws.AwsHelpers.buildClient;
-import static sh.props.aws.AwsHelpers.defaultClientConfiguration;
-import static sh.props.aws.AwsHelpers.getSecretValue;
-import static sh.props.aws.AwsHelpers.listSecrets;
 
+import java.nio.charset.Charset;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -38,14 +39,20 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.core.retry.backoff.BackoffStrategy;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
+import software.amazon.awssdk.services.secretsmanager.model.ListSecretsResponse;
+import software.amazon.awssdk.services.secretsmanager.model.SecretListEntry;
+import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;
 
-/** {@link Source} implementation that loads secrets from AWS SecretsManager. */
 public class AwsSecretsManager extends Source {
   public static final String ID = "aws-secretsmanager";
   private static final Logger log = Logger.getLogger(AwsSecretsManager.class.getName());
@@ -88,11 +95,73 @@ public class AwsSecretsManager extends Source {
       this.regions = List.of();
       this.clients = List.of(buildClient(configuration, null));
     } else {
-      // otherwise, create one client for each specified region
+      // otherwise create one client for each specified region
       this.regions = Stream.of(regions).map(Region::of).collect(toList());
       this.clients =
-          this.regions.stream().map(region -> buildClient(configuration, region)).collect(toList());
+          this.regions.stream().map(region -> buildClient(configuration, null)).collect(toList());
     }
+  }
+
+  /**
+   * Default implementation for AWS's client configuration, that set a default timeout of 5 seconds
+   * and will retry calls failed due to throttling up to 5 times (see {@link
+   * BackoffStrategy#defaultThrottlingStrategy()}).
+   *
+   * @return a valid AWS configuration
+   */
+  static ClientOverrideConfiguration defaultClientConfiguration() {
+    return ClientOverrideConfiguration.builder()
+        .apiCallAttemptTimeout(Duration.ofSeconds(5))
+        .retryPolicy(
+            RetryPolicy.builder()
+                .backoffStrategy(BackoffStrategy.defaultThrottlingStrategy())
+                .numRetries(5)
+                .build())
+        .build();
+  }
+
+  /**
+   * Initializes a client.
+   *
+   * @param config the AWS client configuration
+   * @param region the region that the client should use; if null, the implementation will choose
+   * @return an initialized object
+   */
+  static SecretsManagerAsyncClient buildClient(
+      ClientOverrideConfiguration config, @Nullable Region region) {
+    var builder = SecretsManagerAsyncClient.builder().overrideConfiguration(config);
+    if (region != null) {
+      builder.region(region);
+    }
+    return builder.build();
+  }
+
+  /**
+   * Uses the provided client to retrieve a secret by its id.
+   *
+   * @param client the client which will execute the operation
+   * @param id the secret to retrive
+   * @return a {@link CompletableFuture} that, when completed, will return the secret's value
+   */
+  static CompletableFuture<GetSecretValueResponse> getSecretValue(
+      SecretsManagerAsyncClient client, String id) {
+    return client.getSecretValue(GetSecretValueRequest.builder().secretId(id).build());
+  }
+
+  /**
+   * Retrieves a list of all the defined secrets. We need to wait for this operation to complete, as
+   * we need the list of secrets before retrieving their values.
+   *
+   * @param client the client which will execute the operation
+   * @return a list of defined secrets
+   * @throws SecretsManagerException if the operation fails
+   */
+  static List<String> listSecrets(SecretsManagerAsyncClient client) throws SecretsManagerException {
+    return client
+        .listSecrets()
+        .thenApply(ListSecretsResponse::secretList)
+        .thenApply(secrets -> secrets.stream().map(SecretListEntry::name).collect(toList()))
+        .join();
   }
 
   @Override
@@ -114,21 +183,48 @@ public class AwsSecretsManager extends Source {
    * @param allSecretIds the list of secret ids to retrieve
    */
   void retrieveSecrets(List<String> allSecretIds) {
-    var futures =
-        IntStream.range(0, allSecretIds.size())
-            .mapToObj(
-                i -> {
-                  var client = clients.get(i % clients.size());
-                  var secretId = allSecretIds.get(i);
-                  return getSecretValue(client, secretId)
-                      .handle(AwsHelpers::processSecretResponse)
-                      .thenAccept(value -> this.secrets.put(secretId, value));
-                })
-            .toArray(CompletableFuture[]::new);
+    List<CompletableFuture<GetSecretValueResponse>> futures = new ArrayList<>(allSecretIds.size());
+
+    for (int i = 0; i < allSecretIds.size(); i++) {
+      // load balance secret retrieval over the configured clients
+      var client = clients.get(i % clients.size());
+
+      String secretId = allSecretIds.get(i);
+      var future =
+          getSecretValue(client, secretId)
+              .whenComplete(
+                  (response, throwable) -> {
+                    if (response != null) {
+                      // Decrypts secret using the associated KMS CMK.
+                      // Depending on whether the secret is a string or binary, one of these fields
+                      // will be populated.
+                      if (response.secretString() != null) {
+                        this.secrets.put(secretId, response.secretString());
+                      } else {
+                        this.secrets.put(
+                            secretId,
+                            new String(
+                                Base64.getDecoder()
+                                    .decode(response.secretBinary().asByteBuffer())
+                                    .array(),
+                                Charset.defaultCharset()));
+                      }
+                      return;
+                    }
+
+                    // log the exception
+                    log.log(
+                        Level.WARNING,
+                        throwable,
+                        () ->
+                            format("Unexpected exception while retrieving value for %s", secretId));
+                  });
+      futures.add(future);
+    }
 
     // wait for all secrets to be retrieved before returning
     try {
-      CompletableFuture.allOf(futures).join();
+      CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     } catch (CompletionException e) {
       log.log(Level.WARNING, e, () -> "Unexpected exception while retrieving secrets");
     }
