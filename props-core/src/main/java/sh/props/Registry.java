@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +59,8 @@ public class Registry implements Notifiable {
 
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+    assertNotNull(key, "key");
+
     // check if we have any props to notify
     Collection<AbstractProp<?>> props = this.notifications.get(key);
     if (props == null || props.isEmpty()) {
@@ -174,6 +177,9 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
+    assertNotNull(key, "key");
+    assertNotNull(converter, "converter");
+
     // notify layers that a key is being retrieved
     try {
       // and wait until the request is processed by all sources
@@ -203,15 +209,36 @@ public class Registry implements Notifiable {
    *
    * @param key the key to look for
    * @param converter the type converter used to cast the value to its appropriate type
-   * @param layer the layer to retrieve the value from
+   * @param alias the alias of the {@link sh.props.source.Source} from which the value should be
+   *     retrieved; if <code>null</code> is passed {@link #get(String, Converter)} will be called
+   *     instead
    * @return a {@link Pair} containing the value and defining layer if found, or <code>null
    *     </code>
    */
   @Nullable
-  public <T> T get(String key, Converter<T> converter, Layer layer) {
-    // TODO(mihaibojin): implement get from layer tests
-    var valueLayer = store.get(key, layer);
-    return getFromValueLayer(valueLayer, converter);
+  public <T> T get(String key, Converter<T> converter, String alias) {
+    assertNotNull(key, "key");
+    assertNotNull(converter, "converter");
+
+    // if no alias was provided, search all layers
+    if (alias == null) {
+      return get(key, converter);
+    }
+
+    // find the matching layer (by alias)
+    var target = layers.stream().filter(l -> Objects.equals(l.alias, alias)).findFirst();
+    if (target.isEmpty()) {
+      // no matching layer was found
+      return null;
+    }
+
+    String rawValue = target.get().get(key);
+    if (rawValue == null) {
+      // key was not found
+      return null;
+    }
+
+    return converter.decode(rawValue);
   }
 
   /**
@@ -233,6 +260,21 @@ public class Registry implements Notifiable {
 
     // casts the effective value
     return converter.decode(valueLayer.first);
+  }
+
+  /**
+   * Ensures that the specified param is not null.
+   *
+   * @param key the key to validate
+   * @param <T> the type of the key
+   * @return the specified key
+   */
+  private <T> T assertNotNull(T key, String param) {
+    if (key == null) {
+      throw new IllegalArgumentException(format("%s cannot be null", param));
+    }
+
+    return key;
   }
 
   /**

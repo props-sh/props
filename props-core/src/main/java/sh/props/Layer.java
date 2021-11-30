@@ -44,6 +44,7 @@ import sh.props.source.Source;
  */
 public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
 
+  protected final String alias;
   private final Source source;
   private final Registry registry;
   private final HashMap<String, String> store = new HashMap<>();
@@ -58,11 +59,14 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
    * Class constructor.
    *
    * @param source the source that provides data for this layer
+   * @param alias a unique reference that can identify the source in a {@link Registry}; if <code>
+   *     null</code> is provided, the implementation will use {@link Source#id()} as an alias
    * @param registry a reference to the associated registry
    * @param priority the priority of this layer
    */
-  protected Layer(Source source, Registry registry, int priority) {
+  protected Layer(Source source, @Nullable String alias, Registry registry, int priority) {
     this.source = source;
+    this.alias = alias != null ? alias : source.id();
     this.registry = registry;
     this.priority = priority;
 
@@ -86,10 +90,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
     this.source.refresh();
 
     return this;
-  }
-
-  public String id() {
-    return ""; // TODO(mihaibojin): complete this / take id in constructor
   }
 
   /**
@@ -212,8 +212,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
 
   @Override
   public String toString() {
-    return format(
-        "Layer(%s, id=%s, priority=%d)",
-        this.source.getClass().getSimpleName(), this.id(), this.priority);
+    return format("Layer(%s, alias=%s, priority=%d)", this.source.id(), this.alias, this.priority);
   }
 }

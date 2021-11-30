@@ -47,11 +47,9 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 
 /** {@link Source} implementation that loads secrets from AWS SecretsManager. */
 public class AwsSecretsManager extends Source {
-  public static final String ID = "aws-secretsmanager";
   private static final Logger log = Logger.getLogger(AwsSecretsManager.class.getName());
   private final Map<String, String> secrets = new ConcurrentHashMap<>();
 
-  private final List<Region> regions;
   private final List<SecretsManagerAsyncClient> clients;
 
   /**
@@ -60,10 +58,17 @@ public class AwsSecretsManager extends Source {
    * <p>Specifying more than one region is useful when dealing with multi-region secrets, if you
    * want to load balance operations across these regions.
    *
+   * <p>This implementation uses the default AWS SDK credentials logic. The simplest way to get set
+   * up is to deploy credentials in <code>~/.aws/credentials</code> and set the <code>AWS_PROFILE
+   * </code> env. variable to the corresponding profile.
+   *
    * <p>If a region is not specified, the implementation will rely on Amazon's default behaviour of
    * consulting the <code>AWS_REGION</code> env. variable, its standard configuration files or, if
    * running inside AWS, the metadata endpoint.
    *
+   * @see <a
+   *     href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html">Using
+   *     credentials in AWS</a>
    * @see <a
    *     href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/create-manage-multi-region-secrets.html">AWS
    *     Multi Region Secrets</a>
@@ -83,15 +88,16 @@ public class AwsSecretsManager extends Source {
    * @param regions the AWS region (or regions) to use for retrieving values.
    */
   public AwsSecretsManager(ClientOverrideConfiguration configuration, String... regions) {
+    List<Region> regions1;
     if (regions == null || regions.length == 0) {
       // if no region is specified, use the default, as determined by AWS's implementation
-      this.regions = List.of();
+      regions1 = List.of();
       this.clients = List.of(buildClient(configuration, null));
     } else {
       // otherwise, create one client for each specified region
-      this.regions = Stream.of(regions).map(Region::of).collect(toList());
+      regions1 = Stream.of(regions).map(Region::of).collect(toList());
       this.clients =
-          this.regions.stream().map(region -> buildClient(configuration, region)).collect(toList());
+          regions1.stream().map(region -> buildClient(configuration, region)).collect(toList());
     }
   }
 

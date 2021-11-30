@@ -192,7 +192,7 @@ class SourceDeserializerTest {
     var deserializer =
         new SourceDeserializer.Builder()
             .withDefaults()
-            .withSource(TestSource.ID, new TestSource.Factory())
+            .withSource("test-source", new TestSource.Factory())
             .build();
 
     Source[] sources =

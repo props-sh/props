@@ -106,7 +106,7 @@ class SyncStore implements Datastore {
 
     SyncStore.assertLayerIsValid(search, vl);
 
-    if (Objects.equals(search.id(), l.id())) {
+    if (Objects.equals(search.alias, l.alias)) {
       // we're searching for this key's owner
       return vl;
     }

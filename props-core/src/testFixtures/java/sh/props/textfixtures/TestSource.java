@@ -32,7 +32,6 @@ import sh.props.source.SourceFactory;
 
 /** Creates a source used for tests, which only defines a key=value entry. */
 public class TestSource extends Source {
-  public static final String ID = "test-source";
 
   @Override
   public Map<String, String> get() {

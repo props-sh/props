@@ -39,6 +39,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import sh.props.Layer;
+import sh.props.converter.Converter;
 
 /**
  * Abstract class that permits subscribers to register for updates.
@@ -108,6 +110,28 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
   }
 
   /**
+   * Provides a unique reference for each Source implementation. By default, this method returns the
+   * implementation's name and a unique hash code computed at runtime. This method can help users
+   * reference a source in {@link sh.props.Registry#get(String, Converter, String)}.
+   *
+   * <p>This method is final and cannot be overwritten since that would create potential for
+   * confusion. When a user desired to reference sources by a deterministic identifier (reproducible
+   * in subsequent JVM runs), they should alias {@link Layer}s via {@link
+   * sh.props.RegistryBuilder#withSource(Source, String)}.
+   *
+   * @return a unique reference that's meant to enable client code to identify sources in a {@link
+   *     sh.props.Registry}, allowing users to retrieve a value directly from a source
+   */
+  public final String id() {
+    return format("%s@%s", this.getClass().getSimpleName(), System.identityHashCode(this));
+  }
+
+  @Override
+  public String toString() {
+    return format("Source(%s)", id());
+  }
+
+  /**
    * Sends the provided <code>data</code> to the wrapping layer.
    *
    * @param data the data to send to the Layer
@@ -116,10 +140,5 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
     for (Consumer<Map<String, String>> subscriber : this.layers) {
       subscriber.accept(data);
     }
-  }
-
-  @Override
-  public String toString() {
-    return format("Source(%s)", this.getClass().getSimpleName());
   }
 }
