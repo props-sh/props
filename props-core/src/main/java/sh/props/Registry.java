@@ -212,6 +212,7 @@ public class Registry implements Notifiable {
    * @param alias the alias of the {@link sh.props.source.Source} from which the value should be
    *     retrieved; if <code>null</code> is passed {@link #get(String, Converter)} will be called
    *     instead
+   * @param <T> the type of the returned type
    * @return a {@link Pair} containing the value and defining layer if found, or <code>null
    *     </code>
    */
