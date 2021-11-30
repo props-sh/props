@@ -88,16 +88,16 @@ public class AwsSecretsManager extends Source {
    * @param regions the AWS region (or regions) to use for retrieving values.
    */
   public AwsSecretsManager(ClientOverrideConfiguration configuration, String... regions) {
-    List<Region> regions1;
     if (regions == null || regions.length == 0) {
       // if no region is specified, use the default, as determined by AWS's implementation
-      regions1 = List.of();
       this.clients = List.of(buildClient(configuration, null));
     } else {
       // otherwise, create one client for each specified region
-      regions1 = Stream.of(regions).map(Region::of).collect(toList());
       this.clients =
-          regions1.stream().map(region -> buildClient(configuration, region)).collect(toList());
+          Stream.of(regions)
+              .map(Region::of)
+              .map(region -> buildClient(configuration, region))
+              .collect(toList());
     }
   }
 
