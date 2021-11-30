@@ -47,13 +47,6 @@ class SyncStore implements Datastore {
     this.notifiable = notifiable;
   }
 
-  private static void assertLayerIsValid(Layer search, Pair<String, Layer> vl) {
-    if (!Objects.equals(search.registry(), nonNullLayer(vl.second).registry())) {
-      throw new IllegalArgumentException(
-          "Invalid layer passed (does not belong to current registry)");
-    }
-  }
-
   /**
    * When an owner relinquishes control, find the first lower priority layer that defines the key.
    *
@@ -92,48 +85,6 @@ class SyncStore implements Datastore {
   }
 
   /**
-   * Find a specific layer that defines the key.
-   *
-   * @param key the key to search for
-   * @param vl the effective value/layer pair
-   * @param search the layer to search for
-   * @return a {@link Pair}, containing the value and the defining layer, or <code>null</code>
-   *     otherwise
-   */
-  @Nullable
-  private static Pair<String, Layer> findLayer(String key, Pair<String, Layer> vl, Layer search) {
-    Layer l = nonNullLayer(vl.second);
-
-    SyncStore.assertLayerIsValid(search, vl);
-
-    if (Objects.equals(search.alias, l.alias)) {
-      // we're searching for this key's owner
-      return vl;
-    }
-
-    // find the desired layer
-    while (l != null && l.priority() != search.priority()) {
-      // if we found a mapping
-      String value = l.get(key);
-      if (value != null) {
-        // return it
-        return Tuple.of(value, l);
-      }
-
-      if (l.priority() < search.priority()) {
-        // go to next layer
-        l = l.next();
-      } else if (l.priority() > search.priority()) {
-        // go to previous layer
-        l = l.prev();
-      }
-    }
-
-    // if no layer defines this key
-    return null;
-  }
-
-  /**
    * Checks if the specified pair's value equals the deconstructed value, but NOT the layer.
    *
    * @param value the value to compare
@@ -161,26 +112,6 @@ class SyncStore implements Datastore {
   @Nullable
   public Pair<String, Layer> get(String key) {
     return this.effectiveValues.get(key);
-  }
-
-  /**
-   * Retrieves a value for the specified key, from the specified layer.
-   *
-   * @param key the key to look for
-   * @param layer the layer to retrieve the value from
-   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
-   *     </code>
-   */
-  @Override
-  @Nullable
-  public Pair<String, Layer> get(String key, Layer layer) {
-    Pair<String, Layer> effective = this.effectiveValues.get(key);
-    if (effective == null) {
-      // no mapping exists in any layer
-      return null;
-    }
-
-    return findLayer(key, effective, layer);
   }
 
   /**

@@ -156,9 +156,9 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   @Override
   public void accept(Map<String, String> data) {
     // disallow more than one concurrent update from taking place
-    // TODO(mihaibojin): this has the potential to create a lot of contention, especially if using
-    //                   `OnDemandSource`s which rely on CompletableFutures to process updates, upon
-    //                   a new key registration (LoadOnDemand#registerKey)
+    // TODO(mihaibojin): this lock has the potential to create a lot of contention, especially if
+    //                   using `OnDemandSource`s which rely on CompletableFutures to process
+    //                   updates, upon a new key registration (LoadOnDemand#registerKey)
     this.lock.lock();
     try {
       // iterate over the current values
