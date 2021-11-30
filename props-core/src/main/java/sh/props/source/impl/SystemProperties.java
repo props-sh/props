@@ -26,13 +26,12 @@
 package sh.props.source.impl;
 
 import java.util.Map;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
 /** Retrieves system properties. */
 public class SystemProperties extends Source {
-  public static final String ID = "system";
-
   /**
    * Retrieves all system properties.
    *
@@ -47,17 +46,13 @@ public class SystemProperties extends Source {
   public static class Factory implements SourceFactory<SystemProperties> {
 
     /**
-     * Initializes a {@link SystemProperties} object from the specified id.
+     * Initializes a {@link SystemProperties} object.
      *
-     * @param id the identifier representing this source
+     * @param ignored unused for this source
      * @return a constructed Source object
      */
     @Override
-    public SystemProperties create(String id) {
-      if (!SystemProperties.ID.equals(id)) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
-      }
-
+    public SystemProperties create(@Nullable String ignored) {
       return new SystemProperties();
     }
   }

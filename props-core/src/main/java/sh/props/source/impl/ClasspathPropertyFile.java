@@ -33,12 +33,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends Source {
-  public static final String ID = "classpath";
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;
 
@@ -77,18 +77,16 @@ public class ClasspathPropertyFile extends Source {
     /**
      * Initializes a {@link ClasspathPropertyFile} object from the specified id.
      *
-     * @param id the identifier representing this source
+     * @param location the location of the file on the classpath
      * @return a constructed Source object
      */
     @Override
-    public ClasspathPropertyFile create(String id) {
-      @SuppressWarnings("StringSplitter")
-      String[] parts = id.split("=");
-      if (parts.length != 2 || !ClasspathPropertyFile.ID.equals(parts[0])) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    public ClasspathPropertyFile create(@Nullable String location) {
+      if (location == null) {
+        throw new IllegalArgumentException("Location cannot be null");
       }
 
-      return new ClasspathPropertyFile(parts[1]);
+      return new ClasspathPropertyFile(location);
     }
   }
 }

@@ -26,7 +26,7 @@
 package sh.props.textfixtures;
 
 import java.util.Map;
-import java.util.Objects;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
@@ -43,11 +43,7 @@ public class TestSource extends Source {
   public static class Factory implements SourceFactory<TestSource> {
 
     @Override
-    public TestSource create(String id) {
-      if (!Objects.equals(TestSource.ID, id)) {
-        throw new IllegalArgumentException("Invalid id: " + id);
-      }
-
+    public TestSource create(@Nullable String ignored) {
       return new TestSource();
     }
   }
