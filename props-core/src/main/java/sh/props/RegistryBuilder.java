@@ -25,6 +25,8 @@
 
 package sh.props;
 
+import static sh.props.Registry.assertNotNull;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,12 +103,10 @@ public class RegistryBuilder {
 
     List<Layer> layers = new ArrayList<>(this.sources.size());
     for (var pair : this.sources) {
-      if (pair.first == null) {
-        throw new NullPointerException("The source cannot be null");
-      }
+      Source source = assertNotNull(pair.first, "source");
 
       // wrap each source in a layer
-      Layer layer = new Layer(pair.first, pair.second, registry, priority--);
+      Layer layer = new Layer(source, pair.second, registry, priority--);
 
       // link the previous and current layer
       layer.next = next;

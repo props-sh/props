@@ -25,6 +25,8 @@
 
 package sh.props;
 
+import static sh.props.Registry.assertNotNull;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
@@ -56,7 +58,7 @@ class SyncStore implements Datastore {
    */
   @Nullable
   private static Pair<String, Layer> findNextPotentialOwner(String key, Pair<String, Layer> vl) {
-    Layer l = nonNullLayer(vl.second);
+    Layer l = assertNotNull(vl.second, "layer");
 
     // search all layers with lower priority for the key
     while (l.prev() != null) {
@@ -69,19 +71,6 @@ class SyncStore implements Datastore {
 
     // if no layer defines this key
     return null;
-  }
-
-  /**
-   * Convenience method to check the correctness of the specified layer object.
-   *
-   * @param layer a reference that could be null
-   * @return a non-null reference
-   */
-  private static Layer nonNullLayer(@Nullable Layer layer) {
-    if (layer == null) {
-      throw new NullPointerException("Invalid state, layer should not be null!");
-    }
-    return layer;
   }
 
   /**
@@ -145,7 +134,7 @@ class SyncStore implements Datastore {
           // if we already defined a mapping for this key
 
           // first check the attempted mapping's priority
-          int oldPriority = nonNullLayer(current.second).priority();
+          int oldPriority = assertNotNull(current.second, "layer").priority();
           int priority = layer.priority();
           // if the layer's priority is lower than the current owner
           if (priority < oldPriority) {

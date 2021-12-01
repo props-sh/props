@@ -57,6 +57,21 @@ public class Registry implements Notifiable {
     this.store = new SyncStore(this);
   }
 
+  /**
+   * Ensures that the specified param is not null.
+   *
+   * @param key the key to validate
+   * @param <T> the type of the key
+   * @return the specified key
+   */
+  static <T> T assertNotNull(@Nullable T key, String param) {
+    if (key == null) {
+      throw new IllegalArgumentException(format("%s cannot be null", param));
+    }
+
+    return key;
+  }
+
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
     assertNotNull(key, "key");
@@ -114,7 +129,7 @@ public class Registry implements Notifiable {
     // but do not wait for the key to be loaded
     for (Layer layer : layers) {
       @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
-      var future = layer.registerKey(key);
+      var future = layer.source.registerKey(key);
     }
 
     // and compute the prop's initial value
@@ -180,24 +195,7 @@ public class Registry implements Notifiable {
     assertNotNull(key, "key");
     assertNotNull(converter, "converter");
 
-    // notify layers that a key is being retrieved
-    try {
-      // and wait until the request is processed by all sources
-      CompletableFuture.allOf(
-              layers.stream()
-                  .filter(Layer::loadOnDemand)
-                  .map(layer -> layer.registerKey(key))
-                  .toArray(CompletableFuture[]::new))
-          .join();
-    } catch (CompletionException e) {
-      log.log(
-          Level.WARNING,
-          e,
-          () ->
-              format(
-                  "At least one layer failed to retrieve a value for %s; the returned value may be incorrect",
-                  key));
-    }
+    waitForOnDemandValuesToBePopulated(key);
 
     // finds the value and owning layer
     var valueLayer = this.store.get(key);
@@ -243,6 +241,32 @@ public class Registry implements Notifiable {
   }
 
   /**
+   * Ensures all layers representing {@link sh.props.source.OnDemandSource}s have a chance of
+   * retrieving the value for the specified key.
+   *
+   * @param key the key to retrieve
+   */
+  private void waitForOnDemandValuesToBePopulated(String key) {
+    try {
+      // wait until the request is processed by all sources
+      CompletableFuture.allOf(
+              layers.stream()
+                  .filter(layer -> layer.source.loadOnDemand())
+                  .map(layer -> layer.source.registerKey(key))
+                  .toArray(CompletableFuture[]::new))
+          .join();
+    } catch (CompletionException e) {
+      log.log(
+          Level.WARNING,
+          e,
+          () ->
+              format(
+                  "At least one layer failed to retrieve a value for %s; the returned value may be incorrect",
+                  key));
+    }
+  }
+
+  /**
    * Returns the value, converted to the appropriate type, if a value exists in the specified layer.
    *
    * @param <T> the type of the returned type
@@ -251,6 +275,7 @@ public class Registry implements Notifiable {
    * @return a value cast to the appropriate type, or null if not found
    */
   @Nullable
+  // TODO: refactor as Supplier<value> and use in both get()s
   private <T> T getFromValueLayer(
       @Nullable Pair<String, Layer> valueLayer, Converter<T> converter) {
     // no value found, the key does not exist in the registry
@@ -261,21 +286,6 @@ public class Registry implements Notifiable {
 
     // casts the effective value
     return converter.decode(valueLayer.first);
-  }
-
-  /**
-   * Ensures that the specified param is not null.
-   *
-   * @param key the key to validate
-   * @param <T> the type of the key
-   * @return the specified key
-   */
-  private <T> T assertNotNull(T key, String param) {
-    if (key == null) {
-      throw new IllegalArgumentException(format("%s cannot be null", param));
-    }
-
-    return key;
   }
 
   /**

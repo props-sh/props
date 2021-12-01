@@ -101,6 +101,8 @@ public class FileWatchSvc implements Runnable {
    */
   public <T extends Source & FileWatchable> void refreshOnChanges(T source) throws IOException {
     Path path = source.file();
+    // TODO: assertNotNull(source, "source");
+    // TODO: assertNotNull(path, "source file");
     if (path == null) {
       throw new NullPointerException("The passed argument must not be null");
     }

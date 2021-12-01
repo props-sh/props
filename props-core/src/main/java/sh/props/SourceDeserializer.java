@@ -27,6 +27,7 @@ package sh.props;
 
 import static java.lang.String.format;
 import static java.util.function.Predicate.not;
+import static sh.props.Registry.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -171,9 +172,7 @@ public class SourceDeserializer {
      * @return this builder object (fluent interface)
      */
     public <T extends Source> Builder withSource(String key, SourceFactory<T> factory) {
-      if (factory == null) {
-        throw new IllegalArgumentException("Cannot register a null source");
-      }
+      assertNotNull(factory, "source factory");
 
       // register the source class and ensure the operation succeeded
       var prev = deserializers.putIfAbsent(key.toLowerCase(), factory);

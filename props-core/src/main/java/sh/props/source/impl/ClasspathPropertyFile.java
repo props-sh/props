@@ -82,6 +82,7 @@ public class ClasspathPropertyFile extends Source {
      */
     @Override
     public ClasspathPropertyFile create(@Nullable String location) {
+      // TODO: assertNotNull(location, "location");
       if (location == null) {
         throw new IllegalArgumentException("Location cannot be null");
       }

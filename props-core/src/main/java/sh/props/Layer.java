@@ -30,22 +30,20 @@ import static java.lang.String.format;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.source.LoadOnDemand;
 import sh.props.source.Source;
 
 /**
  * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the
  * effective value for each requested key.
  */
-public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
+public class Layer implements Consumer<Map<String, String>> {
 
   protected final String alias;
-  private final Source source;
+  final Source source;
   private final Registry registry;
   private final HashMap<String, String> store = new HashMap<>();
 
@@ -121,28 +119,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   @Nullable
   public String get(String key) {
     return this.store.get(key);
-  }
-
-  /**
-   * Delegates to the underlying source's {@link Source#loadOnDemand()}.
-   *
-   * @return true if the {@link Source} can load values on-demand, false if it loads them in bulk.
-   */
-  @Override
-  public boolean loadOnDemand() {
-    return source.loadOnDemand();
-  }
-
-  /**
-   * Delegates to the underlying source's {@link Source#registerKey(String)}, notifying it that the
-   * specified key was bound by a {@link Registry}.
-   *
-   * @param key the key pointing to the Prop that was recently bound
-   * @return the underlying source's {@link CompletableFuture}
-   */
-  @Override
-  public CompletableFuture<String> registerKey(String key) {
-    return this.source.registerKey(key);
   }
 
   public int priority() {
