@@ -26,7 +26,7 @@
 package sh.props.textfixtures;
 
 import sh.props.annotations.Nullable;
-import sh.props.typed.IntegerProp;
+import sh.props.custom.IntegerProp;
 
 /** Test-only implementation. */
 public class TestIntProp extends IntegerProp {

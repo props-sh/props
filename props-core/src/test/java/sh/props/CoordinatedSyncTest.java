@@ -27,11 +27,11 @@ package sh.props;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static sh.props.source.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.sources.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Test;
 import sh.props.group.Group;
-import sh.props.source.InMemory;
+import sh.props.sources.InMemory;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.tuples.Tuple;

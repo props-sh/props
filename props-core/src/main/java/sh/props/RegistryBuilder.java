@@ -25,7 +25,7 @@
 
 package sh.props;
 
-import static sh.props.util.Validate.assertNotNull;
+import static sh.props.Validate.assertNotNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

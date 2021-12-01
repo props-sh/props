@@ -30,7 +30,6 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import java.time.Duration;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
-import sh.props.util.BackgroundExecutorFactory;
 
 public class Scheduler {
 

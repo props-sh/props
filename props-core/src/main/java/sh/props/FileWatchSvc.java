@@ -29,7 +29,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
-import static sh.props.util.Validate.assertNotNull;
+import static sh.props.Validate.assertNotNull;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.IOException;
@@ -45,7 +45,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.interfaces.FileWatchable;
-import sh.props.util.BackgroundExecutorFactory;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed

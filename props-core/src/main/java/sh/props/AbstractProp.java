@@ -26,7 +26,7 @@
 package sh.props;
 
 import sh.props.annotations.Nullable;
-import sh.props.converter.Converter;
+import sh.props.converters.Converter;
 import sh.props.interfaces.Prop;
 
 /**

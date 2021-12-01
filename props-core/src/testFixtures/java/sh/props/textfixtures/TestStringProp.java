@@ -28,7 +28,7 @@ package sh.props.textfixtures;
 import sh.props.annotations.Nullable;
 
 /** Test-only implementation. */
-public class TestStringProp extends sh.props.typed.StringProp {
+public class TestStringProp extends sh.props.custom.StringProp {
 
   public TestStringProp(String key, @Nullable String defaultValue) {
     super(key, defaultValue, null, false, false);

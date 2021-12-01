@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import sh.props.CustomProp;
 import sh.props.RegistryBuilder;
-import sh.props.converter.Cast;
+import sh.props.converters.Cast;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 import software.amazon.awssdk.services.secretsmanager.model.CreateSecretRequest;
 import software.amazon.awssdk.services.secretsmanager.model.DeleteSecretRequest;

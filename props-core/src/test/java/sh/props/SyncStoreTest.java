@@ -33,8 +33,8 @@ import static org.hamcrest.core.IsNull.nullValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sh.props.converter.Cast;
-import sh.props.source.InMemory;
+import sh.props.converters.Cast;
+import sh.props.sources.InMemory;
 
 @SuppressWarnings("NullAway")
 class SyncStoreTest {

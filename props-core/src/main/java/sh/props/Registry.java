@@ -40,12 +40,11 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.converter.Cast;
-import sh.props.converter.Converter;
+import sh.props.converters.Cast;
+import sh.props.converters.Converter;
 import sh.props.interfaces.LoadOnDemand;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
-import sh.props.util.Validate;
 
 public class Registry implements Notifiable {
   private static final Logger log = Logger.getLogger(Registry.class.getName());

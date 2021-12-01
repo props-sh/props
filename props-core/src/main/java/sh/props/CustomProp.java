@@ -26,13 +26,13 @@
 package sh.props;
 
 import static java.lang.String.format;
-import static sh.props.util.Validate.assertNotNull;
+import static sh.props.Validate.assertNotNull;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.converter.Converter;
+import sh.props.converters.Converter;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.exceptions.InvalidUpdateOpException;
 
