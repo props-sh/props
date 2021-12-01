@@ -35,10 +35,10 @@ import sh.props.annotations.Nullable;
 @FunctionalInterface
 public interface SourceFactory<T extends Source> {
   /**
-   * Constructs a {@link Source} object from the specified id.
+   * Constructs a {@link Source} object, using the specified options.
    *
-   * @param id the identifier representing this source; null if not needed
+   * @param options configuration for the constructed source; null if not needed
    * @return a constructed Source object
    */
-  T create(@Nullable String id);
+  T create(@Nullable String options);
 }

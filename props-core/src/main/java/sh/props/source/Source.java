@@ -123,7 +123,8 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
    *     sh.props.Registry}, allowing users to retrieve a value directly from a source
    */
   public final String id() {
-    return format("%s@%s", this.getClass().getSimpleName(), System.identityHashCode(this));
+    var hex = Integer.toHexString(System.identityHashCode(this));
+    return format("%s@%s", this.getClass().getSimpleName(), hex);
   }
 
   @Override
