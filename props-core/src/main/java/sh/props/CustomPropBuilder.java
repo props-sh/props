@@ -25,10 +25,10 @@
 
 package sh.props;
 
-import static sh.props.Registry.assertNotNull;
+import static sh.props.Validate.assertNotNull;
 
 import sh.props.annotations.Nullable;
-import sh.props.converter.Converter;
+import sh.props.converters.Converter;
 
 /**
  * Builder class that creates {@link CustomProp} objects based on the provided parameters.

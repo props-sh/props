@@ -27,7 +27,7 @@ package sh.props;
 
 import static java.lang.String.format;
 import static java.util.function.Predicate.not;
-import static sh.props.Registry.assertNotNull;
+import static sh.props.Validate.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -39,12 +39,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
-import sh.props.source.impl.ClasspathPropertyFile;
-import sh.props.source.impl.Environment;
-import sh.props.source.impl.PropertyFile;
-import sh.props.source.impl.SystemProperties;
+import sh.props.interfaces.SourceFactory;
+import sh.props.sources.ClasspathPropertyFile;
+import sh.props.sources.Environment;
+import sh.props.sources.PropertyFile;
+import sh.props.sources.SystemProperties;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 

@@ -36,11 +36,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.converter.Cast;
-import sh.props.converter.Converter;
+import sh.props.converters.Cast;
+import sh.props.converters.Converter;
+import sh.props.interfaces.LoadOnDemand;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 
@@ -57,24 +59,9 @@ public class Registry implements Notifiable {
     this.store = new SyncStore(this);
   }
 
-  /**
-   * Ensures that the specified param is not null.
-   *
-   * @param key the key to validate
-   * @param <T> the type of the key
-   * @return the specified key
-   */
-  static <T> T assertNotNull(@Nullable T key, String param) {
-    if (key == null) {
-      throw new IllegalArgumentException(format("%s cannot be null", param));
-    }
-
-    return key;
-  }
-
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-    assertNotNull(key, "key");
+    Validate.assertNotNull(key, "key");
 
     // check if we have any props to notify
     Collection<AbstractProp<?>> props = this.notifications.get(key);
@@ -98,11 +85,11 @@ public class Registry implements Notifiable {
    * Binds the specified {@link AbstractProp} to this registry. If the registry already contains a
    * value for this prop, it will call {@link AbstractProp#setValue(String)} to set it.
    *
-   * <p>If any of the configured {@link sh.props.source.Source}s override {@link
-   * sh.props.source.LoadOnDemand} and signal that they support on-demand loading of keys, their
-   * corresponding {@link sh.props.source.LoadOnDemand#loadOnDemand()} method will be called, but
-   * the implementation will not wait for a value to be retrieved. The logic of dealing with the
-   * asynchronous nature of receiving each value is left to the implementing Source.
+   * <p>If any of the configured {@link Source}s override {@link LoadOnDemand} and signal that they
+   * support on-demand loading of keys, their corresponding {@link LoadOnDemand#loadOnDemand()}
+   * method will be called, but the implementation will not wait for a value to be retrieved. The
+   * logic of dealing with the asynchronous nature of receiving each value is left to the
+   * implementing Source.
    *
    * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
    * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
@@ -192,14 +179,14 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
-    assertNotNull(key, "key");
-    assertNotNull(converter, "converter");
+    Validate.assertNotNull(key, "key");
+    Validate.assertNotNull(converter, "converter");
 
     waitForOnDemandValuesToBePopulated(key);
 
     // finds the value and owning layer
     var valueLayer = this.store.get(key);
-    return getFromValueLayer(valueLayer, converter);
+    return maybeConvertValue(() -> valueLayer != null ? valueLayer.first : null, converter);
   }
 
   /**
@@ -207,17 +194,16 @@ public class Registry implements Notifiable {
    *
    * @param key the key to look for
    * @param converter the type converter used to cast the value to its appropriate type
-   * @param alias the alias of the {@link sh.props.source.Source} from which the value should be
-   *     retrieved; if <code>null</code> is passed {@link #get(String, Converter)} will be called
-   *     instead
+   * @param alias the alias of the {@link Source} from which the value should be retrieved; if
+   *     <code>null</code> is passed {@link #get(String, Converter)} will be called instead
    * @param <T> the type of the returned type
    * @return a {@link Pair} containing the value and defining layer if found, or <code>null
    *     </code>
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter, String alias) {
-    assertNotNull(key, "key");
-    assertNotNull(converter, "converter");
+    Validate.assertNotNull(key, "key");
+    Validate.assertNotNull(converter, "converter");
 
     // if no alias was provided, search all layers
     if (alias == null) {
@@ -226,23 +212,15 @@ public class Registry implements Notifiable {
 
     // find the matching layer (by alias)
     var target = layers.stream().filter(l -> Objects.equals(l.alias, alias)).findFirst();
-    if (target.isEmpty()) {
-      // no matching layer was found
-      return null;
-    }
 
-    String rawValue = target.get().get(key);
-    if (rawValue == null) {
-      // key was not found
-      return null;
-    }
-
-    return converter.decode(rawValue);
+    // return the value corresponding to the desired key from the Layer
+    // converted to the appropriate type
+    return maybeConvertValue(() -> target.map(l -> l.get(key)).orElse(null), converter);
   }
 
   /**
-   * Ensures all layers representing {@link sh.props.source.OnDemandSource}s have a chance of
-   * retrieving the value for the specified key.
+   * Ensures all layers representing {@link OnDemandSource}s have a chance of retrieving the value
+   * for the specified key.
    *
    * @param key the key to retrieve
    */
@@ -267,25 +245,22 @@ public class Registry implements Notifiable {
   }
 
   /**
-   * Returns the value, converted to the appropriate type, if a value exists in the specified layer.
+   * Returns the value, converted to the appropriate type, if a value exists.
    *
    * @param <T> the type of the returned type
-   * @param valueLayer the value,layer pair from which the value should be extracted
+   * @param valueSupplier supplies a value to be converted
    * @param converter the type converter used to cast the value to its appropriate type
    * @return a value cast to the appropriate type, or null if not found
    */
   @Nullable
-  // TODO: refactor as Supplier<value> and use in both get()s
-  private <T> T getFromValueLayer(
-      @Nullable Pair<String, Layer> valueLayer, Converter<T> converter) {
-    // no value found, the key does not exist in the registry
-    // or the value is null
-    if (valueLayer == null || valueLayer.first == null) {
+  private <T> T maybeConvertValue(Supplier<String> valueSupplier, Converter<T> converter) {
+    // no value found in the registry
+    String rawValue = valueSupplier.get();
+    if (rawValue == null) {
       return null;
     }
 
-    // casts the effective value
-    return converter.decode(valueLayer.first);
+    return converter.decode(rawValue);
   }
 
   /**

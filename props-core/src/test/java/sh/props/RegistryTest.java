@@ -28,13 +28,13 @@ package sh.props;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.sources.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import sh.props.converter.Cast;
-import sh.props.source.impl.InMemory;
+import sh.props.converters.Cast;
+import sh.props.sources.InMemory;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestIntProp;
 

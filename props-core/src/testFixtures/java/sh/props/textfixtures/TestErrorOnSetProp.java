@@ -26,8 +26,8 @@
 package sh.props.textfixtures;
 
 import sh.props.annotations.Nullable;
+import sh.props.custom.IntegerProp;
 import sh.props.exceptions.InvalidUpdateOpException;
-import sh.props.typed.IntegerProp;
 
 public class TestErrorOnSetProp extends IntegerProp {
 

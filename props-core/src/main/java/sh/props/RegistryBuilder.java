@@ -25,13 +25,12 @@
 
 package sh.props;
 
-import static sh.props.Registry.assertNotNull;
+import static sh.props.Validate.assertNotNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 

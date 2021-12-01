@@ -30,7 +30,7 @@ import static java.lang.String.format;
 import java.util.function.Consumer;
 import sh.props.AbstractProp;
 import sh.props.annotations.Nullable;
-import sh.props.converter.Converter;
+import sh.props.converters.Converter;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
@@ -52,7 +52,7 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * provided template.
    *
    * <p>The implementation will convert the tuple's values into strings (using each Prop's
-   * corresponding {@link sh.props.converter.Converter}) before feeding them into the provided
+   * corresponding {@link sh.props.converters.Converter}) before feeding them into the provided
    * template. For that reason, you can only use string-based format specifiers (e.g., <code>%s
    * </code>). You can also use argument indices such as <code>%2$s</code>, to reuse positional
    * values more than once. See {@link String#format(String, Object...)} for more details.

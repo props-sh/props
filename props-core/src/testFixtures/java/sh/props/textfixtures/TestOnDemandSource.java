@@ -27,8 +27,8 @@ package sh.props.textfixtures;
 
 import java.util.Collections;
 import java.util.Map;
+import sh.props.OnDemandSource;
 import sh.props.annotations.Nullable;
-import sh.props.source.OnDemandSource;
 
 public class TestOnDemandSource extends OnDemandSource {
 
