@@ -23,20 +23,21 @@
  *
  */
 
-package sh.props.source;
+package sh.props.interfaces;
 
-import java.util.Map;
-import java.util.function.Consumer;
+import java.nio.file.Path;
 
-public interface Subscribable {
+/**
+ * Denotes an object that sends events based on changes on the file system (e.g., the file was
+ * updated on disk)
+ */
+@FunctionalInterface
+public interface FileWatchable {
 
   /**
-   * Registers a new downstream subscriber.
+   * The file to monitor using JDK's {@link java.nio.file.WatchService}.
    *
-   * @param subscriber a subscriber that accepts any updates this source may be sending
+   * @return a path to a file on disk
    */
-  void register(Consumer<Map<String, String>> subscriber);
-
-  /** Refreshes the implementation's data and sends it to all registered subscribers. */
-  void refresh();
+  Path file();
 }

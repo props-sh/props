@@ -27,7 +27,7 @@ package sh.props.typed;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.source.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,7 +39,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import sh.props.Registry;
 import sh.props.RegistryBuilder;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 import sh.props.textfixtures.TestFileUtil;
 
 @SuppressWarnings("NullAway")

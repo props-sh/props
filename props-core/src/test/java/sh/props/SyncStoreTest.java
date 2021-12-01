@@ -34,7 +34,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 
 @SuppressWarnings("NullAway")
 class SyncStoreTest {

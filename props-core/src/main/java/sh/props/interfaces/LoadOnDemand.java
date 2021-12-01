@@ -23,10 +23,11 @@
  *
  */
 
-package sh.props.source;
+package sh.props.interfaces;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import sh.props.Source;
 
 /**
  * A contract that allows {@link Source}s to partially load values and avoid retrieving the whole

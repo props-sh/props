@@ -23,14 +23,13 @@
  *
  */
 
-package sh.props.source.refresh;
+package sh.props;
 
 import static java.lang.String.format;
 
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.Source;
 
 /**
  * This implementation triggers a {@link Source#refresh()} operation and ensures a single concurrent

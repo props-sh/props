@@ -32,14 +32,14 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.source.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.exceptions.InvalidUpdateOpException;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 import sh.props.textfixtures.TestErrorOnSetProp;
 
 @SuppressWarnings("NullAway")

@@ -23,13 +23,13 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
 
 /** Useful for tests, when the implementation requires overriding values. */
 public class InMemory extends Source {

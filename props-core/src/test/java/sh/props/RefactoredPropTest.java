@@ -33,13 +33,13 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.source.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import sh.props.exceptions.InvalidReadOpException;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.DummyConsumer;
 import sh.props.textfixtures.TestErrorOnGetProp;

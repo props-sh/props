@@ -23,38 +23,37 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import java.util.Map;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
+import sh.props.interfaces.SourceFactory;
 
-/** Retrieves all environment variables. */
-public class Environment extends Source {
-
+/** Retrieves system properties. */
+public class SystemProperties extends Source {
   /**
-   * Retrieves all environment variables.
+   * Retrieves all system properties.
    *
-   * @return a map containing all env. variables
+   * @return a map containing all system properties
    */
   @Override
   public Map<String, String> get() {
-    return System.getenv();
+    return Source.readPropertiesToMap(System.getProperties());
   }
 
   /** Factory implementation. */
-  public static class Factory implements SourceFactory<Environment> {
+  public static class Factory implements SourceFactory<SystemProperties> {
 
     /**
-     * Initializes an {@link Environment} source.
+     * Initializes a {@link SystemProperties} object.
      *
      * @param ignored unused for this source
      * @return a constructed Source object
      */
     @Override
-    public Environment create(@Nullable String ignored) {
-      return new Environment();
+    public SystemProperties create(@Nullable String ignored) {
+      return new SystemProperties();
     }
   }
 }

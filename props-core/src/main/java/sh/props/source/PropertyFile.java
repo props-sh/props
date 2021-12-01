@@ -23,10 +23,11 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import static java.lang.String.format;
 import static java.util.logging.Level.WARNING;
+import static sh.props.util.Validate.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,10 +37,10 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
-import sh.props.source.FileWatchable;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
+import sh.props.interfaces.FileWatchable;
+import sh.props.interfaces.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on disk. */
 public class PropertyFile extends Source implements FileWatchable {
@@ -93,12 +94,9 @@ public class PropertyFile extends Source implements FileWatchable {
      */
     @Override
     public PropertyFile create(@Nullable String location) {
-      // TODO: assertNotNull(location, "location");
-      if (location == null) {
-        throw new IllegalArgumentException("Location cannot be null");
-      }
+      String file = assertNotNull(location, "location");
 
-      return new PropertyFile(Paths.get(location));
+      return new PropertyFile(Paths.get(file));
     }
   }
 }

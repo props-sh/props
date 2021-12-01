@@ -52,8 +52,8 @@ import java.util.logging.Logger;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
 import sh.props.util.BackgroundExecutorFactory;
 
 public class MongoDbStore extends Source {

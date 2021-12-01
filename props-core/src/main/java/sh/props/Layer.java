@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
 
 /**
  * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the

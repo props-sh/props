@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source;
+package sh.props;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -39,8 +39,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import sh.props.Layer;
 import sh.props.converter.Converter;
+import sh.props.interfaces.LoadOnDemand;
 
 /**
  * Abstract class that permits subscribers to register for updates.
@@ -48,7 +48,7 @@ import sh.props.converter.Converter;
  * <p>This functionality is useful for triggering a single {@link Source#get()}, which can be an
  * expensive operation, and notifying multiple layers.
  */
-public abstract class Source implements Supplier<Map<String, String>>, Subscribable, LoadOnDemand {
+public abstract class Source implements Supplier<Map<String, String>>, LoadOnDemand {
 
   protected final List<Consumer<Map<String, String>>> layers = new ArrayList<>();
 
@@ -98,13 +98,11 @@ public abstract class Source implements Supplier<Map<String, String>>, Subscriba
    *
    * @param subscriber a subscribing Layer that accepts any updates this source may be sending
    */
-  @Override
   public void register(Consumer<Map<String, String>> subscriber) {
     this.layers.add(subscriber);
   }
 
   /** Triggers a {@link #get()} call and sends all values to all subscribing layers. */
-  @Override
   public void refresh() {
     sendLayerUpdate(Collections.unmodifiableMap(this.get()));
   }

@@ -25,7 +25,7 @@
 
 package sh.props;
 
-import static sh.props.Registry.assertNotNull;
+import static sh.props.util.Validate.assertNotNull;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;

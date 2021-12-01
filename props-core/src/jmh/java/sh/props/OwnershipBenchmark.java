@@ -39,7 +39,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 import sh.props.converter.Cast;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 
 @SuppressWarnings({"NullAway", "checkstyle:MissingJavadocMethod"})
 @Fork(value = 1, warmups = 1)

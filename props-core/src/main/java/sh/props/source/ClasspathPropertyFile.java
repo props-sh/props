@@ -23,9 +23,10 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.source;
 
 import static java.lang.String.format;
+import static sh.props.util.Validate.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,9 +34,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
+import sh.props.interfaces.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends Source {
@@ -82,12 +83,9 @@ public class ClasspathPropertyFile extends Source {
      */
     @Override
     public ClasspathPropertyFile create(@Nullable String location) {
-      // TODO: assertNotNull(location, "location");
-      if (location == null) {
-        throw new IllegalArgumentException("Location cannot be null");
-      }
+      String file = assertNotNull(location, "location");
 
-      return new ClasspathPropertyFile(location);
+      return new ClasspathPropertyFile(file);
     }
   }
 }

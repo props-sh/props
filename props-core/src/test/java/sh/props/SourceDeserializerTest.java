@@ -30,7 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.source.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +42,7 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import sh.props.converter.Cast;
-import sh.props.source.Source;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 import sh.props.textfixtures.TestFileUtil;
 import sh.props.textfixtures.TestSource;
 

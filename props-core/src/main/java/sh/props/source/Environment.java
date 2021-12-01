@@ -25,20 +25,36 @@
 
 package sh.props.source;
 
+import java.util.Map;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.SourceFactory;
 
-/**
- * Interface for {@link Source} factories.
- *
- * @param <T> the source subclass
- */
-@FunctionalInterface
-public interface SourceFactory<T extends Source> {
+/** Retrieves all environment variables. */
+public class Environment extends Source {
+
   /**
-   * Constructs a {@link Source} object, using the specified options.
+   * Retrieves all environment variables.
    *
-   * @param options configuration for the constructed source; null if not needed
-   * @return a constructed Source object
+   * @return a map containing all env. variables
    */
-  T create(@Nullable String options);
+  @Override
+  public Map<String, String> get() {
+    return System.getenv();
+  }
+
+  /** Factory implementation. */
+  public static class Factory implements SourceFactory<Environment> {
+
+    /**
+     * Initializes an {@link Environment} source.
+     *
+     * @param ignored unused for this source
+     * @return a constructed Source object
+     */
+    @Override
+    public Environment create(@Nullable String ignored) {
+      return new Environment();
+    }
+  }
 }

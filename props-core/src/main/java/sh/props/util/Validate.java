@@ -23,37 +23,26 @@
  *
  */
 
-package sh.props.source.impl;
+package sh.props.util;
 
-import java.util.Map;
+import static java.lang.String.format;
+
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
 
-/** Retrieves system properties. */
-public class SystemProperties extends Source {
+public class Validate {
+
   /**
-   * Retrieves all system properties.
+   * Ensures that the specified param is not null.
    *
-   * @return a map containing all system properties
+   * @param key the key to validate
+   * @param <T> the type of the key
+   * @return the specified key
    */
-  @Override
-  public Map<String, String> get() {
-    return Source.readPropertiesToMap(System.getProperties());
-  }
-
-  /** Factory implementation. */
-  public static class Factory implements SourceFactory<SystemProperties> {
-
-    /**
-     * Initializes a {@link SystemProperties} object.
-     *
-     * @param ignored unused for this source
-     * @return a constructed Source object
-     */
-    @Override
-    public SystemProperties create(@Nullable String ignored) {
-      return new SystemProperties();
+  public static <T> T assertNotNull(@Nullable T key, String param) {
+    if (key == null) {
+      throw new IllegalArgumentException(format("%s cannot be null", param));
     }
+
+    return key;
   }
 }

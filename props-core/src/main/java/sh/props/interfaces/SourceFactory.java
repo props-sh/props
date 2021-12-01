@@ -23,21 +23,23 @@
  *
  */
 
-package sh.props.source;
+package sh.props.interfaces;
 
-import java.nio.file.Path;
+import sh.props.Source;
+import sh.props.annotations.Nullable;
 
 /**
- * Denotes an object that sends events based on changes on the file system (e.g., the file was
- * updated on disk)
+ * Interface for {@link Source} factories.
+ *
+ * @param <T> the source subclass
  */
 @FunctionalInterface
-public interface FileWatchable {
-
+public interface SourceFactory<T extends Source> {
   /**
-   * The file to monitor using JDK's {@link java.nio.file.WatchService}.
+   * Constructs a {@link Source} object, using the specified options.
    *
-   * @return a path to a file on disk
+   * @param options configuration for the constructed source; null if not needed
+   * @return a constructed Source object
    */
-  Path file();
+  T create(@Nullable String options);
 }

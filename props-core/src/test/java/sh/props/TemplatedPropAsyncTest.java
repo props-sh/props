@@ -28,11 +28,11 @@ package sh.props;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static sh.props.source.impl.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
+import static sh.props.source.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 
 import org.junit.jupiter.api.Test;
 import sh.props.group.TemplatedProp;
-import sh.props.source.impl.InMemory;
+import sh.props.source.InMemory;
 import sh.props.textfixtures.DummyConsumer;
 import sh.props.textfixtures.TestIntProp;
 

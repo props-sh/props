@@ -23,7 +23,7 @@
  *
  */
 
-package sh.props.source;
+package sh.props;
 
 import static java.lang.String.format;
 

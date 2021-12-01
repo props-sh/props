@@ -23,12 +23,13 @@
  *
  */
 
-package sh.props.source.refresh;
+package sh.props;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
+import static sh.props.util.Validate.assertNotNull;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.IOException;
@@ -43,8 +44,7 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.source.FileWatchable;
-import sh.props.source.Source;
+import sh.props.interfaces.FileWatchable;
 import sh.props.util.BackgroundExecutorFactory;
 
 /**
@@ -100,12 +100,11 @@ public class FileWatchSvc implements Runnable {
    * @throws IOException if the source's path could not be registered with the {@link WatchService}
    */
   public <T extends Source & FileWatchable> void refreshOnChanges(T source) throws IOException {
+    assertNotNull(source, "source");
+
     Path path = source.file();
-    // TODO: assertNotNull(source, "source");
-    // TODO: assertNotNull(path, "source file");
-    if (path == null) {
-      throw new NullPointerException("The passed argument must not be null");
-    }
+    assertNotNull(path, "source file");
+
     if (path.getParent() == null) {
       throw new NullPointerException("The passed argument must be a valid path to a file");
     }

@@ -26,9 +26,9 @@
 package sh.props.textfixtures;
 
 import java.util.Map;
+import sh.props.Source;
 import sh.props.annotations.Nullable;
-import sh.props.source.Source;
-import sh.props.source.SourceFactory;
+import sh.props.interfaces.SourceFactory;
 
 /** Creates a source used for tests, which only defines a key=value entry. */
 public class TestSource extends Source {
