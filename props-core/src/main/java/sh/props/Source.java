@@ -26,7 +26,7 @@
 package sh.props;
 
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
+import static sh.props.util.Validate.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,10 +63,7 @@ public abstract class Source implements Supplier<Map<String, String>>, LoadOnDem
    */
   protected static Map<String, String> loadPropertiesFromStream(InputStream stream)
       throws IOException {
-    if (isNull(stream)) {
-      throw new IllegalArgumentException(
-          "loadPropertiesFromStream expects a non-null input stream");
-    }
+    assertNotNull(stream, "input stream");
 
     Properties properties = new Properties();
     properties.load(stream);

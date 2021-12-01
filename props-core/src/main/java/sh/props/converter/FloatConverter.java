@@ -25,7 +25,6 @@
 
 package sh.props.converter;
 
-import static java.util.Objects.isNull;
 import static sh.props.converter.ConverterUtils.safeParseNumber;
 
 import sh.props.annotations.Nullable;
@@ -37,7 +36,7 @@ public interface FloatConverter extends Converter<Float> {
   @Nullable
   default Float decode(String value) {
     Number number = safeParseNumber(value);
-    if (isNull(number)) {
+    if (number == null) {
       return null;
     }
 

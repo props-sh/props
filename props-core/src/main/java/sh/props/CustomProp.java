@@ -26,7 +26,7 @@
 package sh.props;
 
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
+import static sh.props.util.Validate.assertNotNull;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -77,10 +77,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
       @Nullable String description,
       boolean isRequired,
       boolean isSecret) {
-    // validate
-    if (isNull(key)) {
-      throw new NullPointerException("The property's key cannot be null");
-    }
+    assertNotNull(key, "property key");
 
     this.key = key;
     this.defaultValue = defaultValue;
@@ -115,7 +112,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    */
   protected void validateBeforeGet(@Nullable T value) {
     // if the Prop is required, a value must be available
-    if (this.isRequired && isNull(value)) {
+    if (this.isRequired && value == null) {
       throw new InvalidReadOpException(
           format(
               "Prop '%s' is required, but neither a value or a default were specified", this.key));

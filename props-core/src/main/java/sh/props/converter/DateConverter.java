@@ -25,7 +25,6 @@
 
 package sh.props.converter;
 
-import static java.util.Objects.isNull;
 import static sh.props.converter.ConverterUtils.safeParseInstant;
 
 import java.time.Instant;
@@ -39,7 +38,7 @@ public interface DateConverter extends Converter<Date> {
   @Nullable
   default Date decode(String value) {
     Instant instant = safeParseInstant(value);
-    if (isNull(instant)) {
+    if (instant == null) {
       return null;
     }
 
