@@ -53,9 +53,4 @@ public class TestOnDemandSource extends OnDemandSource {
     // retrieve the key
     return backingData.get(key);
   }
-
-  @Override
-  public String id() {
-    return "ON_DEMAND";
-  }
 }

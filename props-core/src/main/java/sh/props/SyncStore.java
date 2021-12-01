@@ -25,6 +25,8 @@
 
 package sh.props;
 
+import static sh.props.Registry.assertNotNull;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import sh.props.annotations.Nullable;
@@ -47,13 +49,6 @@ class SyncStore implements Datastore {
     this.notifiable = notifiable;
   }
 
-  private static void assertLayerIsValid(Layer search, Pair<String, Layer> vl) {
-    if (!Objects.equals(search.registry(), nonNullLayer(vl.second).registry())) {
-      throw new IllegalArgumentException(
-          "Invalid layer passed (does not belong to current registry)");
-    }
-  }
-
   /**
    * When an owner relinquishes control, find the first lower priority layer that defines the key.
    *
@@ -63,7 +58,7 @@ class SyncStore implements Datastore {
    */
   @Nullable
   private static Pair<String, Layer> findNextPotentialOwner(String key, Pair<String, Layer> vl) {
-    Layer l = nonNullLayer(vl.second);
+    Layer l = assertNotNull(vl.second, "layer");
 
     // search all layers with lower priority for the key
     while (l.prev() != null) {
@@ -71,61 +66,6 @@ class SyncStore implements Datastore {
       String value = l.get(key);
       if (value != null) {
         return Tuple.of(value, l);
-      }
-    }
-
-    // if no layer defines this key
-    return null;
-  }
-
-  /**
-   * Convenience method to check the correctness of the specified layer object.
-   *
-   * @param layer a reference that could be null
-   * @return a non-null reference
-   */
-  private static Layer nonNullLayer(@Nullable Layer layer) {
-    if (layer == null) {
-      throw new NullPointerException("Invalid state, layer should not be null!");
-    }
-    return layer;
-  }
-
-  /**
-   * Find a specific layer that defines the key.
-   *
-   * @param key the key to search for
-   * @param vl the effective value/layer pair
-   * @param search the layer to search for
-   * @return a {@link Pair}, containing the value and the defining layer, or <code>null</code>
-   *     otherwise
-   */
-  @Nullable
-  private static Pair<String, Layer> findLayer(String key, Pair<String, Layer> vl, Layer search) {
-    Layer l = nonNullLayer(vl.second);
-
-    SyncStore.assertLayerIsValid(search, vl);
-
-    if (Objects.equals(search.id(), l.id())) {
-      // we're searching for this key's owner
-      return vl;
-    }
-
-    // find the desired layer
-    while (l != null && l.priority() != search.priority()) {
-      // if we found a mapping
-      String value = l.get(key);
-      if (value != null) {
-        // return it
-        return Tuple.of(value, l);
-      }
-
-      if (l.priority() < search.priority()) {
-        // go to next layer
-        l = l.next();
-      } else if (l.priority() > search.priority()) {
-        // go to previous layer
-        l = l.prev();
       }
     }
 
@@ -164,25 +104,6 @@ class SyncStore implements Datastore {
   }
 
   /**
-   * Retrieves a value for the specified key, from the specified layer.
-   *
-   * @param key the key to look for
-   * @param layer the layer to retrieve the value from
-   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
-   *     </code>
-   */
-  @Nullable
-  public Pair<String, Layer> get(String key, Layer layer) {
-    Pair<String, Layer> effective = this.effectiveValues.get(key);
-    if (effective == null) {
-      // no mapping exists in any layer
-      return null;
-    }
-
-    return findLayer(key, effective, layer);
-  }
-
-  /**
    * Updates the value for the specified key.
    *
    * @param key the key to update
@@ -213,7 +134,7 @@ class SyncStore implements Datastore {
           // if we already defined a mapping for this key
 
           // first check the attempted mapping's priority
-          int oldPriority = nonNullLayer(current.second).priority();
+          int oldPriority = assertNotNull(current.second, "layer").priority();
           int priority = layer.priority();
           // if the layer's priority is lower than the current owner
           if (priority < oldPriority) {

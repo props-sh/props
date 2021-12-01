@@ -25,6 +25,8 @@
 
 package sh.props.source;
 
+import sh.props.annotations.Nullable;
+
 /**
  * Interface for {@link Source} factories.
  *
@@ -33,10 +35,10 @@ package sh.props.source;
 @FunctionalInterface
 public interface SourceFactory<T extends Source> {
   /**
-   * Constructs a {@link Source} object from the specified id.
+   * Constructs a {@link Source} object, using the specified options.
    *
-   * @param id the identifier representing this source
+   * @param options configuration for the constructed source; null if not needed
    * @return a constructed Source object
    */
-  T create(String id);
+  T create(@Nullable String options);
 }

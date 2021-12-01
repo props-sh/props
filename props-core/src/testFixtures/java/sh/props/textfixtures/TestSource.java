@@ -26,18 +26,12 @@
 package sh.props.textfixtures;
 
 import java.util.Map;
-import java.util.Objects;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
 /** Creates a source used for tests, which only defines a key=value entry. */
 public class TestSource extends Source {
-  public static final String ID = "test-source";
-
-  @Override
-  public String id() {
-    return "test-source";
-  }
 
   @Override
   public Map<String, String> get() {
@@ -48,11 +42,7 @@ public class TestSource extends Source {
   public static class Factory implements SourceFactory<TestSource> {
 
     @Override
-    public TestSource create(String id) {
-      if (!Objects.equals(TestSource.ID, id)) {
-        throw new IllegalArgumentException("Invalid id: " + id);
-      }
-
+    public TestSource create(@Nullable String ignored) {
       return new TestSource();
     }
   }

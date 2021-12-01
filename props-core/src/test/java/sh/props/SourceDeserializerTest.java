@@ -74,7 +74,8 @@ class SourceDeserializerTest {
     TestFileUtil.appendLine("file=" + propFile, configFile);
 
     // store the sources to be used by each test
-    sources = SourceDeserializer.read(Files.newInputStream(configFile));
+    var deserializer = new SourceDeserializer.Builder().withDefaults().build();
+    sources = deserializer.read(Files.newInputStream(configFile));
   }
 
   @Test
@@ -155,8 +156,9 @@ class SourceDeserializerTest {
   @Test
   void readFromConfigList() {
     // ARRANGE
+    var deserializer = new SourceDeserializer.Builder().withDefaults().build();
     Source[] sources =
-        SourceDeserializer.read(
+        deserializer.read(
             List.of("classpath=/source/standard-types.properties", "file=" + propFile));
 
     // ACT
@@ -175,21 +177,26 @@ class SourceDeserializerTest {
 
   @Test
   void cannotDeserializeWithUnknownSource() {
+    // ARRANGE
+    var deserializer = new SourceDeserializer.Builder().withDefaults().build();
+
+    // ACT / ASSERT
     assertThrows(
         IllegalStateException.class,
-        () ->
-            SourceDeserializer.read(
-                List.of("classpath=/source/standard-types.properties", "UNKNOWN")));
+        () -> deserializer.read(List.of("classpath=/source/standard-types.properties", "UNKNOWN")));
   }
 
   @Test
   void customSourceImplementation() {
     // ARRANGE
-    SourceDeserializer.register(TestSource.ID, new TestSource.Factory());
+    var deserializer =
+        new SourceDeserializer.Builder()
+            .withDefaults()
+            .withSource("test-source", new TestSource.Factory())
+            .build();
 
     Source[] sources =
-        SourceDeserializer.read(
-            List.of("classpath=/source/standard-types.properties", "test-source"));
+        deserializer.read(List.of("classpath=/source/standard-types.properties", "test-source"));
 
     // ACT
     Registry registry = new RegistryBuilder(sources).build();

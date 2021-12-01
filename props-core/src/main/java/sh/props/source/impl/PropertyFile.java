@@ -36,14 +36,13 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
+import sh.props.annotations.Nullable;
 import sh.props.source.FileWatchable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on disk. */
 public class PropertyFile extends Source implements FileWatchable {
-  public static final String ID = "file";
-
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;
 
@@ -74,16 +73,6 @@ public class PropertyFile extends Source implements FileWatchable {
   }
 
   /**
-   * Returns an unique identifier designating this property file.
-   *
-   * @return an unique id pointing to the property file on disk
-   */
-  @Override
-  public String id() {
-    return ID + "://" + this.location.toString();
-  }
-
-  /**
    * The location of the property file backing this source.
    *
    * @return a valid path to the backing file, on disk
@@ -99,18 +88,17 @@ public class PropertyFile extends Source implements FileWatchable {
     /**
      * Initializes a {@link PropertyFile} object from the specified id.
      *
-     * @param id the identifier representing this source
+     * @param location the location of the file on disk
      * @return a constructed Source object
      */
     @Override
-    public PropertyFile create(String id) {
-      @SuppressWarnings("StringSplitter")
-      String[] parts = id.split("=");
-      if (parts.length != 2 || !PropertyFile.ID.equals(parts[0])) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
+    public PropertyFile create(@Nullable String location) {
+      // TODO: assertNotNull(location, "location");
+      if (location == null) {
+        throw new IllegalArgumentException("Location cannot be null");
       }
 
-      return new PropertyFile(Paths.get(parts[1]));
+      return new PropertyFile(Paths.get(location));
     }
   }
 }

@@ -25,19 +25,28 @@
 
 package sh.props;
 
+import static sh.props.Registry.assertNotNull;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import sh.props.annotations.Nullable;
 import sh.props.source.Source;
+import sh.props.tuples.Pair;
+import sh.props.tuples.Tuple;
 
 public class RegistryBuilder {
 
-  ArrayDeque<Source> sources = new ArrayDeque<>();
+  ArrayDeque<Pair<Source, String>> sources = new ArrayDeque<>();
 
   /**
    * Class constructor that accepts sources that the {@link Registry} will use for retrieving
    * values.
+   *
+   * <p>This is a shorthand for quickly creating a Registry in cases where the client code does not
+   * care about retrieving values directly from a Source, in a reproducible way (same alias in
+   * subsequent JVM runs). If the implementation does require that feature, it can use {@link
+   * #withSource(Source, String)} to also provide an alias for each source.
    *
    * @param sources the source or sources to add to the registry
    */
@@ -46,19 +55,33 @@ public class RegistryBuilder {
     if (sources != null) {
       // if any sources are specified, add them
       for (Source source : sources) {
-        this.sources.addFirst(source);
+        withSource(source);
       }
     }
+  }
+
+  /**
+   * Registers a source with the current registry, without specifying an alias.
+   *
+   * @param source the source to register
+   * @return this builder object (fluent interface)
+   */
+  public RegistryBuilder withSource(Source source) {
+    this.sources.addFirst(Tuple.of(source, null));
+    return this;
   }
 
   /**
    * Registers a source with the current registry.
    *
    * @param source the source to register
+   * @param alias a reference that can be used to retrieve values directly from this source; if
+   *     <code>null</code> is provided, it will result in the source being identified by its {@link
+   *     Source#id()}
    * @return this builder object (fluent interface)
    */
-  public RegistryBuilder withSource(Source source) {
-    this.sources.addFirst(source);
+  public RegistryBuilder withSource(Source source, @Nullable String alias) {
+    this.sources.addFirst(Tuple.of(source, alias));
     return this;
   }
 
@@ -79,9 +102,12 @@ public class RegistryBuilder {
     @Nullable Layer next = null;
 
     List<Layer> layers = new ArrayList<>(this.sources.size());
-    for (Source source : this.sources) {
+    for (var pair : this.sources) {
+      Source source = assertNotNull(pair.first, "source");
+      String alias = pair.second;
+
       // wrap each source in a layer
-      Layer layer = new Layer(source, registry, priority--);
+      Layer layer = new Layer(source, alias, registry, priority--);
 
       // link the previous and current layer
       layer.next = next;

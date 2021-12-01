@@ -26,22 +26,12 @@
 package sh.props.source.impl;
 
 import java.util.Map;
+import sh.props.annotations.Nullable;
 import sh.props.source.Source;
 import sh.props.source.SourceFactory;
 
 /** Retrieves all environment variables. */
 public class Environment extends Source {
-  public static final String ID = "env";
-
-  /**
-   * An unique identifier representing this source in the {@link sh.props.Registry}.
-   *
-   * @return an unique id
-   */
-  @Override
-  public String id() {
-    return ID;
-  }
 
   /**
    * Retrieves all environment variables.
@@ -55,18 +45,15 @@ public class Environment extends Source {
 
   /** Factory implementation. */
   public static class Factory implements SourceFactory<Environment> {
+
     /**
-     * Initializes an {@link Environment} object from the specified id.
+     * Initializes an {@link Environment} source.
      *
-     * @param id the identifier representing this source
+     * @param ignored unused for this source
      * @return a constructed Source object
      */
     @Override
-    public Environment create(String id) {
-      if (!Environment.ID.equals(id)) {
-        throw new IllegalArgumentException("Invalid id '" + id + "' for the current class " + this);
-      }
-
+    public Environment create(@Nullable String ignored) {
       return new Environment();
     }
   }

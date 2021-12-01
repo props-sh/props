@@ -25,6 +25,8 @@
 
 package sh.props;
 
+import static sh.props.Registry.assertNotNull;
+
 import sh.props.annotations.Nullable;
 import sh.props.converter.Converter;
 
@@ -49,14 +51,10 @@ public class CustomPropBuilder<T> {
    * @param converter the type converter that can serialize/deserialize the Prop's value
    */
   public CustomPropBuilder(Registry registry, Converter<T> converter) {
-    if (registry == null) {
-      throw new IllegalArgumentException("The registry cannot be null");
-    }
-    this.registry = registry;
+    assertNotNull(registry, "registry");
+    assertNotNull(converter, "converter");
 
-    if (converter == null) {
-      throw new IllegalArgumentException("The converter cannot be null");
-    }
+    this.registry = registry;
     this.converter = converter;
   }
 

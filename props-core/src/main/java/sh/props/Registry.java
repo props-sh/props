@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,8 +57,25 @@ public class Registry implements Notifiable {
     this.store = new SyncStore(this);
   }
 
+  /**
+   * Ensures that the specified param is not null.
+   *
+   * @param key the key to validate
+   * @param <T> the type of the key
+   * @return the specified key
+   */
+  static <T> T assertNotNull(@Nullable T key, String param) {
+    if (key == null) {
+      throw new IllegalArgumentException(format("%s cannot be null", param));
+    }
+
+    return key;
+  }
+
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+    assertNotNull(key, "key");
+
     // check if we have any props to notify
     Collection<AbstractProp<?>> props = this.notifications.get(key);
     if (props == null || props.isEmpty()) {
@@ -111,7 +129,7 @@ public class Registry implements Notifiable {
     // but do not wait for the key to be loaded
     for (Layer layer : layers) {
       @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
-      var future = layer.registerKey(key);
+      var future = layer.source.registerKey(key);
     }
 
     // and compute the prop's initial value
@@ -174,13 +192,67 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
-    // notify layers that a key is being retrieved
+    assertNotNull(key, "key");
+    assertNotNull(converter, "converter");
+
+    waitForOnDemandValuesToBePopulated(key);
+
+    // finds the value and owning layer
+    var valueLayer = this.store.get(key);
+    return getFromValueLayer(valueLayer, converter);
+  }
+
+  /**
+   * Retrieves a value for the specified key, from the specified layer.
+   *
+   * @param key the key to look for
+   * @param converter the type converter used to cast the value to its appropriate type
+   * @param alias the alias of the {@link sh.props.source.Source} from which the value should be
+   *     retrieved; if <code>null</code> is passed {@link #get(String, Converter)} will be called
+   *     instead
+   * @param <T> the type of the returned type
+   * @return a {@link Pair} containing the value and defining layer if found, or <code>null
+   *     </code>
+   */
+  @Nullable
+  public <T> T get(String key, Converter<T> converter, String alias) {
+    assertNotNull(key, "key");
+    assertNotNull(converter, "converter");
+
+    // if no alias was provided, search all layers
+    if (alias == null) {
+      return get(key, converter);
+    }
+
+    // find the matching layer (by alias)
+    var target = layers.stream().filter(l -> Objects.equals(l.alias, alias)).findFirst();
+    if (target.isEmpty()) {
+      // no matching layer was found
+      return null;
+    }
+
+    String rawValue = target.get().get(key);
+    if (rawValue == null) {
+      // key was not found
+      return null;
+    }
+
+    return converter.decode(rawValue);
+  }
+
+  /**
+   * Ensures all layers representing {@link sh.props.source.OnDemandSource}s have a chance of
+   * retrieving the value for the specified key.
+   *
+   * @param key the key to retrieve
+   */
+  private void waitForOnDemandValuesToBePopulated(String key) {
     try {
-      // and wait until the request is processed by all sources
+      // wait until the request is processed by all sources
       CompletableFuture.allOf(
               layers.stream()
-                  .filter(Layer::loadOnDemand)
-                  .map(layer -> layer.registerKey(key))
+                  .filter(layer -> layer.source.loadOnDemand())
+                  .map(layer -> layer.source.registerKey(key))
                   .toArray(CompletableFuture[]::new))
           .join();
     } catch (CompletionException e) {
@@ -192,10 +264,20 @@ public class Registry implements Notifiable {
                   "At least one layer failed to retrieve a value for %s; the returned value may be incorrect",
                   key));
     }
+  }
 
-    // finds the value and owning layer
-    Pair<String, Layer> valueLayer = this.store.get(key);
-
+  /**
+   * Returns the value, converted to the appropriate type, if a value exists in the specified layer.
+   *
+   * @param <T> the type of the returned type
+   * @param valueLayer the value,layer pair from which the value should be extracted
+   * @param converter the type converter used to cast the value to its appropriate type
+   * @return a value cast to the appropriate type, or null if not found
+   */
+  @Nullable
+  // TODO: refactor as Supplier<value> and use in both get()s
+  private <T> T getFromValueLayer(
+      @Nullable Pair<String, Layer> valueLayer, Converter<T> converter) {
     // no value found, the key does not exist in the registry
     // or the value is null
     if (valueLayer == null || valueLayer.first == null) {

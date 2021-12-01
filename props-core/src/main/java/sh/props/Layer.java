@@ -30,21 +30,20 @@ import static java.lang.String.format;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
-import sh.props.source.LoadOnDemand;
 import sh.props.source.Source;
 
 /**
  * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the
  * effective value for each requested key.
  */
-public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
+public class Layer implements Consumer<Map<String, String>> {
 
-  private final Source source;
+  protected final String alias;
+  final Source source;
   private final Registry registry;
   private final HashMap<String, String> store = new HashMap<>();
 
@@ -58,11 +57,14 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
    * Class constructor.
    *
    * @param source the source that provides data for this layer
+   * @param alias a unique reference that can identify the source in a {@link Registry}; if <code>
+   *     null</code> is provided, the implementation will use {@link Source#id()} as an alias
    * @param registry a reference to the associated registry
    * @param priority the priority of this layer
    */
-  protected Layer(Source source, Registry registry, int priority) {
+  protected Layer(Source source, @Nullable String alias, Registry registry, int priority) {
     this.source = source;
+    this.alias = alias != null ? alias : source.id();
     this.registry = registry;
     this.priority = priority;
 
@@ -109,15 +111,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   }
 
   /**
-   * Delegates to {@link Source#id()}.
-   *
-   * @return the id of the underlying source
-   */
-  public String id() {
-    return this.source.id();
-  }
-
-  /**
    * Retrieves the current value of the Prop identified by the specified key.
    *
    * @param key the key to retrieve
@@ -126,28 +119,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   @Nullable
   public String get(String key) {
     return this.store.get(key);
-  }
-
-  /**
-   * Delegates to the underlying source's {@link Source#loadOnDemand()}.
-   *
-   * @return true if the {@link Source} can load values on-demand, false if it loads them in bulk.
-   */
-  @Override
-  public boolean loadOnDemand() {
-    return source.loadOnDemand();
-  }
-
-  /**
-   * Delegates to the underlying source's {@link Source#registerKey(String)}, notifying it that the
-   * specified key was bound by a {@link Registry}.
-   *
-   * @param key the key pointing to the Prop that was recently bound
-   * @return the underlying source's {@link CompletableFuture}
-   */
-  @Override
-  public CompletableFuture<String> registerKey(String key) {
-    return this.source.registerKey(key);
   }
 
   public int priority() {
@@ -161,9 +132,9 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
   @Override
   public void accept(Map<String, String> data) {
     // disallow more than one concurrent update from taking place
-    // TODO(mihaibojin): this has the potential to create a lot of contention, especially if using
-    //                   `OnDemandSource`s which rely on CompletableFutures to process updates, upon
-    //                   a new key registration (LoadOnDemand#registerKey)
+    // TODO(mihaibojin): this lock has the potential to create a lot of contention, especially if
+    //                   using `OnDemandSource`s which rely on CompletableFutures to process
+    //                   updates, upon a new key registration (LoadOnDemand#registerKey)
     this.lock.lock();
     try {
       // iterate over the current values
@@ -217,6 +188,6 @@ public class Layer implements Consumer<Map<String, String>>, LoadOnDemand {
 
   @Override
   public String toString() {
-    return format("Layer(id=%s, priority=%d)", this.id(), this.priority);
+    return format("Layer(%s, alias=%s, priority=%d)", this.source.id(), this.alias, this.priority);
   }
 }

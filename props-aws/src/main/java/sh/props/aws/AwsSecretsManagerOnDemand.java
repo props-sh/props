@@ -112,9 +112,4 @@ public class AwsSecretsManagerOnDemand extends OnDemandSource {
         .handle((response, err) -> AwsHelpers.processSecretResponse(response, err, key))
         .join();
   }
-
-  @Override
-  public String id() {
-    return ID;
-  }
 }

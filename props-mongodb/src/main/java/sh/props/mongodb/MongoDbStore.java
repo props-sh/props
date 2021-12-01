@@ -231,11 +231,6 @@ public class MongoDbStore extends Source {
     return Collections.unmodifiableMap(results);
   }
 
-  @Override
-  public String id() {
-    return ID;
-  }
-
   /**
    * Retrieves all the key,value pairs defined in the underlying collection.
    *

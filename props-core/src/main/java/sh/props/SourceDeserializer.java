@@ -27,11 +27,13 @@ package sh.props;
 
 import static java.lang.String.format;
 import static java.util.function.Predicate.not;
+import static sh.props.Registry.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,8 @@ import sh.props.source.impl.ClasspathPropertyFile;
 import sh.props.source.impl.Environment;
 import sh.props.source.impl.PropertyFile;
 import sh.props.source.impl.SystemProperties;
+import sh.props.tuples.Pair;
+import sh.props.tuples.Tuple;
 
 /**
  * Allows reading and deserializing {@link Source} configuration from an input stream.
@@ -53,61 +57,33 @@ import sh.props.source.impl.SystemProperties;
  * appropriately parse it and construct the {@link Source}.
  */
 public class SourceDeserializer {
+  private final Map<String, SourceFactory<? extends Source>> deserializers;
 
   /**
-   * Allows external implementations to register additional sources, which will then be usable for
-   * deserialization from a configuration file.
+   * Class constructor that initializes the known deserializers.
    *
-   * @param key the key to register; must not have been previously bound
-   * @param factory the {@link Source} this key should be instantiated to
-   * @param <T> the type of the Source associated with the specified key
+   * @param deserializers the list of {@link SourceFactory} objects to register
    */
-  public static <T extends Source> void register(String key, SourceFactory<T> factory) {
-    if (factory == null) {
-      throw new IllegalArgumentException("Cannot register a null factory");
-    }
-
-    // register the source class and ensure the operation succeeded
-    SourceFactory<? extends Source> prev = Holder.MAP.putIfAbsent(key.toLowerCase(), factory);
-    if (prev != null) {
-      throw new IllegalArgumentException(
-          key
-              + " cannot be overwritten; it was previously registered with "
-              + prev.getClass().getSimpleName());
-    }
+  protected SourceDeserializer(Map<String, SourceFactory<? extends Source>> deserializers) {
+    this.deserializers = Collections.unmodifiableMap(deserializers);
   }
 
   /**
-   * Reads {@link Source} configuration from the specified input stream and return an array of
-   * sources, which can be passed to {@link sh.props.RegistryBuilder#RegistryBuilder(Source...)}.
+   * Finds a potential {@link Source} identifier in the specified line.
    *
-   * @param stream the input stream representing the configuration data
-   * @return an array of Source objects
+   * @param line the line to process
+   * @return an (id, options) pair
    */
-  public static Source[] read(InputStream stream) {
-    try (BufferedReader reader =
-        new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()))) {
-
-      List<String> sourceConfig =
-          reader.lines().filter(not(String::isBlank)).collect(Collectors.toList());
-      return read(sourceConfig);
-
-    } catch (Exception e) {
-      throw new IllegalStateException("Error encountered while reading source configuration", e);
+  static Pair<String, String> processSourceConfig(String line) {
+    line = line.trim();
+    int pos = line.indexOf('=');
+    if (pos == -1) {
+      // the options part was not specified
+      return Tuple.of(line.toLowerCase(), null);
     }
-  }
 
-  /**
-   * Reads {@link Source} configuration from the specified input stream and return an array of
-   * sources, which can be passed to {@link sh.props.RegistryBuilder#RegistryBuilder(Source...)}.
-   *
-   * @param sourceConfig a list of source configurations
-   * @return an array of Source objects
-   * @throws IllegalStateException if the configuration line cannot be used to identify an *
-   *     appropriate source
-   */
-  public static Source[] read(List<String> sourceConfig) {
-    return sourceConfig.stream().map(SourceDeserializer::constructSource).toArray(Source[]::new);
+    // return the (id, options) pair
+    return Tuple.of(line.substring(0, pos).toLowerCase(), line.substring(pos + 1));
   }
 
   /**
@@ -120,52 +96,104 @@ public class SourceDeserializer {
    *     appropriate source
    */
   @Nullable
-  static Source constructSource(String line) {
+  Source constructSource(String line) {
     // identify an implementation that can process this config line
-    String id = findId(line).toLowerCase();
-    SourceFactory<? extends Source> factory = Holder.MAP.get(id);
+    Pair<String, String> config = processSourceConfig(line);
+    var factory = this.deserializers.get(config.first);
     if (factory == null) {
       // fail if the configuration file contains other artifacts
       // this is to prevent users making wrong assumptions about their registry configuration
       // e.g., assuming a key configuration file is there, when in fact it isn't
       throw new IllegalStateException(
-          format(
-              "The specified config (%s) could not be mapped to a Source. Will not add to configuration.",
-              id));
+          format("The specified config (%s) could not be mapped to a Source", line));
     }
 
     // construct a Source by parsing the specified line
-    return factory.create(line);
+    return factory.create(config.second);
   }
 
   /**
-   * Finds a potential {@link Source} identifier in the specified line.
+   * Reads {@link Source} configuration from the specified input stream and return an array of
+   * sources, which can be passed to {@link RegistryBuilder#RegistryBuilder(Source...)}.
    *
-   * @param line the line to process
-   * @return the potential id
+   * @param stream the input stream representing the configuration data
+   * @return an array of Source objects
    */
-  static String findId(String line) {
-    line = line.trim();
-    int pos = line.indexOf('=');
-    if (pos == -1) {
-      // return the line, as-is, since it doesn't contain any separators
-      return line;
-    }
+  public Source[] read(InputStream stream) {
+    try (BufferedReader reader =
+        new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()))) {
 
-    // return only the identifier
-    return line.substring(0, pos);
+      var sourceConfig = reader.lines().filter(not(String::isBlank)).collect(Collectors.toList());
+      return read(sourceConfig);
+
+    } catch (Exception e) {
+      throw new IllegalStateException("Error encountered while reading source configuration", e);
+    }
   }
 
-  /** Static holder, ensuring the map does not get initialized if this feature is not used. */
-  private static class Holder {
-    public static final Map<String, SourceFactory<? extends Source>> MAP = new HashMap<>();
+  /**
+   * Reads {@link Source} configuration from the specified input stream and return an array of
+   * sources, which can be passed to {@link RegistryBuilder#RegistryBuilder(Source...)}.
+   *
+   * @param sourceConfig a list of source configurations
+   * @return an array of Source objects
+   * @throws IllegalStateException if the configuration line cannot be used to identify an *
+   *     appropriate source
+   */
+  public Source[] read(List<String> sourceConfig) {
+    return sourceConfig.stream().map(this::constructSource).toArray(Source[]::new);
+  }
 
-    static {
-      // define the core source implementations
-      MAP.put(ClasspathPropertyFile.ID, new ClasspathPropertyFile.Factory());
-      MAP.put(Environment.ID, new Environment.Factory());
-      MAP.put(PropertyFile.ID, new PropertyFile.Factory());
-      MAP.put(SystemProperties.ID, new SystemProperties.Factory());
+  /** Builder pattern for constructing {@link SourceDeserializer} objects. */
+  public static class Builder {
+    public static final String CLASSPATH_SOURCE = "classpath";
+    public static final String ENV_SOURCE = "env";
+    public static final String FILE_SOURCE = "file";
+    public static final String SYSTEM_SOURCE = "system";
+
+    final Map<String, SourceFactory<? extends Source>> deserializers = new HashMap<>();
+
+    /**
+     * Registers the default {@link SourceFactory} objects provided by props-core.
+     *
+     * @return this builder object (fluent interface)
+     */
+    public Builder withDefaults() {
+      deserializers.put(CLASSPATH_SOURCE, new ClasspathPropertyFile.Factory());
+      deserializers.put(ENV_SOURCE, new Environment.Factory());
+      deserializers.put(FILE_SOURCE, new PropertyFile.Factory());
+      deserializers.put(SYSTEM_SOURCE, new SystemProperties.Factory());
+      return this;
+    }
+
+    /**
+     * Allows external implementations to register additional sources, which will then be usable for
+     * deserialization from a configuration file.
+     *
+     * @param key the key to register; must not have been previously bound
+     * @param factory the {@link Source} this key should be instantiated to
+     * @param <T> the type of the Source associated with the specified key
+     * @return this builder object (fluent interface)
+     */
+    public <T extends Source> Builder withSource(String key, SourceFactory<T> factory) {
+      assertNotNull(factory, "source factory");
+
+      // register the source class and ensure the operation succeeded
+      var prev = deserializers.putIfAbsent(key.toLowerCase(), factory);
+      if (prev != null) {
+        throw new IllegalArgumentException(
+            key.toLowerCase() + " is already registered for " + prev.getClass().getSimpleName());
+      }
+      return this;
+    }
+
+    /**
+     * Builds the source deserializer.
+     *
+     * @return an initialized {@link SourceDeserializer}
+     */
+    public SourceDeserializer build() {
+      return new SourceDeserializer(deserializers);
     }
   }
 }

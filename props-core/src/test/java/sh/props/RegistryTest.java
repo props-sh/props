@@ -209,4 +209,44 @@ class RegistryTest extends AwaitAssertionTest {
     source.put("key", "2");
     await().until(prop::get, equalTo(2));
   }
+
+  @Test
+  void getFromLayer() {
+    // ARRANGE
+    var source1 = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
+    var source2 = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
+    var registry =
+        new RegistryBuilder().withSource(source1, "mem1").withSource(source2, "mem2").build();
+
+    source1.put("key", "1");
+    source2.put("key", "2");
+
+    // ACT // ASSERT
+    assertThat("Effective value expected", registry.get("key", Cast.asInteger()), equalTo(2));
+    assertThat("Effective value expected", registry.get("key", Cast.asInteger(), null), equalTo(2));
+
+    assertThat(
+        "Value from mem1 expected", registry.get("key", Cast.asInteger(), "mem1"), equalTo(1));
+    assertThat(
+        "Value from mem2 expected", registry.get("key", Cast.asInteger(), "mem2"), equalTo(2));
+  }
+
+  @Test
+  void nullSafetyChecks() {
+    // ARRANGE
+    var source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
+    var registry = new RegistryBuilder().withSource(source, "mem").build();
+
+    source.put("key", "1");
+
+    // ACT // ASSERT
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> registry.get(null, Cast.asInteger(), "mem"),
+        "key cannot be null");
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> registry.get(null, Cast.asInteger()),
+        "key cannot be null");
+  }
 }
