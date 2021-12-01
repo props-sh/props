@@ -104,9 +104,10 @@ public class RegistryBuilder {
     List<Layer> layers = new ArrayList<>(this.sources.size());
     for (var pair : this.sources) {
       Source source = assertNotNull(pair.first, "source");
+      String alias = pair.second;
 
       // wrap each source in a layer
-      Layer layer = new Layer(source, pair.second, registry, priority--);
+      Layer layer = new Layer(source, alias, registry, priority--);
 
       // link the previous and current layer
       layer.next = next;
