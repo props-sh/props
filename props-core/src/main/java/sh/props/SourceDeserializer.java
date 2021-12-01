@@ -123,8 +123,7 @@ public class SourceDeserializer {
     try (BufferedReader reader =
         new BufferedReader(new InputStreamReader(stream, Charset.defaultCharset()))) {
 
-      List<String> sourceConfig =
-          reader.lines().filter(not(String::isBlank)).collect(Collectors.toList());
+      var sourceConfig = reader.lines().filter(not(String::isBlank)).collect(Collectors.toList());
       return read(sourceConfig);
 
     } catch (Exception e) {
@@ -147,6 +146,11 @@ public class SourceDeserializer {
 
   /** Builder pattern for constructing {@link SourceDeserializer} objects. */
   public static class Builder {
+    public static final String CLASSPATH_SOURCE = "classpath";
+    public static final String ENV_SOURCE = "env";
+    public static final String FILE_SOURCE = "file";
+    public static final String SYSTEM_SOURCE = "system";
+
     final Map<String, SourceFactory<? extends Source>> deserializers = new HashMap<>();
 
     /**
@@ -155,10 +159,10 @@ public class SourceDeserializer {
      * @return this builder object (fluent interface)
      */
     public Builder withDefaults() {
-      deserializers.put("classpath", new ClasspathPropertyFile.Factory());
-      deserializers.put("env", new Environment.Factory());
-      deserializers.put("file", new PropertyFile.Factory());
-      deserializers.put("system", new SystemProperties.Factory());
+      deserializers.put(CLASSPATH_SOURCE, new ClasspathPropertyFile.Factory());
+      deserializers.put(ENV_SOURCE, new Environment.Factory());
+      deserializers.put(FILE_SOURCE, new PropertyFile.Factory());
+      deserializers.put(SYSTEM_SOURCE, new SystemProperties.Factory());
       return this;
     }
 
