@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.interfaces.Prop;
+import sh.props.interfaces.Subscribable;
 
 /**
  * This class implements the base functionality required to notify subscribers asynchronously that
@@ -48,13 +49,14 @@ import sh.props.interfaces.Prop;
  *
  * @param <T> the type of the prop object
  */
-public abstract class SubscribableProp<T> implements Prop<T> {
+public abstract class SubscribableProp<T> implements Subscribable<T>, Prop<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
   protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();
   protected final List<Consumer<Throwable>> errorHandlers = new CopyOnWriteArrayList<>();
   private final ReentrantLock sendStage = new ReentrantLock();
   protected AtomicLong lastProcessedEpoch = new AtomicLong();
+  @Nullable protected Scheduler scheduler = null;
 
   /**
    * Wrap the passed consumer and catch any exceptions. If any exceptions are thrown by {@link
@@ -116,9 +118,9 @@ public abstract class SubscribableProp<T> implements Prop<T> {
 
   /**
    * Accepts a value and an epoch. Since this method offloads the actual work of sending the
-   * notification to the {@link ForkJoinPool}, the value is accompanied by an ever increasing epoch.
-   * The epoch is used to determine if the event should still be propagated, thus ensuring that only
-   * the most recent updates are propagated.
+   * notification to a {@link ForkJoinPool} (provided by {@link #scheduler}), the value is
+   * accompanied by an ever-increasing epoch. The epoch is used to determine if the event should
+   * still be propagated, thus ensuring that only the most recent updates are propagated.
    *
    * <p>For example, since the ForkJoinPool could be busy with other work, the value could be
    * updated to A and then quickly to B, before the task has a chance to run. In that case, only B
@@ -133,36 +135,36 @@ public abstract class SubscribableProp<T> implements Prop<T> {
       return;
     }
 
-    ForkJoinPool.commonPool()
-        .execute(
-            () -> {
-              long current =
-                  this.lastProcessedEpoch.updateAndGet(SubscribableProp.setIfMoreRecent(epoch));
+    Scheduler runner = scheduler != null ? scheduler : Scheduler.instance();
+    runner.forkJoinExecute(
+        () -> {
+          long current =
+              this.lastProcessedEpoch.updateAndGet(SubscribableProp.setIfMoreRecent(epoch));
 
-              // the epoch was not updated, which means that the current update event should be
-              // discarded
-              if (current != epoch) {
-                return;
-              }
+          // the epoch was not updated, which means that the current update event should be
+          // discarded
+          if (current != epoch) {
+            return;
+          }
 
-              // lock to ensure that the updated value was received by all consumers
-              // before allowing a new update to be processed
-              this.sendStage.lock();
+          // lock to ensure that the updated value was received by all consumers
+          // before allowing a new update to be processed
+          this.sendStage.lock();
 
-              try {
-                // since some time may have passed, recheck that this epoch is still valid
-                if (this.lastProcessedEpoch.get() != epoch) {
-                  // if not, discard the update
-                  return;
-                }
+          try {
+            // since some time may have passed, recheck that this epoch is still valid
+            if (this.lastProcessedEpoch.get() != epoch) {
+              // if not, discard the update
+              return;
+            }
 
-                // send the same value to all consumers
-                this.updateHandlers.forEach(c -> c.accept(value));
-              } finally {
-                // allow the next update to be sent
-                this.sendStage.unlock();
-              }
-            });
+            // send the same value to all consumers
+            this.updateHandlers.forEach(c -> c.accept(value));
+          } finally {
+            // allow the next update to be sent
+            this.sendStage.unlock();
+          }
+        });
   }
 
   /**

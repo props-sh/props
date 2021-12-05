@@ -36,7 +36,8 @@ import sh.props.tuples.Tuple;
 
 public class RegistryBuilder {
 
-  ArrayDeque<Pair<Source, String>> sources = new ArrayDeque<>();
+  private final ArrayDeque<Pair<Source, String>> sources = new ArrayDeque<>();
+  private Scheduler scheduler = Scheduler.instance();
 
   /**
    * Class constructor that accepts sources that the {@link Registry} will use for retrieving
@@ -85,12 +86,23 @@ public class RegistryBuilder {
   }
 
   /**
+   * Specified a custom {@link Scheduler} to use for async operations.
+   *
+   * @param scheduler the scheduler object to use
+   * @return this builder object (fluent interface)
+   */
+  public RegistryBuilder withScheduler(Scheduler scheduler) {
+    this.scheduler = scheduler;
+    return this;
+  }
+
+  /**
    * Builds a registry object, given the sources that were already added.
    *
    * @return a configured {@link Registry} object
    */
   public Registry build() {
-    Registry registry = new Registry();
+    Registry registry = new Registry(this.scheduler);
 
     // validate sources
     if (this.sources.isEmpty()) {

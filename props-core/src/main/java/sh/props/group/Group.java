@@ -26,6 +26,7 @@
 package sh.props.group;
 
 import sh.props.AbstractProp;
+import sh.props.SubscribableProp;
 import sh.props.interfaces.Subscribable;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
@@ -108,12 +109,12 @@ public class Group {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> AbstractPropGroup<Tuple<T, U, V, W, X>> of(
+  public static <T, U, V, W, X> SubscribableProp<Tuple<T, U, V, W, X>> of(
       AbstractProp<T> first,
       AbstractProp<U> second,
       AbstractProp<V> third,
       AbstractProp<W> fourth,
       AbstractProp<X> fifth) {
-    return new SynchronizedTuple<>(first, second, third, fourth, fifth);
+    return new QuintupleSyncdPropGroup<>(first, second, third, fourth, fifth);
   }
 }

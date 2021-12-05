@@ -41,6 +41,20 @@ public class BackgroundExecutorFactory {
   private static final Logger log = Logger.getLogger(BackgroundExecutorFactory.class.getName());
 
   /**
+   * Creates {@link ScheduledExecutorService} based on daemon {@link Thread}s, setting a default
+   * parallelism matching the system's available threads, as returned by {@link
+   * Runtime#availableProcessors()}.
+   *
+   * <p>Any such executors will attempt graceful shutdown when instructed and will wait for any
+   * current requests to complete, up to the default {@link #DEFAULT_GRACE_PERIOD}.
+   *
+   * @return an initialized scheduled executor
+   */
+  public static ScheduledExecutorService create() {
+    return create(Runtime.getRuntime().availableProcessors(), DEFAULT_GRACE_PERIOD);
+  }
+
+  /**
    * Creates {@link ScheduledExecutorService} based on daemon {@link Thread}s.
    *
    * <p>Any such executors will attempt graceful shutdown when instructed and will wait for any
