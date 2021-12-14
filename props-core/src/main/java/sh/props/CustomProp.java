@@ -28,7 +28,6 @@ package sh.props;
 import static java.lang.String.format;
 import static sh.props.Validate.assertNotNull;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
@@ -56,8 +55,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
 
   private final boolean isSecret;
 
-  private final AtomicReference<T> currentValue = new AtomicReference<>();
-  private final AtomicLong epoch = new AtomicLong();
+  private final AtomicReference<Holder<T>> ref = new AtomicReference<>(new Holder<>());
 
   /**
    * Constructs a new property class.
@@ -130,28 +128,40 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    */
   @Override
   protected boolean setValue(@Nullable String updateValue) {
-    // store the epoch, reserving a 'point-in-time' for this value update
-    long epoch = this.epoch.incrementAndGet();
+    // decode the value, if non null
+    T value = updateValue != null ? this.decode(updateValue) : null;
 
+    // validate the value before updating it
     try {
-      // decode the value, if non null
-      T value = updateValue != null ? this.decode(updateValue) : null;
-
-      // validate the value before updating it
       this.validateBeforeSet(value);
 
-      // update the value
-      this.currentValue.set(value);
+    } catch (InvalidUpdateOpException err) {
+      // if value cannot be validated before an update, mark the prop to be in an error state
+      var res = this.ref.updateAndGet(holder -> holder.error(err));
 
-      // ensure the value is valid before sending it to subscribers
-      this.validateBeforeGet(value);
-      this.onValueUpdate(value, epoch);
+      // and notify subscribers
+      this.onUpdateError(err, res.epoch);
+
+      return false;
+    }
+
+    // update the value
+    var res = this.ref.updateAndGet(holder -> holder.value(value));
+
+    // then send the value to any subscribers
+    T currentValue = valueOrDefault(res.value);
+
+    try {
+      // ensure the value is valid before reading it
+      this.validateBeforeGet(currentValue);
+      // then update subscribers
+      this.onValueUpdate(currentValue, res.epoch);
 
       return true;
 
-    } catch (InvalidUpdateOpException | RuntimeException e) {
-      // logs the exception and signals any subscribers
-      this.onUpdateError(e, epoch);
+    } catch (InvalidReadOpException err) {
+      // if the value is not valid for reads, notify subscribers
+      this.onUpdateError(err, res.epoch);
 
       return false;
     }
@@ -166,13 +176,30 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
   @Override
   @Nullable
   public T get() {
-    // retrieve the value from the atomic ref
-    T currentValue = this.currentValue.get();
-    // set a default, if the value is missing
-    T value = currentValue != null ? currentValue : this.defaultValue;
     // ensure the Prop is in a valid state before returning it
+    T value = valueOrDefault(getValue());
     this.validateBeforeGet(value);
     return value;
+  }
+
+  /**
+   * Retrieves the currently set value.
+   *
+   * @return value or null
+   */
+  @SuppressWarnings("NullAway")
+  private T getValue() {
+    // we are always guaranteed to get a non-null Holder from the AtomicRef
+    return this.ref.get().value;
+  }
+
+  /**
+   * Retrieves the currently set value of this prop, or the {@link #defaultValue}, if the currently
+   * set value is null.
+   */
+  @Nullable
+  private T valueOrDefault(@Nullable T currentValue) {
+    return currentValue != null ? currentValue : this.defaultValue;
   }
 
   /**
@@ -233,7 +260,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    */
   @Nullable
   protected String getSafeValue() {
-    T currentValue = this.currentValue.get();
+    T currentValue = valueOrDefault(getValue());
     if (this.isSecret()) {
       return this.redact(currentValue);
     } else {
