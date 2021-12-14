@@ -35,6 +35,7 @@ public class Validate {
    * Ensures that the specified param is not null.
    *
    * @param key the key to validate
+   * @param param the name of the parameter
    * @param <T> the type of the key
    * @return the specified key
    */
