@@ -27,6 +27,7 @@ package sh.props.group;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
+import sh.props.Holder;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 
@@ -72,7 +73,11 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
    * @param op the transformation to apply
    */
   protected void apply(UnaryOperator<TupleT> op) {
-    Holder<TupleT> updated = this.value.updateAndGet(holder -> holder.value(op));
+    // TODO(mihaibojin): this behaviour is inconsistent, as it can erase a previously existing
+    //                   error. Need to figure out how to only clear errors when a previously
+    //                   errored Tuple element receives a good value
+    Holder<TupleT> updated =
+        this.value.updateAndGet(holder -> holder.value(op.apply(holder.value)));
     this.onValueUpdate(updated.value, updated.epoch);
   }
 
@@ -104,52 +109,5 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
     }
 
     return result.value;
-  }
-
-  /**
-   * Holder class that keep references to a value/error, as well as an epoch that can be used to
-   * determine the most current value in a series of concurrent operations.
-   *
-   * @param <TupleT> the type of the value held by this class
-   */
-  protected static class Holder<TupleT> {
-    private final long epoch;
-    private final @Nullable TupleT value;
-    private final @Nullable Throwable error;
-
-    /** Default constructor that initializes with empty values, starting from epoch 0. */
-    public Holder() {
-      this.epoch = 0;
-      this.value = null;
-      this.error = null;
-    }
-
-    /**
-     * Class constructor used to create a new complete Holder.
-     *
-     * @param epoch the epoch to set
-     * @param value a value
-     * @param error or an error
-     */
-    private Holder(long epoch, @Nullable TupleT value, @Nullable Throwable error) {
-      this.epoch = epoch;
-      this.value = value;
-      this.error = error;
-    }
-
-    public Holder<TupleT> value(TupleT value) {
-      return new Holder<>(this.epoch + 1, value, null);
-    }
-
-    // TODO(mihaibojin): this behaviour is inconsistent, as it can erase a previously existing
-    //                   error. Need to figure out how to only clear errors when a previously
-    //                   errored Tuple element receives a good value
-    public Holder<TupleT> value(UnaryOperator<TupleT> op) {
-      return new Holder<>(this.epoch + 1, op.apply(this.value), null);
-    }
-
-    public Holder<TupleT> error(Throwable throwable) {
-      return new Holder<>(this.epoch + 1, null, throwable);
-    }
   }
 }
