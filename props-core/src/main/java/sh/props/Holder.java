@@ -25,25 +25,48 @@
 
 package sh.props;
 
-import static java.lang.String.format;
-
 import sh.props.annotations.Nullable;
 
-public class Validate {
+/**
+ * Holder class that keep references to a value/error, as well as an epoch that can be used to
+ * determine the most current value in a series of concurrent operations.
+ *
+ * <p>This holder class can transition between values and errors, but cannot contain both at the
+ * same time.
+ *
+ * @param <V> the type of the value held by this class
+ */
+public class Holder<V> {
+
+  public final long epoch;
+  public final @Nullable V value;
+
+  @SuppressWarnings("UnusedVariable")
+  public final @Nullable Throwable error;
+
+  /** Default constructor that initializes with empty values, starting from epoch 0. */
+  public Holder() {
+    this(0, null, null);
+  }
 
   /**
-   * Ensures that the specified param is not null.
+   * Internal constructor for initializing a new object.
    *
-   * @param key the key to validate
-   * @param param the name of the parameter
-   * @param <T> the type of the key
-   * @return the specified key
+   * @param epoch the epoch to set
+   * @param value a value
+   * @param error or an error
    */
-  public static <T> T assertNotNull(@Nullable T key, String param) {
-    if (key == null) {
-      throw new IllegalArgumentException(format("%s cannot be null", param));
-    }
+  private Holder(long epoch, @Nullable V value, @Nullable Throwable error) {
+    this.epoch = epoch;
+    this.value = value;
+    this.error = error;
+  }
 
-    return key;
+  public Holder<V> value(@Nullable V value) {
+    return new Holder<>(this.epoch + 1, value, null);
+  }
+
+  public Holder<V> error(Throwable throwable) {
+    return new Holder<>(this.epoch + 1, null, throwable);
   }
 }

@@ -87,7 +87,7 @@ public class FileWatchSvc implements Runnable {
    * @return the default {@link FileWatchSvc}
    */
   public static FileWatchSvc instance() {
-    return Holder.DEFAULT;
+    return Initializer.DEFAULT;
   }
 
   /**
@@ -185,7 +185,7 @@ public class FileWatchSvc implements Runnable {
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */
-  private static final class Holder {
+  private static final class Initializer {
 
     private static final FileWatchSvc DEFAULT;
 

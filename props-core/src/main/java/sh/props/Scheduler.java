@@ -60,7 +60,7 @@ public class Scheduler {
    * @return the default {@link Scheduler}
    */
   public static Scheduler instance() {
-    return Holder.DEFAULT;
+    return Initializer.DEFAULT;
   }
 
   /**
@@ -91,7 +91,7 @@ public class Scheduler {
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */
-  private static class Holder {
+  private static final class Initializer {
 
     private static final Scheduler DEFAULT = new Scheduler();
   }

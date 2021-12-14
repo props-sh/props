@@ -278,47 +278,4 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
     final String template = "Prop{%s=%s}";
     return format(template, this.key, this.getSafeValue());
   }
-
-  /**
-   * Holder class that keep references to a value/error, as well as an epoch that can be used to
-   * determine the most current value in a series of concurrent operations.
-   *
-   * <p>This holder class can transition between values and errors, but cannot contain both at the
-   * same time.
-   *
-   * @param <V> the type of the value held by this class
-   */
-  protected static class Holder<V> {
-    private final long epoch;
-    private final @Nullable V value;
-
-    @SuppressWarnings("UnusedVariable")
-    private final @Nullable Throwable error;
-
-    /** Default constructor that initializes with empty values, starting from epoch 0. */
-    public Holder() {
-      this(0, null, null);
-    }
-
-    /**
-     * Internal constructor for initializing a new object.
-     *
-     * @param epoch the epoch to set
-     * @param value a value
-     * @param error or an error
-     */
-    private Holder(long epoch, @Nullable V value, @Nullable Throwable error) {
-      this.epoch = epoch;
-      this.value = value;
-      this.error = error;
-    }
-
-    public Holder<V> value(@Nullable V value) {
-      return new Holder<>(this.epoch + 1, value, null);
-    }
-
-    public Holder<V> error(Throwable throwable) {
-      return new Holder<>(this.epoch + 1, null, throwable);
-    }
-  }
 }
