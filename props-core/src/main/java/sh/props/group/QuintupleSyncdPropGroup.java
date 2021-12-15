@@ -41,6 +41,9 @@ import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
+// this was an initial implementation, replaced by a better algorightm in {@link
+// AnotherQTSyncdPropGroup)
+@Deprecated(forRemoval = true)
 public class QuintupleSyncdPropGroup<T, U, V, W, X> extends SubscribableProp<Tuple<T, U, V, W, X>> {
   private static final int COUNT = 5;
 

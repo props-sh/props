@@ -115,6 +115,6 @@ public class Group {
       AbstractProp<V> third,
       AbstractProp<W> fourth,
       AbstractProp<X> fifth) {
-    return new QuintupleSyncdPropGroup<>(first, second, third, fourth, fifth);
+    return new AnotherQuintupleSyncdPropGroup<>(first, second, third, fourth, fifth);
   }
 }
