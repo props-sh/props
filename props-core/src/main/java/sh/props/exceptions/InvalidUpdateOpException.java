@@ -31,6 +31,7 @@ package sh.props.exceptions;
  * <p>This class is a checked exception because it needs to be handled by the registry and should
  * not be left to callers.
  */
+// TODO(mihaibojin): subclass RuntimeException
 public class InvalidUpdateOpException extends Exception {
 
   private static final long serialVersionUID = -8725185292576512276L;

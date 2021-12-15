@@ -188,10 +188,10 @@ class RefactoredPropTest extends AwaitAssertionTest {
     prop2.subscribe((ignore) -> {}, errorReceived);
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
-    RefactoredProp<String, Integer> supplier =
+    RefactoredProp<String, Integer> refactoredProp =
         new RefactoredProp<>(prop1, prop2, Integer::parseInt);
 
-    supplier.subscribe(consumer, (ignore) -> {});
+    refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key2", "2");
@@ -211,6 +211,6 @@ class RefactoredPropTest extends AwaitAssertionTest {
     //                   value/error.  On the other hand, maybe the logic should be: try prop2,
     //                   if missing or error, try prop1, and if missing or error, throw 1/2
     //                   exceptions
-    await().until(supplier::get, equalTo(1));
+    await().until(refactoredProp::get, equalTo(1));
   }
 }

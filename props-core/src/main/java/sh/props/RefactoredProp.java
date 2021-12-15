@@ -92,6 +92,9 @@ public class RefactoredProp<T, R> implements Prop<R> {
       // if both values are null, return null
       return null;
     } catch (RuntimeException e) {
+      // TODO(mihaibojin): potentially define a conversion exception and just throw it instead of
+      //                   wrapping
+
       // wrap any exceptions
       throw new InvalidReadOpException(e);
     }

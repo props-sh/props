@@ -111,5 +111,3 @@ public abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT>
     return result.value;
   }
 }
-
-// value1 value2 error1 value2
