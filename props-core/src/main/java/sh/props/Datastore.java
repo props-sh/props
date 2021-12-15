@@ -34,6 +34,8 @@ import sh.props.tuples.Pair;
  * <p>Currently, this interface is not ready to be made public and only a single (internal)
  * implementation is provided.
  */
+// TODO(mihaibojin): superfluous for the moment, and it overcomplicates the Registry; remove
+@Deprecated(forRemoval = true)
 interface Datastore {
 
   /**

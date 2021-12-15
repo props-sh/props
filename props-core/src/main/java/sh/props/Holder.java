@@ -98,6 +98,11 @@ public class Holder<V> {
     return value;
   }
 
+  /**
+   * Prints the Holder's underling value or error. Useful for debugging purposes.
+   *
+   * @return a value or an error
+   */
   @Override
   public String toString() {
     return error == null ? Objects.toString(value) : error.toString();

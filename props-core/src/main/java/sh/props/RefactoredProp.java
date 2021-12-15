@@ -62,6 +62,11 @@ public class RefactoredProp<T, R> implements Prop<R> {
   public RefactoredProp(
       AbstractProp<T> oldProp, AbstractProp<R> refactoredProp, Function<T, R> converter) {
     this.key = refactoredProp.key();
+    // TODO(mihaibojin): since CustomProp is epoch aware, maybe remove the use of Groups since it's
+    //                   no longer needed and it doesn't make sense; the correct logic should be:
+    //                   - try the refactored prop, if value return, if error hold
+    //                   - try the original prop, if value return, if error throw both errors,
+    //                   suppressed
     this.group = Group.of(oldProp, refactoredProp);
     this.converter = converter;
   }
