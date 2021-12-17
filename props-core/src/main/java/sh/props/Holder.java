@@ -69,6 +69,7 @@ public class Holder<V> {
    * Create a new Holder, with the specified value.
    *
    * @param value the value to set
+   * @param <V> the type of the underlying value
    * @return a new object
    */
   public static <V> Holder<V> ofValue(@Nullable V value) {
@@ -79,6 +80,7 @@ public class Holder<V> {
    * Create a new Holder, with the specified error.
    *
    * @param err the error that was encountered
+   * @param <V> the type of the underlying value
    * @return a new object
    */
   public static <V> Holder<V> ofError(@Nullable Throwable err) {
