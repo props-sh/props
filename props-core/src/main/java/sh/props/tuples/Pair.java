@@ -58,6 +58,8 @@ public class Pair<T, U> {
    *
    * @param pair the original pair that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
    * @return a new object with the value updated
    */
   public static <T, U> Pair<T, U> updateFirst(@Nullable Pair<T, U> pair, @Nullable T value) {
@@ -73,6 +75,8 @@ public class Pair<T, U> {
    *
    * @param pair the original pair that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
    * @return a new object with the value updated
    */
   public static <T, U> Pair<T, U> updateSecond(@Nullable Pair<T, U> pair, @Nullable U value) {

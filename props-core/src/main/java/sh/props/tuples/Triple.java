@@ -59,6 +59,9 @@ public class Triple<T, U, V> extends Pair<T, U> {
    *
    * @param triple the original triple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
    * @return a new object with the value updated
    */
   public static <T, U, V> Triple<T, U, V> updateFirst(
@@ -75,6 +78,9 @@ public class Triple<T, U, V> extends Pair<T, U> {
    *
    * @param triple the original triple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
    * @return a new object with the value updated
    */
   public static <T, U, V> Triple<T, U, V> updateSecond(
@@ -91,6 +97,9 @@ public class Triple<T, U, V> extends Pair<T, U> {
    *
    * @param triple the original triple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
    * @return a new object with the value updated
    */
   public static <T, U, V> Triple<T, U, V> updateThird(

@@ -67,6 +67,11 @@ public final class Quintuple<T, U, V, W, X> extends Quad<T, U, V, W> {
    *
    * @param quintuple the original quintuple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object in the tuple
+   * @param <U> the type of the second object in the tuple
+   * @param <V> the type of the third object in the tuple
+   * @param <W> the type of the fourth object in the tuple
+   * @param <X> the type of the fifth object in the tuple
    * @return a new object with the value updated
    */
   public static <T, U, V, W, X> Quintuple<T, U, V, W, X> updateFirst(
@@ -84,6 +89,11 @@ public final class Quintuple<T, U, V, W, X> extends Quad<T, U, V, W> {
    *
    * @param quintuple the original quintuple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object in the tuple
+   * @param <U> the type of the second object in the tuple
+   * @param <V> the type of the third object in the tuple
+   * @param <W> the type of the fourth object in the tuple
+   * @param <X> the type of the fifth object in the tuple
    * @return a new object with the value updated
    */
   public static <T, U, V, W, X> Quintuple<T, U, V, W, X> updateSecond(
@@ -101,6 +111,11 @@ public final class Quintuple<T, U, V, W, X> extends Quad<T, U, V, W> {
    *
    * @param quintuple the original quintuple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object in the tuple
+   * @param <U> the type of the second object in the tuple
+   * @param <V> the type of the third object in the tuple
+   * @param <W> the type of the fourth object in the tuple
+   * @param <X> the type of the fifth object in the tuple
    * @return a new object with the value updated
    */
   public static <T, U, V, W, X> Quintuple<T, U, V, W, X> updateThird(
@@ -118,6 +133,11 @@ public final class Quintuple<T, U, V, W, X> extends Quad<T, U, V, W> {
    *
    * @param quintuple the original quintuple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object in the tuple
+   * @param <U> the type of the second object in the tuple
+   * @param <V> the type of the third object in the tuple
+   * @param <W> the type of the fourth object in the tuple
+   * @param <X> the type of the fifth object in the tuple
    * @return a new object with the value updated
    */
   public static <T, U, V, W, X> Quintuple<T, U, V, W, X> updateFourth(
@@ -135,6 +155,11 @@ public final class Quintuple<T, U, V, W, X> extends Quad<T, U, V, W> {
    *
    * @param quintuple the original quintuple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object in the tuple
+   * @param <U> the type of the second object in the tuple
+   * @param <V> the type of the third object in the tuple
+   * @param <W> the type of the fourth object in the tuple
+   * @param <X> the type of the fifth object in the tuple
    * @return a new object with the value updated
    */
   public static <T, U, V, W, X> Quintuple<T, U, V, W, X> updateFifth(

@@ -61,6 +61,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    *
    * @param quad the original quad that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
    * @return a new object with the value updated
    */
   public static <T, U, V, W> Quad<T, U, V, W> updateFirst(
@@ -77,6 +81,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    *
    * @param quad the original quad that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
    * @return a new object with the value updated
    */
   public static <T, U, V, W> Quad<T, U, V, W> updateSecond(
@@ -93,6 +101,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    *
    * @param quad the original quad that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
    * @return a new object with the value updated
    */
   public static <T, U, V, W> Quad<T, U, V, W> updateThird(
@@ -109,6 +121,10 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    *
    * @param quad the original quad that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
    * @return a new object with the value updated
    */
   public static <T, U, V, W> Quad<T, U, V, W> updateFourth(
