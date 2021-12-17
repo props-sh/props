@@ -40,6 +40,7 @@ import sh.props.textfixtures.StoreAllValuesConsumer;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
+import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
@@ -149,7 +150,7 @@ public class CoordinatedAsyncTest extends AwaitAssertionTest {
     var prop4 = registry.bind(new TestIntProp("key4", null));
     var prop5 = registry.bind(new TestIntProp("key5", null));
 
-    StoreAllValuesConsumer<Tuple<Integer, Integer, Integer, Integer, Integer>> consumer =
+    StoreAllValuesConsumer<Quintuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
     prop.subscribe(consumer, (ignored) -> {});

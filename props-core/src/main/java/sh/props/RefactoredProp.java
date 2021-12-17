@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.InvalidReadOpException;
-import sh.props.group.AbstractPropGroup;
 import sh.props.group.Group;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
@@ -48,7 +47,7 @@ import sh.props.tuples.Pair;
 public class RefactoredProp<T, R> implements Prop<R> {
 
   private final String key;
-  private final AbstractPropGroup<Pair<T, R>> group;
+  private final SubscribableProp<Pair<T, R>> group;
   private final Function<T, R> converter;
 
   /**

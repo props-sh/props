@@ -55,21 +55,31 @@ public class Pair<T, U> {
   /**
    * Constructs a new {@link Pair} with the updated value.
    *
+   * @param pair the original pair that will provide the other values
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  public Pair<T, U> updateFirst(@Nullable T value) {
-    return new Pair<>(value, this.second);
+  public static <T, U> Pair<T, U> updateFirst(@Nullable Pair<T, U> pair, @Nullable T value) {
+    if (pair == null) {
+      return new Pair<>(value, null);
+    }
+
+    return new Pair<>(value, pair.second);
   }
 
   /**
    * Constructs a new {@link Pair} with the updated value.
    *
+   * @param pair the original pair that will provide the other values
    * @param value the new value to set
    * @return a new object with the value updated
    */
-  public Pair<T, U> updateSecond(@Nullable U value) {
-    return new Pair<>(this.first, value);
+  public static <T, U> Pair<T, U> updateSecond(@Nullable Pair<T, U> pair, @Nullable U value) {
+    if (pair == null) {
+      return new Pair<>(null, value);
+    }
+
+    return new Pair<>(pair.first, value);
   }
 
   /**
