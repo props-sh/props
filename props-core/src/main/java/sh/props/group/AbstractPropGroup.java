@@ -38,14 +38,16 @@ import sh.props.tuples.Tuple;
 
 abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   protected final AtomicReference<Holder<TupleT>> holderRef;
+  private final String key;
 
   /**
    * Accepts the reference to the holder of (value,error,epoch) triples.
    *
    * @param holderRef the holder ref
    */
-  protected AbstractPropGroup(AtomicReference<Holder<TupleT>> holderRef) {
+  protected AbstractPropGroup(AtomicReference<Holder<TupleT>> holderRef, String key) {
     this.holderRef = holderRef;
+    this.key = key;
   }
 
   /**
@@ -95,12 +97,17 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   @Override
   @SuppressWarnings("NullAway")
   public TupleT get() {
-    var holder = holderRef.get();
-    try {
-      return holder.value();
-    } catch (Throwable e) {
-      throw ensureUnchecked(e);
-    }
+    return holderRef.get().value();
+  }
+
+  /**
+   * Returns a key for this object. The key is generated using {@link #multiKey(String, String...)}.
+   *
+   * @return the key that identifies this prop group
+   */
+  @Override
+  public String key() {
+    return key;
   }
 
   /**
@@ -114,7 +121,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @return the updated holder object
    */
   @SuppressWarnings("NullAway")
-  protected Holder<TupleT> updateValue(
+  protected Holder<TupleT> setValueState(
       AtomicReference<Holder<TupleT>> ref,
       Function<TupleT, TupleT> transformer,
       BiConsumer<TupleT, Long> subscriber) {
@@ -129,7 +136,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @param throwable the error to set
    * @return the updated holder
    */
-  protected Holder<TupleT> setError(Throwable throwable) {
+  protected Holder<TupleT> setErrorState(Throwable throwable) {
     var result = holderRef.updateAndGet(holder -> holder.error(throwable));
     this.onUpdateError(throwable, result.epoch);
     return result;

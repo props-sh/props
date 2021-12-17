@@ -25,7 +25,7 @@
 
 package sh.props;
 
-import static sh.props.Validate.ensureUnchecked;
+import static sh.props.Utilities.ensureUnchecked;
 
 import java.util.Objects;
 import sh.props.annotations.Nullable;

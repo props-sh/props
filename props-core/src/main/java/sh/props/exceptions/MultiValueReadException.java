@@ -23,42 +23,19 @@
  *
  */
 
-package sh.props;
+package sh.props.exceptions;
 
-import static java.lang.String.format;
+import java.util.List;
 
-import sh.props.annotations.Nullable;
-
-public class Validate {
+public class MultiValueReadException extends ValueCannotBeReadException {
 
   /**
-   * Ensures that the specified param is not null.
+   * Standard constructor that takes an error message.
    *
-   * @param key the key to validate
-   * @param param the name of the parameter
-   * @param <T> the type of the key
-   * @return the specified key
+   * @param errors multiple errors suppressed by this exception
    */
-  public static <T> T assertNotNull(@Nullable T key, String param) {
-    if (key == null) {
-      throw new IllegalArgumentException(format("%s cannot be null", param));
-    }
-
-    return key;
-  }
-
-  /**
-   * Ensures thrown exceptions are unchecked.
-   *
-   * @param t the exception to be thrown
-   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
-   *     throwable
-   */
-  static RuntimeException ensureUnchecked(Throwable t) {
-    if (t instanceof RuntimeException) {
-      return (RuntimeException) t;
-    }
-
-    return new RuntimeException(t);
+  public MultiValueReadException(List<Throwable> errors) {
+    super("One or multiple errors prevented reading a value");
+    errors.forEach(this::addSuppressed);
   }
 }

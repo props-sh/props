@@ -25,7 +25,7 @@
 
 package sh.props;
 
-import static sh.props.Validate.ensureUnchecked;
+import static sh.props.Utilities.ensureUnchecked;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -149,12 +149,7 @@ public class RefactoredProp<T, R> implements Prop<R> {
   @Override
   @Nullable
   public R get() {
-    try {
-      return attemptValueRetrieval(refactoredProp, originalProp, converter).value();
-    } catch (Throwable e) {
-      // we know attemptValueRetrieval() will only contain InvalidReadOpException types
-      throw (ValueCannotBeReadException) e;
-    }
+    return attemptValueRetrieval(refactoredProp, originalProp, converter).value();
   }
 
   /**

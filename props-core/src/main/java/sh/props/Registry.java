@@ -62,7 +62,7 @@ public class Registry implements Notifiable {
 
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-    Validate.assertNotNull(key, "key");
+    Utilities.assertNotNull(key, "key");
 
     // check if we have any props to notify
     Collection<AbstractProp<?>> props = this.notifications.get(key);
@@ -73,12 +73,7 @@ public class Registry implements Notifiable {
 
     // alleviate the risk of blocking the main (update) thread
     // by offloading to an executor pool, since we don't control Prop subscribers
-    scheduler.forkJoinExecute(
-        () -> {
-          for (AbstractProp<?> prop : props) {
-            prop.setValue(value);
-          }
-        });
+    scheduler.forkJoinExecute(() -> props.forEach(prop -> prop.setValue(value)));
   }
 
   /**
@@ -185,8 +180,8 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
-    Validate.assertNotNull(key, "key");
-    Validate.assertNotNull(converter, "converter");
+    Utilities.assertNotNull(key, "key");
+    Utilities.assertNotNull(converter, "converter");
 
     waitForOnDemandValuesToBePopulated(key);
 
@@ -208,8 +203,8 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter, String alias) {
-    Validate.assertNotNull(key, "key");
-    Validate.assertNotNull(converter, "converter");
+    Utilities.assertNotNull(key, "key");
+    Utilities.assertNotNull(converter, "converter");
 
     // if no alias was provided, search all layers
     if (alias == null) {

@@ -169,6 +169,6 @@ class TemplatedPropAsyncTest {
     source.put("key5", "5");
 
     // ASSERT
-    verify(consumer, timeout(1_000).atLeastOnce()).accept(expected);
+    verify(consumer, timeout(1_000)).accept(expected);
   }
 }

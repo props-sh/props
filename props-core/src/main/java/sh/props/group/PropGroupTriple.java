@@ -30,12 +30,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.exceptions.ValueCannotBeReadException;
+import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
-  private final String key;
   private final AbstractProp<T> first;
   private final AbstractProp<U> second;
   private final AbstractProp<V> third;
@@ -48,25 +47,24 @@ class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
    * @param third the third prop
    */
   public PropGroupTriple(AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
-    super(new AtomicReference<>(new Holder<>()));
+    super(new AtomicReference<>(new Holder<>()), multiKey(first.key(), second.key(), third.key()));
     this.first = first;
     this.second = second;
     this.third = third;
-    key = multiKey(first.key(), second.key(), third.key());
 
     // guarantee that holder.value is not null
     readValues();
 
     // register for prop updates
     first.subscribe(
-        v -> updateValue(holderRef, t -> Triple.updateFirst(t, v), this::onValueUpdate),
-        this::setError);
+        v -> setValueState(holderRef, t -> Triple.updateFirst(t, v), this::onValueUpdate),
+        this::setErrorState);
     second.subscribe(
-        v -> updateValue(holderRef, t -> Triple.updateSecond(t, v), this::onValueUpdate),
-        this::setError);
+        v -> setValueState(holderRef, t -> Triple.updateSecond(t, v), this::onValueUpdate),
+        this::setErrorState);
     third.subscribe(
-        v -> updateValue(holderRef, t -> Triple.updateThird(t, v), this::onValueUpdate),
-        this::setError);
+        v -> setValueState(holderRef, t -> Triple.updateThird(t, v), this::onValueUpdate),
+        this::setErrorState);
   }
 
   /** Reads the associated props. */
@@ -82,22 +80,8 @@ class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
       // if no errors, construct a result
       holderRef.updateAndGet(holder -> holder.value(Tuple.of(v1, v2, v3)));
     } else {
-      // otherwise, collect all the logged exceptions
-      var exc = new ValueCannotBeReadException("One or more errors");
-      errors.forEach(exc::addSuppressed);
-
-      // and set the errored state
-      holderRef.updateAndGet(holder -> holder.error(exc));
+      // otherwise, set the errored state, suppressing all encountered errors
+      holderRef.updateAndGet(holder -> holder.error(new MultiValueReadException(errors)));
     }
-  }
-
-  /**
-   * Returns a key for this object. The key is generated using {@link #multiKey(String, String...)}.
-   *
-   * @return the key that identifies this prop group
-   */
-  @Override
-  public String key() {
-    return key;
   }
 }

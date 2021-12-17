@@ -30,24 +30,47 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
+/** Hamcrest matcher for testing that a {@link Throwable} contains the expected error message. */
 public class ExpectedExceptionMatcher extends TypeSafeMatcher<Throwable> {
-  private final String errorMessage;
+  private final String message;
 
-  public ExpectedExceptionMatcher(String errorMessage) {
-    this.errorMessage = errorMessage;
+  /**
+   * Constructs the matcher, storing the expected error.
+   *
+   * @param message the message to check
+   */
+  private ExpectedExceptionMatcher(String message) {
+    this.message = message;
   }
 
-  public static Matcher<Throwable> hasExceptionMessage(String error) {
-    return new ExpectedExceptionMatcher(error);
+  /**
+   * Convenience method for constructing the matcher fluently.
+   *
+   * @param message the error message to check
+   * @return a Hamcrest matcher
+   */
+  public static Matcher<Throwable> hasExceptionMessage(String message) {
+    return new ExpectedExceptionMatcher(message);
   }
 
+  /**
+   * Checks that the passed {@link Throwable} contains the expected message.
+   *
+   * @param exc the exception to check
+   * @return true if it matches
+   */
   @Override
   protected boolean matchesSafely(Throwable exc) {
-    return Objects.equals(exc.getMessage(), errorMessage);
+    return Objects.equals(exc.getMessage(), message);
   }
 
+  /**
+   * Describes the assertion failure.
+   *
+   * @param description the description to which we append more info
+   */
   @Override
   public void describeTo(Description description) {
-    description.appendText(errorMessage);
+    description.appendText(message);
   }
 }

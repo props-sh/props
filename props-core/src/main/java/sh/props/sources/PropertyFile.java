@@ -27,7 +27,7 @@ package sh.props.sources;
 
 import static java.lang.String.format;
 import static java.util.logging.Level.WARNING;
-import static sh.props.Validate.assertNotNull;
+import static sh.props.Utilities.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;

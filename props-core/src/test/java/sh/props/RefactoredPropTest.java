@@ -78,7 +78,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
     verify(initialized, timeout(1_000)).accept(2);
 
     // ASSERT
-    verify(consumer, timeout(1_000L).atLeastOnce()).accept(2);
+    verify(consumer, timeout(1_000)).accept(2);
 
     assertThat(prop1.get(), equalTo("1"));
     assertThat(prop2.get(), equalTo(2));
@@ -206,7 +206,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
   }
 
   @Test
-  void bothExceptionsObvserved() {
+  void bothExceptionsObserved() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 

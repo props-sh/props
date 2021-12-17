@@ -27,7 +27,7 @@ package sh.props;
 
 import static java.lang.String.format;
 import static java.util.function.Predicate.not;
-import static sh.props.Validate.assertNotNull;
+import static sh.props.Utilities.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

@@ -26,7 +26,7 @@
 package sh.props;
 
 import static java.lang.String.format;
-import static sh.props.Validate.assertNotNull;
+import static sh.props.Utilities.assertNotNull;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
