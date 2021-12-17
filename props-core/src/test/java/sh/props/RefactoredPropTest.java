@@ -29,7 +29,6 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -63,10 +62,9 @@ class RefactoredPropTest extends AwaitAssertionTest {
     prop2.subscribe(initialized, (ignore) -> {});
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
-    RefactoredProp<String, Integer> supplier =
-        new RefactoredProp<>(prop1, prop2, Integer::parseInt);
+    var refactoredProp = new RefactoredProp<>(prop1, prop2, Integer::parseInt);
 
-    supplier.subscribe(consumer, (ignore) -> {});
+    refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key1", "1");
@@ -76,11 +74,11 @@ class RefactoredPropTest extends AwaitAssertionTest {
     verify(initialized, timeout(1_000)).accept(2);
 
     // ASSERT
-    verify(consumer, atLeastOnce()).accept(2);
+    verify(consumer, timeout(1_000L).atLeastOnce()).accept(2);
 
     assertThat(prop1.get(), equalTo("1"));
     assertThat(prop2.get(), equalTo(2));
-    assertThat(supplier.get(), equalTo(2));
+    assertThat(refactoredProp.get(), equalTo(2));
   }
 
   @Test
@@ -94,10 +92,9 @@ class RefactoredPropTest extends AwaitAssertionTest {
     var prop2 = registry.bind(new TestIntProp("key2", null));
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
-    RefactoredProp<String, Integer> supplier =
-        new RefactoredProp<>(prop1, prop2, Integer::parseInt);
+    var refactoredProp = new RefactoredProp<>(prop1, prop2, Integer::parseInt);
 
-    supplier.subscribe(consumer, (ignore) -> {});
+    refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key1", "1");
@@ -107,7 +104,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     assertThat(prop1.get(), equalTo("1"));
     assertThat(prop2.get(), equalTo(null));
-    assertThat(supplier.get(), equalTo(1));
+    assertThat(refactoredProp.get(), equalTo(1));
   }
 
   @RepeatedTest(value = 10)
@@ -158,10 +155,9 @@ class RefactoredPropTest extends AwaitAssertionTest {
     prop2.subscribe((ignore) -> {}, errorReceived);
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
-    RefactoredProp<String, Integer> supplier =
-        new RefactoredProp<>(prop1, prop2, Integer::parseInt);
+    var refactoredProp = new RefactoredProp<>(prop1, prop2, Integer::parseInt);
 
-    supplier.subscribe(consumer, (ignore) -> {});
+    refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
     source.put("key2", "2");
@@ -171,7 +167,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
     // ASSERT
     Assertions.assertThrows(InvalidReadOpException.class, prop2::get);
     // the RefactoredProp cannot resolve due to an invalid prop2
-    Assertions.assertThrows(InvalidReadOpException.class, supplier::get);
+    Assertions.assertThrows(InvalidReadOpException.class, refactoredProp::get);
   }
 
   @RepeatedTest(value = 10)
@@ -201,16 +197,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
     source.put("key1", "1");
 
     // ASSERT
-    // prop2 fails
     Assertions.assertThrows(InvalidReadOpException.class, prop2::get);
-    // but the RefactoredProp resolves due to a valid prop1
-    // TODO(mihaibojin): this is somewhat of a dubious side-effect of using AbstractPropGroup
-    //                   as a store for RefactoredProp-s; need to rethink if this makes sense
-    //                   (last prop to be updated decides the value and correctness) or if
-    //                   given prop2, it should always take precedence regardless of prop1's
-    //                   value/error.  On the other hand, maybe the logic should be: try prop2,
-    //                   if missing or error, try prop1, and if missing or error, throw 1/2
-    //                   exceptions
-    await().until(refactoredProp::get, equalTo(1));
+    Assertions.assertThrows(InvalidReadOpException.class, refactoredProp::get);
   }
 }
