@@ -25,6 +25,9 @@
 
 package sh.props;
 
+import static sh.props.Utilities.ensureUnchecked;
+
+import java.util.Objects;
 import sh.props.annotations.Nullable;
 
 /**
@@ -62,11 +65,71 @@ public class Holder<V> {
     this.error = error;
   }
 
+  /**
+   * Create a new Holder, with the specified value.
+   *
+   * @param value the value to set
+   * @param <V> the type of the underlying value
+   * @return a new object
+   */
+  public static <V> Holder<V> ofValue(@Nullable V value) {
+    return new Holder<>(0, value, null);
+  }
+
+  /**
+   * Create a new Holder, with the specified error.
+   *
+   * @param err the error that was encountered
+   * @param <V> the type of the underlying value
+   * @return a new object
+   */
+  public static <V> Holder<V> ofError(@Nullable Throwable err) {
+    return new Holder<>(0, null, err);
+  }
+
+  /**
+   * Create a new Holder, with the updated value. This method updates the class's epoch.
+   *
+   * @param value the value to set
+   * @return a new object
+   */
   public Holder<V> value(@Nullable V value) {
     return new Holder<>(this.epoch + 1, value, null);
   }
 
-  public Holder<V> error(Throwable throwable) {
-    return new Holder<>(this.epoch + 1, null, throwable);
+  /**
+   * Returns the specified value, or throws the underlying {@link Throwable} as an unchecked
+   * exception.
+   *
+   * @return the associated value
+   * @throws RuntimeException in case the Holder is in an errored state
+   */
+  @Nullable
+  public V value() {
+    if (error != null) {
+      throw ensureUnchecked(error);
+    }
+
+    return value;
+  }
+
+  /**
+   * Create a new Holder, with the specified error. This method updates the class's epoch.
+   *
+   * @param err the error that was encountered
+   * @return a new object
+   */
+  public Holder<V> error(Throwable err) {
+    return new Holder<>(this.epoch + 1, null, err);
+  }
+
+  /**
+   * Prints the Holder's underling value or error. Useful for debugging purposes.
+   *
+   * @return a value or an error
+   */
+  @Override
+  public String toString() {
+    return error == null ? Objects.toString(value) : error.toString();
   }
 }

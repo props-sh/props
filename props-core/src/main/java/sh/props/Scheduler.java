@@ -34,24 +34,29 @@ import java.util.concurrent.ScheduledExecutorService;
 public class Scheduler {
 
   protected final ScheduledExecutorService executor;
+  protected final ForkJoinPool forkJoinPool;
 
   /**
    * Class constructor.
    *
-   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create(int)}, with a
-   * number of threads equal to {@link ForkJoinPool#getCommonPoolParallelism()}.
+   * <p>Creates a new scheduled executor using {@link BackgroundExecutorFactory#create()}. This
+   * results in instantiating an executor service with a number of threads as returned by the {@link
+   * Runtime#availableProcessors()}, and uses the {@link ForkJoinPool}.
    */
   public Scheduler() {
-    this(BackgroundExecutorFactory.create(ForkJoinPool.getCommonPoolParallelism()));
+    this(BackgroundExecutorFactory.create(), ForkJoinPool.commonPool());
   }
 
   /**
    * Class constructor.
    *
-   * @param executor The executor used to schedule any refresh operations.
+   * @param executor the {@link java.util.concurrent.ScheduledExecutorService} used to schedule any
+   *     refresh operations.
+   * @param forkJoinPool the {@link ForkJoinPool} to use when submitting tasks
    */
-  public Scheduler(ScheduledExecutorService executor) {
+  public Scheduler(ScheduledExecutorService executor, ForkJoinPool forkJoinPool) {
     this.executor = executor;
+    this.forkJoinPool = forkJoinPool;
   }
 
   /**
@@ -88,6 +93,24 @@ public class Scheduler {
   @SuppressWarnings("FutureReturnValueIgnored")
   public void refreshEagerly(Source source, Duration refreshPeriod) {
     this.refresh(source, Duration.ZERO, refreshPeriod);
+  }
+
+  /**
+   * Executes the specified {@link Runnable} using the {@link #executor}.
+   *
+   * @param task the task to run
+   */
+  public void execute(Runnable task) {
+    executor.execute(task);
+  }
+
+  /**
+   * Executes the specified {@link Runnable} using the {@link #forkJoinPool}.
+   *
+   * @param task the task to run
+   */
+  public void forkJoinExecute(Runnable task) {
+    forkJoinPool.execute(task);
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */

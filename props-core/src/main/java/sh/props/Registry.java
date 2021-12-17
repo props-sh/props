@@ -35,7 +35,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,15 +52,17 @@ public class Registry implements Notifiable {
   final List<Layer> layers = new ArrayList<>();
   final ConcurrentHashMap<String, HashSet<AbstractProp<?>>> notifications =
       new ConcurrentHashMap<>();
+  private final Scheduler scheduler;
 
   /** Ensures a registry can only be constructed through a builder. */
-  Registry() {
+  Registry(Scheduler scheduler) {
     this.store = new SyncStore(this);
+    this.scheduler = scheduler;
   }
 
   @Override
   public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
-    Validate.assertNotNull(key, "key");
+    Utilities.assertNotNull(key, "key");
 
     // check if we have any props to notify
     Collection<AbstractProp<?>> props = this.notifications.get(key);
@@ -72,13 +73,7 @@ public class Registry implements Notifiable {
 
     // alleviate the risk of blocking the main (update) thread
     // by offloading to an executor pool, since we don't control Prop subscribers
-    ForkJoinPool.commonPool()
-        .execute(
-            () -> {
-              for (AbstractProp<?> prop : props) {
-                prop.setValue(value);
-              }
-            });
+    scheduler.forkJoinExecute(() -> props.forEach(prop -> prop.setValue(value)));
   }
 
   /**
@@ -144,6 +139,12 @@ public class Registry implements Notifiable {
           return current;
         });
 
+    // replace the prop's scheduler with this registry's scheduler
+    if (prop.scheduler == null) {
+      // only do this operation once (for the first registry that gets to bind this prop)
+      prop.scheduler = this.scheduler;
+    }
+
     // return the prop back to the caller
     return prop;
   }
@@ -179,8 +180,8 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter) {
-    Validate.assertNotNull(key, "key");
-    Validate.assertNotNull(converter, "converter");
+    Utilities.assertNotNull(key, "key");
+    Utilities.assertNotNull(converter, "converter");
 
     waitForOnDemandValuesToBePopulated(key);
 
@@ -202,8 +203,8 @@ public class Registry implements Notifiable {
    */
   @Nullable
   public <T> T get(String key, Converter<T> converter, String alias) {
-    Validate.assertNotNull(key, "key");
-    Validate.assertNotNull(converter, "converter");
+    Utilities.assertNotNull(key, "key");
+    Utilities.assertNotNull(converter, "converter");
 
     // if no alias was provided, search all layers
     if (alias == null) {

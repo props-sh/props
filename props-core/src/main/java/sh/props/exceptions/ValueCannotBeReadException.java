@@ -25,17 +25,17 @@
 
 package sh.props.exceptions;
 
-/**
- * Signals that a Prop object could not be updated to a new value.
- *
- * <p>This class is a checked exception because it needs to be handled by the registry and should
- * not be left to callers.
- */
-public class InvalidUpdateOpException extends Exception {
+/** Signals that a Prop object could not be read. */
+public class ValueCannotBeReadException extends RuntimeException {
 
-  private static final long serialVersionUID = -8725185292576512276L;
+  private static final long serialVersionUID = -1203249458144372108L;
 
-  public InvalidUpdateOpException(String message) {
+  /**
+   * Standard constructor that takes an error message.
+   *
+   * @param message the error details
+   */
+  public ValueCannotBeReadException(String message) {
     super(message);
   }
 }

@@ -34,8 +34,8 @@ import sh.props.converters.Converter;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
+import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
-import sh.props.tuples.Tuple;
 
 /**
  * Partial implementation that can be used to combine a string template with a backing {@link Prop},
@@ -183,7 +183,7 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
    *     supports subscriptions
    */
-  public static <T, U, V, W, X> TemplatedProp<Tuple<T, U, V, W, X>> of(
+  public static <T, U, V, W, X> TemplatedProp<Quintuple<T, U, V, W, X>> of(
       String template,
       AbstractProp<T> first,
       AbstractProp<U> second,
@@ -192,7 +192,7 @@ public abstract class TemplatedProp<T> implements Prop<String> {
       AbstractProp<X> fifth) {
     return new TemplatedProp<>(Group.of(first, second, third, fourth, fifth)) {
       @Override
-      protected String renderTemplate(Tuple<T, U, V, W, X> value) {
+      protected String renderTemplate(Quintuple<T, U, V, W, X> value) {
         return format(
             template,
             TemplatedProp.encodeValue(value.first, first),

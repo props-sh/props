@@ -42,7 +42,8 @@ public class Triple<T, U, V> extends Pair<T, U> {
   @Nullable public final V third;
 
   /**
-   * Constructs the triple.
+   * Constructs the triple. This method is marked package-private to direct the user to constructing
+   * * objects using {@link Tuple#of(Object, Object, Object)}.
    *
    * @param first the first object
    * @param second the second object
@@ -54,44 +55,69 @@ public class Triple<T, U, V> extends Pair<T, U> {
   }
 
   /**
-   * Convert this triple to a pair, using its first two values.
+   * Constructs a new {@link Pair} with the updated value.
    *
-   * @return a pair containing this object's first two values
+   * @param triple the original triple that will provide the other values
+   * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @return a new object with the value updated
    */
-  public Pair<T, U> toPair() {
-    return Tuple.of(this.first, this.second);
+  public static <T, U, V> Triple<T, U, V> updateFirst(
+      @Nullable Triple<T, U, V> triple, @Nullable T value) {
+    if (triple == null) {
+      return new Triple<>(value, null, null);
+    }
+
+    return new Triple<>(value, triple.second, triple.third);
   }
 
   /**
    * Constructs a new {@link Pair} with the updated value.
    *
+   * @param triple the original triple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
    * @return a new object with the value updated
    */
-  @Override
-  public Triple<T, U, V> updateFirst(@Nullable T value) {
-    return new Triple<>(value, this.second, this.third);
-  }
+  public static <T, U, V> Triple<T, U, V> updateSecond(
+      @Nullable Triple<T, U, V> triple, @Nullable U value) {
+    if (triple == null) {
+      return new Triple<>(null, value, null);
+    }
 
-  /**
-   * Constructs a new {@link Pair} with the updated value.
-   *
-   * @param value the new value to set
-   * @return a new object with the value updated
-   */
-  @Override
-  public Triple<T, U, V> updateSecond(@Nullable U value) {
-    return new Triple<>(this.first, value, this.third);
+    return new Triple<>(triple.first, value, triple.third);
   }
 
   /**
    * Constructs a new {@link Triple} with the updated value.
    *
+   * @param triple the original triple that will provide the other values
    * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
    * @return a new object with the value updated
    */
-  public Triple<T, U, V> updateThird(@Nullable V value) {
-    return new Triple<>(this.first, this.second, value);
+  public static <T, U, V> Triple<T, U, V> updateThird(
+      @Nullable Triple<T, U, V> triple, @Nullable V value) {
+    if (triple == null) {
+      return new Triple<>(null, null, value);
+    }
+
+    return new Triple<>(triple.first, triple.second, value);
+  }
+
+  /**
+   * Convert this triple to a pair, using its first two values.
+   *
+   * @return a pair containing this object's first two values
+   */
+  public Pair<T, U> toPair() {
+    return new Pair<>(this.first, this.second);
   }
 
   /**

@@ -27,7 +27,7 @@ package sh.props.textfixtures;
 
 import sh.props.annotations.Nullable;
 import sh.props.custom.IntegerProp;
-import sh.props.exceptions.InvalidUpdateOpException;
+import sh.props.exceptions.ValueCannotBeSetException;
 
 public class TestErrorOnSetProp extends IntegerProp {
 
@@ -35,10 +35,20 @@ public class TestErrorOnSetProp extends IntegerProp {
     super(key, defaultValue, null, false, false);
   }
 
+  /**
+   * Helper method to construct reproducible error messages.
+   *
+   * @param value the value that creates the error
+   * @return the error message
+   */
+  public static String errorMessage(Integer value) {
+    return "invalid value: " + value;
+  }
+
   @Override
-  protected void validateBeforeSet(@Nullable Integer value) throws InvalidUpdateOpException {
+  protected void validateBeforeSet(@Nullable Integer value) throws ValueCannotBeSetException {
     if (value != null && value > 1) {
-      throw new InvalidUpdateOpException("invalid value");
+      throw new ValueCannotBeSetException(errorMessage(value));
     }
   }
 }

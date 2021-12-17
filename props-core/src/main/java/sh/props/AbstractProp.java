@@ -35,6 +35,9 @@ import sh.props.interfaces.Prop;
  *
  * @param <T> the property's type
  */
+// TODO(mihaibojin): get rid of the extra OOP complexity and redefine this class a Prop<T>
+//                   make all implementation rely on this class, basically making this class the
+//                   contract of any Prop sub-implementations
 public abstract class AbstractProp<T> extends SubscribableProp<T> implements Prop<T>, Converter<T> {
 
   /**

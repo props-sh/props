@@ -26,14 +26,14 @@
 package sh.props;
 
 import static java.lang.String.format;
-import static sh.props.Validate.assertNotNull;
+import static sh.props.Utilities.assertNotNull;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;
-import sh.props.exceptions.InvalidReadOpException;
-import sh.props.exceptions.InvalidUpdateOpException;
+import sh.props.exceptions.ValueCannotBeReadException;
+import sh.props.exceptions.ValueCannotBeSetException;
 
 /**
  * An almost complete implementation of property objects, containing additional metadata that may be
@@ -92,9 +92,9 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    * error consumers, registered to the prop object with {@link #subscribe(Consumer, Consumer)}.
    *
    * @param value the value to validate
-   * @throws InvalidUpdateOpException when the validation fails
+   * @throws ValueCannotBeSetException when the validation fails
    */
-  protected void validateBeforeSet(@Nullable T value) throws InvalidUpdateOpException {
+  protected void validateBeforeSet(@Nullable T value) throws ValueCannotBeSetException {
     // no validation ops by default
   }
 
@@ -106,12 +106,12 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    * to preserve the non-null value required property guarantee.
    *
    * @param value the value to validate
-   * @throws InvalidReadOpException when validation fails
+   * @throws ValueCannotBeReadException when validation fails
    */
   protected void validateBeforeGet(@Nullable T value) {
     // if the Prop is required, a value must be available
     if (this.isRequired && value == null) {
-      throw new InvalidReadOpException(
+      throw new ValueCannotBeReadException(
           format(
               "Prop '%s' is required, but neither a value or a default were specified", this.key));
     }
@@ -135,7 +135,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
     try {
       this.validateBeforeSet(value);
 
-    } catch (InvalidUpdateOpException err) {
+    } catch (ValueCannotBeSetException err) {
       // if value cannot be validated before an update, mark the prop to be in an error state
       var res = this.ref.updateAndGet(holder -> holder.error(err));
 
@@ -159,7 +159,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
 
       return true;
 
-    } catch (InvalidReadOpException err) {
+    } catch (ValueCannotBeReadException err) {
       // if the value is not valid for reads, notify subscribers
       this.onUpdateError(err, res.epoch);
 
@@ -171,7 +171,8 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    * Returns the property's current value.
    *
    * @return the {@link CustomProp}'s current value, or <code>null</code>.
-   * @throws InvalidReadOpException if the value could not be validated
+   * @throws ValueCannotBeReadException if the value could not be validated
+   * @throws ValueCannotBeSetException if the value could not be updated
    */
   @Override
   @Nullable
@@ -190,7 +191,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
   @SuppressWarnings("NullAway")
   private T getValue() {
     // we are always guaranteed to get a non-null Holder from the AtomicRef
-    return this.ref.get().value;
+    return this.ref.get().value();
   }
 
   /**
@@ -260,8 +261,18 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    */
   @Nullable
   protected String getSafeValue() {
-    T currentValue = valueOrDefault(getValue());
+    final T value;
+    try {
+      value = getValue();
+    } catch (RuntimeException e) {
+      // if the value cannot be retrieved, signal an error
+      return "<ERROR>";
+    }
+
+    // process the value and ensure it is safe to print it
+    T currentValue = valueOrDefault(value);
     if (this.isSecret()) {
+      // redact the value, if necessary
       return this.redact(currentValue);
     } else {
       return this.encode(currentValue);

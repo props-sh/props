@@ -28,6 +28,8 @@ package sh.props;
 import sh.props.annotations.Nullable;
 
 /** Denotes classes that can be notified of key,value updates from a designated layer. */
+// TODO(mihaibojin): remove, superfluous; can be re-added later if needs be
+@Deprecated(forRemoval = true)
 @FunctionalInterface
 interface Notifiable {
 

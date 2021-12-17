@@ -25,7 +25,7 @@
 
 package sh.props;
 
-import static sh.props.Validate.assertNotNull;
+import static sh.props.Utilities.assertNotNull;
 
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;

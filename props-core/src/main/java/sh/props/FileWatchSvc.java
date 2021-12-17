@@ -29,7 +29,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
-import static sh.props.Validate.assertNotNull;
+import static sh.props.Utilities.assertNotNull;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.IOException;

@@ -23,32 +23,42 @@
  *
  */
 
-package sh.props.textfixtures;
+package sh.props;
+
+import static java.lang.String.format;
 
 import sh.props.annotations.Nullable;
-import sh.props.custom.IntegerProp;
-import sh.props.exceptions.ValueCannotBeReadException;
 
-public class TestErrorOnGetProp extends IntegerProp {
+public class Utilities {
 
-  public TestErrorOnGetProp(String key, @Nullable Integer defaultValue) {
-    super(key, defaultValue, null, false, false);
+  /**
+   * Ensures that the specified param is not null.
+   *
+   * @param key the key to validate
+   * @param param the name of the parameter
+   * @param <T> the type of the key
+   * @return the specified key
+   */
+  public static <T> T assertNotNull(@Nullable T key, String param) {
+    if (key == null) {
+      throw new IllegalArgumentException(format("%s cannot be null", param));
+    }
+
+    return key;
   }
 
   /**
-   * Helper method to construct reproducible error messages.
+   * Ensures thrown exceptions are unchecked.
    *
-   * @param value the value that creates the error
-   * @return the error message
+   * @param t the exception to be thrown
+   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
+   *     throwable
    */
-  public static String errorMessage(Integer value) {
-    return "unretrievable value: " + value;
-  }
-
-  @Override
-  protected void validateBeforeGet(@Nullable Integer value) throws ValueCannotBeReadException {
-    if (value != null && value > 1) {
-      throw new ValueCannotBeReadException(errorMessage(value));
+  public static RuntimeException ensureUnchecked(Throwable t) {
+    if (t instanceof RuntimeException) {
+      return (RuntimeException) t;
     }
+
+    return new RuntimeException(t);
   }
 }

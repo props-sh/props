@@ -43,7 +43,8 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   @Nullable public final W fourth;
 
   /**
-   * Constructs the quad.
+   * Constructs the quad. This method is marked package-private to direct the user to constructing *
+   * objects using {@link Tuple#of(Object, Object, Object, Object)}.
    *
    * @param first the first object
    * @param second the second object
@@ -56,13 +57,93 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   }
 
   /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param quad the original quad that will provide the other values
+   * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
+   * @return a new object with the value updated
+   */
+  public static <T, U, V, W> Quad<T, U, V, W> updateFirst(
+      @Nullable Quad<T, U, V, W> quad, @Nullable T value) {
+    if (quad == null) {
+      return new Quad<>(value, null, null, null);
+    }
+
+    return new Quad<>(value, quad.second, quad.third, quad.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param quad the original quad that will provide the other values
+   * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
+   * @return a new object with the value updated
+   */
+  public static <T, U, V, W> Quad<T, U, V, W> updateSecond(
+      @Nullable Quad<T, U, V, W> quad, @Nullable U value) {
+    if (quad == null) {
+      return new Quad<>(null, value, null, null);
+    }
+
+    return new Quad<>(quad.first, value, quad.third, quad.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param quad the original quad that will provide the other values
+   * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
+   * @return a new object with the value updated
+   */
+  public static <T, U, V, W> Quad<T, U, V, W> updateThird(
+      @Nullable Quad<T, U, V, W> quad, @Nullable V value) {
+    if (quad == null) {
+      return new Quad<>(null, null, value, null);
+    }
+
+    return new Quad<>(quad.first, quad.second, value, quad.fourth);
+  }
+
+  /**
+   * Constructs a new {@link Quad} with the updated value.
+   *
+   * @param quad the original quad that will provide the other values
+   * @param value the new value to set
+   * @param <T> the type of the first object
+   * @param <U> the type of the second object
+   * @param <V> the type of the third object
+   * @param <W> the type of the fourth object
+   * @return a new object with the value updated
+   */
+  public static <T, U, V, W> Quad<T, U, V, W> updateFourth(
+      @Nullable Quad<T, U, V, W> quad, @Nullable W value) {
+    if (quad == null) {
+      return new Quad<>(null, null, null, value);
+    }
+
+    return new Quad<>(quad.first, quad.second, quad.third, value);
+  }
+
+  /**
    * Convert this quad to a pair, using its first two values.
    *
    * @return a pair containing this object's first two values
    */
   @Override
   public Pair<T, U> toPair() {
-    return Tuple.of(this.first, this.second);
+    return new Pair<>(this.first, this.second);
   }
 
   /**
@@ -71,50 +152,7 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
    * @return a triple containing this object's first three values
    */
   public Triple<T, U, V> toTriple() {
-    return Tuple.of(this.first, this.second, this.third);
-  }
-
-  /**
-   * Constructs a new {@link Quad} with the updated value.
-   *
-   * @param value the new value to set
-   * @return a new object with the value updated
-   */
-  @Override
-  public Quad<T, U, V, W> updateFirst(@Nullable T value) {
-    return new Quad<>(value, this.second, this.third, this.fourth);
-  }
-
-  /**
-   * Constructs a new {@link Quad} with the updated value.
-   *
-   * @param value the new value to set
-   * @return a new object with the value updated
-   */
-  @Override
-  public Quad<T, U, V, W> updateSecond(@Nullable U value) {
-    return new Quad<>(this.first, value, this.third, this.fourth);
-  }
-
-  /**
-   * Constructs a new {@link Quad} with the updated value.
-   *
-   * @param value the new value to set
-   * @return a new object with the value updated
-   */
-  @Override
-  public Quad<T, U, V, W> updateThird(@Nullable V value) {
-    return new Quad<>(this.first, this.second, value, this.fourth);
-  }
-
-  /**
-   * Constructs a new {@link Quad} with the updated value.
-   *
-   * @param value the new value to set
-   * @return a new object with the value updated
-   */
-  public Quad<T, U, V, W> updateFourth(@Nullable W value) {
-    return new Quad<>(this.first, this.second, this.third, value);
+    return new Triple<>(this.first, this.second, this.third);
   }
 
   /**
