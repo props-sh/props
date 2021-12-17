@@ -104,7 +104,7 @@ public class AnotherPairSyncdPropGroup<T, U> extends AnotherPropGroup<Pair<T, U>
       errors.forEach(exc::addSuppressed);
 
       // and set the errored state
-      setError(exc);
+      cached.updateAndGet(holder -> holder.error(exc));
     }
   }
 
@@ -146,8 +146,7 @@ public class AnotherPairSyncdPropGroup<T, U> extends AnotherPropGroup<Pair<T, U>
   }
 
   /**
-   * Returns a key for this object. The key is generated using {@link
-   * AbstractPropGroup#multiKey(String, String...)}.
+   * Returns a key for this object. The key is generated using {@link #multiKey(String, String...)}.
    *
    * @return the key that identifies this prop group
    */

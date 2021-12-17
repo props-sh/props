@@ -28,11 +28,8 @@ package sh.props.group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.interfaces.Prop;
@@ -40,7 +37,7 @@ import sh.props.tuples.Quintuple;
 import sh.props.tuples.Tuple;
 
 public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
-    extends SubscribableProp<Quintuple<T, U, V, W, X>> {
+    extends AnotherPropGroup<Quintuple<T, U, V, W, X>> {
   private final AtomicReference<Holder<Quintuple<T, U, V, W, X>>> cached =
       new AtomicReference<>(new Holder<>());
   private final String key;
@@ -70,9 +67,7 @@ public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
     this.third = third;
     this.fourth = fourth;
     this.fifth = fifth;
-    key =
-        AbstractPropGroup.multiKey(
-            first.key(), second.key(), third.key(), fourth.key(), fifth.key());
+    key = multiKey(first.key(), second.key(), third.key(), fourth.key(), fifth.key());
 
     // guarantee that holder.value is not null
     readValues();
@@ -110,23 +105,13 @@ public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
     return new RuntimeException(t);
   }
 
-  @SuppressWarnings("NullAway")
-  private static <T, U, V, W, X> Holder<Quintuple<T, U, V, W, X>> updateValue(
-      AtomicReference<Holder<Quintuple<T, U, V, W, X>>> ref,
-      Function<Quintuple<T, U, V, W, X>, Quintuple<T, U, V, W, X>> transformer,
-      BiConsumer<Quintuple<T, U, V, W, X>, Long> subscriber) {
-    var result = ref.updateAndGet(holder -> holder.value(transformer.apply(holder.value)));
-    subscriber.accept(result.value, result.epoch);
-    return result;
-  }
-
   private Holder<Quintuple<T, U, V, W, X>> setError(Throwable throwable) {
     var result = cached.updateAndGet(holder -> holder.error(throwable));
     this.onUpdateError(throwable, result.epoch);
     return result;
   }
 
-  /** Reads the associated props. This method is synchronized to prevent concurrent runs. */
+  /** Reads the associated props. */
   private void readValues() {
     List<Throwable> errors = new ArrayList<>();
 
@@ -146,7 +131,7 @@ public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
       errors.forEach(exc::addSuppressed);
 
       // and set the errored state
-      setError(exc);
+      cached.updateAndGet(holder -> holder.error(exc));
     }
   }
 
@@ -188,8 +173,7 @@ public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
   }
 
   /**
-   * Returns a key for this object. The key is generated using {@link
-   * AbstractPropGroup#multiKey(String, String...)}.
+   * Returns a key for this object. The key is generated using {@link #multiKey(String, String...)}.
    *
    * @return the key that identifies this prop group
    */

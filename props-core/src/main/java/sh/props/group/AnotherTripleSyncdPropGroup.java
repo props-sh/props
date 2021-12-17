@@ -28,18 +28,15 @@ package sh.props.group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.InvalidReadOpException;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
-public class AnotherTripleSyncdPropGroup<T, U, V> extends SubscribableProp<Triple<T, U, V>> {
+public class AnotherTripleSyncdPropGroup<T, U, V> extends AnotherPropGroup<Triple<T, U, V>> {
   private final AtomicReference<Holder<Triple<T, U, V>>> cached =
       new AtomicReference<>(new Holder<>());
   private final String key;
@@ -60,7 +57,7 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends SubscribableProp<Tripl
     this.first = first;
     this.second = second;
     this.third = third;
-    key = AbstractPropGroup.multiKey(first.key(), second.key(), third.key());
+    key = multiKey(first.key(), second.key(), third.key());
 
     // guarantee that holder.value is not null
     readValues();
@@ -92,23 +89,13 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends SubscribableProp<Tripl
     return new RuntimeException(t);
   }
 
-  @SuppressWarnings("NullAway")
-  private static <T, U, V> Holder<Triple<T, U, V>> updateValue(
-      AtomicReference<Holder<Triple<T, U, V>>> ref,
-      Function<Triple<T, U, V>, Triple<T, U, V>> transformer,
-      BiConsumer<Triple<T, U, V>, Long> subscriber) {
-    var result = ref.updateAndGet(holder -> holder.value(transformer.apply(holder.value)));
-    subscriber.accept(result.value, result.epoch);
-    return result;
-  }
-
   private Holder<Triple<T, U, V>> setError(Throwable throwable) {
     var result = cached.updateAndGet(holder -> holder.error(throwable));
     this.onUpdateError(throwable, result.epoch);
     return result;
   }
 
-  /** Reads the associated props. This method is synchronized to prevent concurrent runs. */
+  /** Reads the associated props. */
   private void readValues() {
     List<Throwable> errors = new ArrayList<>();
 
@@ -126,7 +113,7 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends SubscribableProp<Tripl
       errors.forEach(exc::addSuppressed);
 
       // and set the errored state
-      setError(exc);
+      cached.updateAndGet(holder -> holder.error(exc));
     }
   }
 
@@ -168,8 +155,7 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends SubscribableProp<Tripl
   }
 
   /**
-   * Returns a key for this object. The key is generated using {@link
-   * AbstractPropGroup#multiKey(String, String...)}.
+   * Returns a key for this object. The key is generated using {@link #multiKey(String, String...)}.
    *
    * @return the key that identifies this prop group
    */
