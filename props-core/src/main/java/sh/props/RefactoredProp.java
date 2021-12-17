@@ -25,12 +25,14 @@
 
 package sh.props;
 
+import static sh.props.Validate.ensureUnchecked;
+
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import sh.props.annotations.Nullable;
-import sh.props.exceptions.InvalidReadOpException;
+import sh.props.exceptions.ValueCannotBeReadException;
 import sh.props.interfaces.Prop;
 
 /**
@@ -42,14 +44,14 @@ import sh.props.interfaces.Prop;
  * <ul>
  *   <li>- firstly, it attempts to retrieve the refactored prop's value
  *   <li>- if an exception is encountered while calling {@link AbstractProp#get()} (usually an
- *       {@link InvalidReadOpException}), it will be thrown or passed to any subscribers, regardless
- *       of the value of the original prop
+ *       {@link ValueCannotBeReadException}), it will be thrown or passed to any subscribers,
+ *       regardless of the value of the original prop
  *   <li>- if the refactored prop is <code>null</code>, the class will then attempt to load a value
  *       from the original (old) prop
  *   <li>- the value will be convereted to the desired type, using the provided <code>converter
  *       </code>
- *   <li>- if an exception is encountered (usually an {@link InvalidReadOpException}), it will be
- *       thrown or passed to any subscribers
+ *   <li>- if an exception is encountered (usually an {@link ValueCannotBeReadException}), it will
+ *       be thrown or passed to any subscribers
  *   <li>- otherwise the resulting value, or <code>null</code>, will be returned or passed to any
  *       subscribers
  * </ul>
@@ -95,42 +97,31 @@ public class RefactoredProp<T, R> implements Prop<R> {
    */
   private static <T, R> Holder<R> attemptValueRetrieval(
       Supplier<R> refactored, Supplier<T> old, Function<T, R> converter) {
-    Holder<R> result = new Holder<>();
+    final R preferredValue;
     try {
       // attempt to retrieve the refactored prop
-      result = result.value(refactored.get());
+      preferredValue = refactored.get();
 
     } catch (RuntimeException e) {
       // if the refactored prop is returning an error, stop here
-      return result.error(e);
+      return Holder.ofError(e);
     }
 
     // if the preferred value is set
-    if (result.value != null) {
+    if (preferredValue != null) {
       // we can stop here since we have the desired value
-      return result;
+      return Holder.ofValue(preferredValue);
     }
 
     try {
       // attempt to retrieve the old prop's value
       T oldPropValue = old.get();
       // and then convert it to the expected type
-      return result.value(converter.apply(oldPropValue));
+      return Holder.ofValue(converter.apply(oldPropValue));
 
     } catch (RuntimeException e) {
-      // if an exception is encountered, return exceptionally
-      var err = new InvalidReadOpException("Could not retrieve either refactored or original prop");
-
-      if (result.error != null) {
-        // add any exceptions encountered while retrieving the refactored prop
-        err.addSuppressed(result.error);
-      }
-
-      // add the exception encountered while retrieving the old prop's value
-      err.addSuppressed(e);
-
       // and mark the error state
-      return result.error(err);
+      return Holder.ofError(e);
     }
   }
 
@@ -148,26 +139,11 @@ public class RefactoredProp<T, R> implements Prop<R> {
   }
 
   /**
-   * Ensures thrown exceptions are unchecked.
-   *
-   * @param t the exception to be thrown
-   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
-   *     throwable
-   */
-  private static RuntimeException ensureUnchecked(Throwable t) {
-    if (t instanceof RuntimeException) {
-      return (RuntimeException) t;
-    }
-
-    return new RuntimeException(t);
-  }
-
-  /**
    * Retrieves the prop's value by attempting to read the refactored prop, then the old prop, and
    * finally returning null.
    *
    * @return the prop's value, or null
-   * @throws InvalidReadOpException if the value cannot be read
+   * @throws ValueCannotBeReadException if the value cannot be read
    * @throws RuntimeException if the old prop is converted to the new type, but the conversion fails
    */
   @Override
@@ -177,7 +153,7 @@ public class RefactoredProp<T, R> implements Prop<R> {
       return attemptValueRetrieval(refactoredProp, originalProp, converter).get();
     } catch (Throwable e) {
       // we know attemptValueRetrieval() will only contain InvalidReadOpException types
-      throw (InvalidReadOpException) e;
+      throw (ValueCannotBeReadException) e;
     }
   }
 

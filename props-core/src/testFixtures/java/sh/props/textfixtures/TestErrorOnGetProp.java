@@ -27,7 +27,7 @@ package sh.props.textfixtures;
 
 import sh.props.annotations.Nullable;
 import sh.props.custom.IntegerProp;
-import sh.props.exceptions.InvalidReadOpException;
+import sh.props.exceptions.ValueCannotBeReadException;
 
 public class TestErrorOnGetProp extends IntegerProp {
 
@@ -35,10 +35,20 @@ public class TestErrorOnGetProp extends IntegerProp {
     super(key, defaultValue, null, false, false);
   }
 
+  /**
+   * Helper method to construct reproducible error messages.
+   *
+   * @param value the value that creates the error
+   * @return the error message
+   */
+  public static String errorMessage(Integer value) {
+    return "unretrievable value: " + value;
+  }
+
   @Override
-  protected void validateBeforeGet(@Nullable Integer value) {
+  protected void validateBeforeGet(@Nullable Integer value) throws ValueCannotBeReadException {
     if (value != null && value > 1) {
-      throw new InvalidReadOpException("unretrievable value");
+      throw new ValueCannotBeReadException(errorMessage(value));
     }
   }
 }

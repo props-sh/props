@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.exceptions.InvalidReadOpException;
+import sh.props.exceptions.ValueCannotBeReadException;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
@@ -64,6 +64,7 @@ class PropGroupPair<T, U> extends AbstractPropGroup<Pair<T, U>> {
   }
 
   /** Reads the associated props. This method is synchronized to prevent concurrent runs. */
+  // TODO(mihaibojin): attempt to use this method for updating values/errors (all PropGroupTypes)
   private void readValues() {
     List<Throwable> errors = new ArrayList<>();
 
@@ -76,7 +77,7 @@ class PropGroupPair<T, U> extends AbstractPropGroup<Pair<T, U>> {
       holderRef.updateAndGet(holder -> holder.value(Tuple.of(v1, v2)));
     } else {
       // otherwise, collect all the logged exceptions
-      var exc = new InvalidReadOpException("One or more errors");
+      var exc = new ValueCannotBeReadException("One or more errors");
       errors.forEach(exc::addSuppressed);
 
       // and set the errored state

@@ -37,8 +37,8 @@ import static sh.props.sources.InMemory.UPDATE_REGISTRY_ON_EVERY_WRITE;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import sh.props.converters.Cast;
-import sh.props.exceptions.InvalidReadOpException;
-import sh.props.exceptions.InvalidUpdateOpException;
+import sh.props.exceptions.ValueCannotBeReadException;
+import sh.props.exceptions.ValueCannotBeSetException;
 import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestErrorOnSetProp;
 
@@ -89,7 +89,7 @@ class CustomPropTest {
     var prop = new CustomPropBuilder<>(registry, Cast.asString()).required(true).build("key");
 
     // ACT / ASSERT
-    assertThrows(InvalidReadOpException.class, prop::get);
+    assertThrows(ValueCannotBeReadException.class, prop::get);
 
     source.put("key", "value");
     await().until(prop::get, equalTo("value"));
@@ -112,6 +112,6 @@ class CustomPropTest {
     assertThat(prop.get(), equalTo(0));
 
     source.put("key", "2");
-    await().until(capture::get, instanceOf(InvalidUpdateOpException.class));
+    await().until(capture::get, instanceOf(ValueCannotBeSetException.class));
   }
 }

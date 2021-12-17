@@ -64,6 +64,26 @@ public class Holder<V> {
   }
 
   /**
+   * Create a new Holder, with the specified value.
+   *
+   * @param value the value to set
+   * @return a new object
+   */
+  public static <V> Holder<V> ofValue(@Nullable V value) {
+    return new Holder<>(0, value, null);
+  }
+
+  /**
+   * Create a new Holder, with the specified error.
+   *
+   * @param err the error that was encountered
+   * @return a new object
+   */
+  public static <V> Holder<V> ofError(@Nullable Throwable err) {
+    return new Holder<>(0, null, err);
+  }
+
+  /**
    * Create a new Holder, with the updated value. This method updates the class's epoch.
    *
    * @param value the value to set
@@ -76,11 +96,11 @@ public class Holder<V> {
   /**
    * Create a new Holder, with the specified error. This method updates the class's epoch.
    *
-   * @param throwable the error that was encountered
+   * @param err the error that was encountered
    * @return a new object
    */
-  public Holder<V> error(Throwable throwable) {
-    return new Holder<>(this.epoch + 1, null, throwable);
+  public Holder<V> error(Throwable err) {
+    return new Holder<>(this.epoch + 1, null, err);
   }
 
   /**

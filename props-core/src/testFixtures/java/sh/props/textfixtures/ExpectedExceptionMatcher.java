@@ -23,20 +23,31 @@
  *
  */
 
-package sh.props.exceptions;
+package sh.props.textfixtures;
 
-/**
- * Signals that a Prop object could not be updated to a new value.
- *
- * <p>This class is a checked exception because it needs to be handled by the registry and should
- * not be left to callers.
- */
-// TODO(mihaibojin): subclass RuntimeException
-public class InvalidUpdateOpException extends Exception {
+import java.util.Objects;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 
-  private static final long serialVersionUID = -8725185292576512276L;
+public class ExpectedExceptionMatcher extends TypeSafeMatcher<Throwable> {
+  private final String errorMessage;
 
-  public InvalidUpdateOpException(String message) {
-    super(message);
+  public ExpectedExceptionMatcher(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
+  public static Matcher<Throwable> hasExceptionMessage(String error) {
+    return new ExpectedExceptionMatcher(error);
+  }
+
+  @Override
+  protected boolean matchesSafely(Throwable exc) {
+    return Objects.equals(exc.getMessage(), errorMessage);
+  }
+
+  @Override
+  public void describeTo(Description description) {
+    description.appendText(errorMessage);
   }
 }

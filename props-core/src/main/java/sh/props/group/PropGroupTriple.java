@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.exceptions.InvalidReadOpException;
+import sh.props.exceptions.ValueCannotBeReadException;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
@@ -83,7 +83,7 @@ class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
       holderRef.updateAndGet(holder -> holder.value(Tuple.of(v1, v2, v3)));
     } else {
       // otherwise, collect all the logged exceptions
-      var exc = new InvalidReadOpException("One or more errors");
+      var exc = new ValueCannotBeReadException("One or more errors");
       errors.forEach(exc::addSuppressed);
 
       // and set the errored state

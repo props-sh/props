@@ -25,17 +25,17 @@
 
 package sh.props.exceptions;
 
-/** Signals that a Prop object could not be read. */
-public class InvalidReadOpException extends RuntimeException {
+/** Signals that a Prop object could not be updated to a new value. */
+public class ValueCannotBeSetException extends RuntimeException {
 
-  private static final long serialVersionUID = -1203249458144372108L;
+  private static final long serialVersionUID = -8725185292576512276L;
 
   /**
    * Standard constructor that takes an error message.
    *
    * @param message the error details
    */
-  public InvalidReadOpException(String message) {
+  public ValueCannotBeSetException(String message) {
     super(message);
   }
 }

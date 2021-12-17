@@ -23,42 +23,19 @@
  *
  */
 
-package sh.props;
+package sh.props.exceptions;
 
-import static java.lang.String.format;
+/** Signals that a Prop object could not be read. */
+public class ValueCannotBeReadException extends RuntimeException {
 
-import sh.props.annotations.Nullable;
-
-public class Validate {
-
-  /**
-   * Ensures that the specified param is not null.
-   *
-   * @param key the key to validate
-   * @param param the name of the parameter
-   * @param <T> the type of the key
-   * @return the specified key
-   */
-  public static <T> T assertNotNull(@Nullable T key, String param) {
-    if (key == null) {
-      throw new IllegalArgumentException(format("%s cannot be null", param));
-    }
-
-    return key;
-  }
+  private static final long serialVersionUID = -1203249458144372108L;
 
   /**
-   * Ensures thrown exceptions are unchecked.
+   * Standard constructor that takes an error message.
    *
-   * @param t the exception to be thrown
-   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
-   *     throwable
+   * @param message the error details
    */
-  static RuntimeException ensureUnchecked(Throwable t) {
-    if (t instanceof RuntimeException) {
-      return (RuntimeException) t;
-    }
-
-    return new RuntimeException(t);
+  public ValueCannotBeReadException(String message) {
+    super(message);
   }
 }
