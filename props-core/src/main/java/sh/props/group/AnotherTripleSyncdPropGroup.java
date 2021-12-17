@@ -30,15 +30,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.annotations.Nullable;
 import sh.props.exceptions.InvalidReadOpException;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 public class AnotherTripleSyncdPropGroup<T, U, V> extends AnotherPropGroup<Triple<T, U, V>> {
-  private final AtomicReference<Holder<Triple<T, U, V>>> cached =
-      new AtomicReference<>(new Holder<>());
   private final String key;
   private final AbstractProp<T> first;
   private final AbstractProp<U> second;
@@ -53,7 +49,7 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends AnotherPropGroup<Tripl
    */
   public AnotherTripleSyncdPropGroup(
       AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
-
+    super(new AtomicReference<>(new Holder<>()));
     this.first = first;
     this.second = second;
     this.third = third;
@@ -64,35 +60,14 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends AnotherPropGroup<Tripl
 
     // register for prop updates
     first.subscribe(
-        v -> updateValue(cached, t -> Triple.updateFirst(t, v), this::onValueUpdate),
+        v -> updateValue(holderRef, t -> Triple.updateFirst(t, v), this::onValueUpdate),
         this::setError);
     second.subscribe(
-        v -> updateValue(cached, t -> Triple.updateSecond(t, v), this::onValueUpdate),
+        v -> updateValue(holderRef, t -> Triple.updateSecond(t, v), this::onValueUpdate),
         this::setError);
     third.subscribe(
-        v -> updateValue(cached, t -> Triple.updateThird(t, v), this::onValueUpdate),
+        v -> updateValue(holderRef, t -> Triple.updateThird(t, v), this::onValueUpdate),
         this::setError);
-  }
-
-  /**
-   * Ensures thrown exceptions are unchecked.
-   *
-   * @param t the exception to be thrown
-   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
-   *     throwable
-   */
-  private static RuntimeException ensureUnchecked(Throwable t) {
-    if (t instanceof RuntimeException) {
-      return (RuntimeException) t;
-    }
-
-    return new RuntimeException(t);
-  }
-
-  private Holder<Triple<T, U, V>> setError(Throwable throwable) {
-    var result = cached.updateAndGet(holder -> holder.error(throwable));
-    this.onUpdateError(throwable, result.epoch);
-    return result;
   }
 
   /** Reads the associated props. */
@@ -106,51 +81,14 @@ public class AnotherTripleSyncdPropGroup<T, U, V> extends AnotherPropGroup<Tripl
 
     if (errors.isEmpty()) {
       // if no errors, construct a result
-      cached.updateAndGet(holder -> holder.value(Tuple.of(v1, v2, v3)));
+      holderRef.updateAndGet(holder -> holder.value(Tuple.of(v1, v2, v3)));
     } else {
       // otherwise, collect all the logged exceptions
       var exc = new InvalidReadOpException("One or more errors");
       errors.forEach(exc::addSuppressed);
 
       // and set the errored state
-      cached.updateAndGet(holder -> holder.error(exc));
-    }
-  }
-
-  /**
-   * Reads the prop's value or stores the thrown exception.
-   *
-   * @param prop the prop to load
-   * @param errors the errors collector
-   * @param <PropT> the type of the underlying prop
-   * @return the read value, or null
-   */
-  @Nullable
-  private <PropT> PropT readVal(AbstractProp<PropT> prop, List<Throwable> errors) {
-    try {
-      return prop.get();
-    } catch (RuntimeException e) {
-      errors.add(e);
-      return null;
-    }
-  }
-
-  /**
-   * Retrieves a {@link Tuple} of values. If any errors were encountered via the underlying {@link
-   * Prop}s, this method will throw an exception. This method will continue to throw an exception
-   * until all errors are cleared.
-   *
-   * @return a tuple, containing the current values
-   * @throws RuntimeException in case any errors were set by any of the underlying props
-   */
-  @Override
-  @SuppressWarnings("NullAway")
-  public Triple<T, U, V> get() {
-    var holder = cached.get();
-    try {
-      return holder.get();
-    } catch (Throwable e) {
-      throw ensureUnchecked(e);
+      holderRef.updateAndGet(holder -> holder.error(exc));
     }
   }
 

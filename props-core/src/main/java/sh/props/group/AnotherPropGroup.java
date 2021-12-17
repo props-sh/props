@@ -25,14 +25,28 @@
 
 package sh.props.group;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import sh.props.AbstractProp;
 import sh.props.Holder;
 import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
+import sh.props.interfaces.Prop;
+import sh.props.tuples.Tuple;
 
 public abstract class AnotherPropGroup<TupleT> extends SubscribableProp<TupleT> {
+  protected final AtomicReference<Holder<TupleT>> holderRef;
+
+  /**
+   * Accepts the reference to the holder of (value,error,epoch) triples.
+   *
+   * @param holderRef the holder ref
+   */
+  protected AnotherPropGroup(AtomicReference<Holder<TupleT>> holderRef) {
+    this.holderRef = holderRef;
+  }
 
   /**
    * Helper function that concatenates the passed strings to generate a composite key. Each key part
@@ -55,6 +69,50 @@ public abstract class AnotherPropGroup<TupleT> extends SubscribableProp<TupleT> 
     return sb.toString();
   }
 
+  /**
+   * Ensures thrown exceptions are unchecked.
+   *
+   * @param t the exception to be thrown
+   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
+   *     throwable
+   */
+  static RuntimeException ensureUnchecked(Throwable t) {
+    if (t instanceof RuntimeException) {
+      return (RuntimeException) t;
+    }
+
+    return new RuntimeException(t);
+  }
+
+  /**
+   * Retrieves a {@link Tuple} of values. If any errors were encountered via the underlying {@link
+   * Prop}s, this method will throw an exception. This method will continue to throw an exception
+   * until all errors are cleared.
+   *
+   * @return a tuple, containing the current values
+   * @throws RuntimeException in case any errors were set by any of the underlying props
+   */
+  @Override
+  @SuppressWarnings("NullAway")
+  public TupleT get() {
+    var holder = holderRef.get();
+    try {
+      return holder.get();
+    } catch (Throwable e) {
+      throw ensureUnchecked(e);
+    }
+  }
+
+  /**
+   * Helper method that applies updates to the underlying holder.
+   *
+   * @param ref an {@link AtomicReference} to the holder of values/errors
+   * @param transformer the transforming {@link Function} that converts a holder's value from the
+   *     previous state to the new state
+   * @param subscriber a subscribing {@link java.util.function.BiConsumer} which accepts the updated
+   *     (value, epoch) pair
+   * @return the updated holder object
+   */
   @SuppressWarnings("NullAway")
   protected Holder<TupleT> updateValue(
       AtomicReference<Holder<TupleT>> ref,
@@ -63,5 +121,35 @@ public abstract class AnotherPropGroup<TupleT> extends SubscribableProp<TupleT> 
     var result = ref.updateAndGet(holder -> holder.value(transformer.apply(holder.value)));
     subscriber.accept(result.value, result.epoch);
     return result;
+  }
+
+  /**
+   * Replaces a {@link Holder}'s value with an error state.
+   *
+   * @param throwable the error to set
+   * @return the updated holder
+   */
+  protected Holder<TupleT> setError(Throwable throwable) {
+    var result = holderRef.updateAndGet(holder -> holder.error(throwable));
+    this.onUpdateError(throwable, result.epoch);
+    return result;
+  }
+
+  /**
+   * Helper method that teads the prop's value or stores the thrown exception.
+   *
+   * @param prop the prop to load
+   * @param errors the errors collector
+   * @param <T> the type of the underlying prop
+   * @return the read value, or null
+   */
+  @Nullable
+  protected <T> T readVal(AbstractProp<T> prop, List<Throwable> errors) {
+    try {
+      return prop.get();
+    } catch (RuntimeException e) {
+      errors.add(e);
+      return null;
+    }
   }
 }
