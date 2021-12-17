@@ -43,7 +43,8 @@ public class Quad<T, U, V, W> extends Triple<T, U, V> {
   @Nullable public final W fourth;
 
   /**
-   * Constructs the quad.
+   * Constructs the quad. This method is marked package-private to direct the user to constructing *
+   * objects using {@link Tuple#of(Object, Object, Object, Object)}.
    *
    * @param first the first object
    * @param second the second object

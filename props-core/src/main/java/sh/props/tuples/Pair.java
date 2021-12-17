@@ -42,7 +42,8 @@ public class Pair<T, U> {
   @Nullable public final U second;
 
   /**
-   * Constructs the pair.
+   * Constructs the pair. This method is marked package-private to direct the user to constructing
+   * objects using {@link Tuple#of(Object, Object)}.
    *
    * @param first the first object
    * @param second the second object

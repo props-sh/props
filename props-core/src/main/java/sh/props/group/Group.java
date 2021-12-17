@@ -33,7 +33,8 @@ import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
-public class Group {
+/** Convenience class for constructing groups of {@link sh.props.interfaces.Prop}s. */
+public final class Group {
 
   /**
    * Groups two Props, allowing the user to retrieve all four values concurrently. The returned type

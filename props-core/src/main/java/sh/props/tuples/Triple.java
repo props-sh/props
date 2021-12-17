@@ -42,7 +42,8 @@ public class Triple<T, U, V> extends Pair<T, U> {
   @Nullable public final V third;
 
   /**
-   * Constructs the triple.
+   * Constructs the triple. This method is marked package-private to direct the user to constructing
+   * * objects using {@link Tuple#of(Object, Object, Object)}.
    *
    * @param first the first object
    * @param second the second object
