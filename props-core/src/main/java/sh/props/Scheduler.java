@@ -50,7 +50,9 @@ public class Scheduler {
   /**
    * Class constructor.
    *
-   * @param executor The executor used to schedule any refresh operations.
+   * @param executor the {@link java.util.concurrent.ScheduledExecutorService} used to schedule any
+   *     refresh operations.
+   * @param forkJoinPool the {@link ForkJoinPool} to use when submitting tasks
    */
   public Scheduler(ScheduledExecutorService executor, ForkJoinPool forkJoinPool) {
     this.executor = executor;
