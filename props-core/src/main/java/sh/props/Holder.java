@@ -25,6 +25,8 @@
 
 package sh.props;
 
+import static sh.props.Validate.ensureUnchecked;
+
 import java.util.Objects;
 import sh.props.annotations.Nullable;
 
@@ -94,6 +96,22 @@ public class Holder<V> {
   }
 
   /**
+   * Returns the specified value, or throws the underlying {@link Throwable} as an unchecked
+   * exception.
+   *
+   * @return the associated value
+   * @throws RuntimeException in case the Holder is in an errored state
+   */
+  @Nullable
+  public V value() {
+    if (error != null) {
+      throw ensureUnchecked(error);
+    }
+
+    return value;
+  }
+
+  /**
    * Create a new Holder, with the specified error. This method updates the class's epoch.
    *
    * @param err the error that was encountered
@@ -101,21 +119,6 @@ public class Holder<V> {
    */
   public Holder<V> error(Throwable err) {
     return new Holder<>(this.epoch + 1, null, err);
-  }
-
-  /**
-   * Returns the specified value, or throws the underlying {@link Throwable}.
-   *
-   * @return the associated value
-   * @throws Throwable in case the Holder is in an errored state
-   */
-  @Nullable
-  public V get() throws Throwable {
-    if (error != null) {
-      throw error;
-    }
-
-    return value;
   }
 
   /**

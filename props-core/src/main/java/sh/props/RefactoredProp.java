@@ -150,7 +150,7 @@ public class RefactoredProp<T, R> implements Prop<R> {
   @Nullable
   public R get() {
     try {
-      return attemptValueRetrieval(refactoredProp, originalProp, converter).get();
+      return attemptValueRetrieval(refactoredProp, originalProp, converter).value();
     } catch (Throwable e) {
       // we know attemptValueRetrieval() will only contain InvalidReadOpException types
       throw (ValueCannotBeReadException) e;
@@ -225,7 +225,7 @@ public class RefactoredProp<T, R> implements Prop<R> {
 
     try {
       // the operation succeeded, send a value update
-      onUpdate.accept(result.get());
+      onUpdate.accept(result.value());
     } catch (Throwable err) {
       // the operation failed, send the error to downstream subscribers
       onError.accept(err);

@@ -27,7 +27,6 @@ package sh.props;
 
 import static java.lang.String.format;
 import static sh.props.Validate.assertNotNull;
-import static sh.props.Validate.ensureUnchecked;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -179,13 +178,9 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
   @Nullable
   public T get() {
     // ensure the Prop is in a valid state before returning it
-    try {
-      T value = valueOrDefault(getValue());
-      this.validateBeforeGet(value);
-      return value;
-    } catch (Throwable err) {
-      throw ensureUnchecked(err);
-    }
+    T value = valueOrDefault(getValue());
+    this.validateBeforeGet(value);
+    return value;
   }
 
   /**
@@ -194,9 +189,9 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
    * @return value or null
    */
   @SuppressWarnings("NullAway")
-  private T getValue() throws Throwable {
+  private T getValue() {
     // we are always guaranteed to get a non-null Holder from the AtomicRef
-    return this.ref.get().get();
+    return this.ref.get().value();
   }
 
   /**
@@ -269,7 +264,7 @@ public abstract class CustomProp<T> extends AbstractProp<T> implements Converter
     final T value;
     try {
       value = getValue();
-    } catch (Throwable e) {
+    } catch (RuntimeException e) {
       // if the value cannot be retrieved, signal an error
       return "<ERROR>";
     }

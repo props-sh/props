@@ -97,7 +97,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   public TupleT get() {
     var holder = holderRef.get();
     try {
-      return holder.get();
+      return holder.value();
     } catch (Throwable e) {
       throw ensureUnchecked(e);
     }
