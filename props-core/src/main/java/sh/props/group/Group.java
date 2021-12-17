@@ -49,7 +49,7 @@ public final class Group {
    */
   public static <T, U> SubscribableProp<Pair<T, U>> of(
       AbstractProp<T> first, AbstractProp<U> second) {
-    return new AnotherPairSyncdPropGroup<>(first, second);
+    return new PropGroupPair<>(first, second);
   }
 
   /**
@@ -67,7 +67,7 @@ public final class Group {
    */
   public static <T, U, V> SubscribableProp<Triple<T, U, V>> of(
       AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
-    return new AnotherTripleSyncdPropGroup<>(first, second, third);
+    return new PropGroupTriple<>(first, second, third);
   }
 
   /**
@@ -90,7 +90,7 @@ public final class Group {
       AbstractProp<U> second,
       AbstractProp<V> third,
       AbstractProp<W> fourth) {
-    return new AnotherQuadSyncdPropGroup<>(first, second, third, fourth);
+    return new PropGroupQuad<>(first, second, third, fourth);
   }
 
   /**
@@ -116,6 +116,6 @@ public final class Group {
       AbstractProp<V> third,
       AbstractProp<W> fourth,
       AbstractProp<X> fifth) {
-    return new AnotherQuintupleSyncdPropGroup<>(first, second, third, fourth, fifth);
+    return new PropGroupQuintuple<>(first, second, third, fourth, fifth);
   }
 }

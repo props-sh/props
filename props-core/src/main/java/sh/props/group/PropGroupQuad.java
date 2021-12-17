@@ -31,49 +31,68 @@ import java.util.concurrent.atomic.AtomicReference;
 import sh.props.AbstractProp;
 import sh.props.Holder;
 import sh.props.exceptions.InvalidReadOpException;
-import sh.props.tuples.Pair;
+import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
-public class AnotherPairSyncdPropGroup<T, U> extends AnotherPropGroup<Pair<T, U>> {
+class PropGroupQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>> {
   private final String key;
   private final AbstractProp<T> first;
   private final AbstractProp<U> second;
+  private final AbstractProp<V> third;
+  private final AbstractProp<W> fourth;
 
   /**
    * Constructs a synchronized quintuple of values.
    *
    * @param first the first prop
    * @param second the second prop
+   * @param third the third prop
+   * @param fourth the fourth prop
    */
-  public AnotherPairSyncdPropGroup(AbstractProp<T> first, AbstractProp<U> second) {
+  public PropGroupQuad(
+      AbstractProp<T> first,
+      AbstractProp<U> second,
+      AbstractProp<V> third,
+      AbstractProp<W> fourth) {
     super(new AtomicReference<>(new Holder<>()));
+
     this.first = first;
     this.second = second;
-    key = multiKey(first.key(), second.key());
+    this.third = third;
+    this.fourth = fourth;
+    key = multiKey(first.key(), second.key(), third.key(), fourth.key());
 
     // guarantee that holder.value is not null
     readValues();
 
     // register for prop updates
     first.subscribe(
-        v -> this.updateValue(holderRef, pair -> Pair.updateFirst(pair, v), this::onValueUpdate),
+        v -> updateValue(holderRef, t -> Quad.updateFirst(t, v), this::onValueUpdate),
         this::setError);
     second.subscribe(
-        v -> updateValue(holderRef, pair -> Pair.updateSecond(pair, v), this::onValueUpdate),
+        v -> updateValue(holderRef, t -> Quad.updateSecond(t, v), this::onValueUpdate),
+        this::setError);
+    third.subscribe(
+        v -> updateValue(holderRef, t -> Quad.updateThird(t, v), this::onValueUpdate),
+        this::setError);
+    fourth.subscribe(
+        v -> updateValue(holderRef, t -> Quad.updateFourth(t, v), this::onValueUpdate),
         this::setError);
   }
 
-  /** Reads the associated props. This method is synchronized to prevent concurrent runs. */
+  /** Reads the associated props. */
   private void readValues() {
     List<Throwable> errors = new ArrayList<>();
 
     // attempt to read all values
     T v1 = readVal(first, errors);
     U v2 = readVal(second, errors);
+    V v3 = readVal(third, errors);
+    W v4 = readVal(fourth, errors);
 
     if (errors.isEmpty()) {
       // if no errors, construct a result
-      holderRef.updateAndGet(holder -> holder.value(Tuple.of(v1, v2)));
+      holderRef.updateAndGet(holder -> holder.value(Tuple.of(v1, v2, v3, v4)));
     } else {
       // otherwise, collect all the logged exceptions
       var exc = new InvalidReadOpException("One or more errors");

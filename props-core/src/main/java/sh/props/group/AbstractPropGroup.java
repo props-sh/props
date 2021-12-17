@@ -36,7 +36,7 @@ import sh.props.annotations.Nullable;
 import sh.props.interfaces.Prop;
 import sh.props.tuples.Tuple;
 
-public abstract class AnotherPropGroup<TupleT> extends SubscribableProp<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   protected final AtomicReference<Holder<TupleT>> holderRef;
 
   /**
@@ -44,7 +44,7 @@ public abstract class AnotherPropGroup<TupleT> extends SubscribableProp<TupleT> 
    *
    * @param holderRef the holder ref
    */
-  protected AnotherPropGroup(AtomicReference<Holder<TupleT>> holderRef) {
+  protected AbstractPropGroup(AtomicReference<Holder<TupleT>> holderRef) {
     this.holderRef = holderRef;
   }
 

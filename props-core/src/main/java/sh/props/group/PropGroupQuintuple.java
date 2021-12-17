@@ -34,8 +34,7 @@ import sh.props.exceptions.InvalidReadOpException;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Tuple;
 
-public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
-    extends AnotherPropGroup<Quintuple<T, U, V, W, X>> {
+class PropGroupQuintuple<T, U, V, W, X> extends AbstractPropGroup<Quintuple<T, U, V, W, X>> {
   private final String key;
   private final AbstractProp<T> first;
   private final AbstractProp<U> second;
@@ -52,7 +51,7 @@ public class AnotherQuintupleSyncdPropGroup<T, U, V, W, X>
    * @param fourth the fourth prop
    * @param fifth the fifth prop
    */
-  public AnotherQuintupleSyncdPropGroup(
+  public PropGroupQuintuple(
       AbstractProp<T> first,
       AbstractProp<U> second,
       AbstractProp<V> third,
