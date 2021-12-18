@@ -28,6 +28,7 @@ package sh.props.custom;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.NumericDurationConverter;
 
@@ -50,7 +51,7 @@ public class NumericDurationProp extends CustomProp<Duration> implements Numeric
    * @param key the Prop's key
    * @param defaultValue a default value, or null if one doesn't exist
    * @param description a generic description used to explain what the prop is for
-   * @param isRequired true if the Prop must have a value when {@link BaseProp#get()} is called
+   * @param isRequired true if the Prop must have a value when {@link Prop#get()} is called
    * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
    *     when {@link Object#toString()} is called
    */
