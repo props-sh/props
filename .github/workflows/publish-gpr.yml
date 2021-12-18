@@ -2,7 +2,7 @@ name: Publish a package to GitHub Package Repo
 
 on:
   push:
-    branches: [ 'main' ]
+    branches: [ 'main', 'feature/16-publish-all-projects' ]
 
 jobs:
   build-and-publish-package:

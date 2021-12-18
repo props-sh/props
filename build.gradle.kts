@@ -7,6 +7,7 @@ plugins {
     checkstyle
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
+    `maven-publish`
 }
 
 group = project.group
@@ -209,4 +210,27 @@ allprojects {
             testSourceDirs.addAll(java.sourceSets["intTest"].resources.srcDirs)
         }
     }
+
+    // Publish to GitHub Packages
+    apply(plugin = "maven-publish")
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/props-sh/props")
+                credentials {
+                    username =
+                        project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                }
+            }
+        }
+        publications {
+            register<MavenPublication>("gpr") {
+                group = project.group as String
+                from(components["java"])
+            }
+        }
+    }
+
 }
