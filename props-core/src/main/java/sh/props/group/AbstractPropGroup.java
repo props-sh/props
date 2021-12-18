@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import sh.props.AbstractProp;
 import sh.props.BaseProp;
 import sh.props.Holder;
 import sh.props.annotations.Nullable;
@@ -135,7 +134,7 @@ abstract class AbstractPropGroup<TupleT> extends BaseProp<TupleT> {
    * @return the read value, or null
    */
   @Nullable
-  protected <T> T readVal(AbstractProp<T> prop, List<Throwable> errors) {
+  protected <T> T readVal(BaseProp<T> prop, List<Throwable> errors) {
     try {
       return prop.get();
     } catch (RuntimeException e) {

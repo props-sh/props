@@ -28,18 +28,18 @@ package sh.props.group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import sh.props.AbstractProp;
+import sh.props.BaseProp;
 import sh.props.Holder;
 import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Tuple;
 
 class PropGroupQuintuple<T, U, V, W, X> extends AbstractPropGroup<Quintuple<T, U, V, W, X>> {
-  private final AbstractProp<T> first;
-  private final AbstractProp<U> second;
-  private final AbstractProp<V> third;
-  private final AbstractProp<W> fourth;
-  private final AbstractProp<X> fifth;
+  private final BaseProp<T> first;
+  private final BaseProp<U> second;
+  private final BaseProp<V> third;
+  private final BaseProp<W> fourth;
+  private final BaseProp<X> fifth;
 
   /**
    * Constructs a synchronized quintuple of values.
@@ -51,11 +51,11 @@ class PropGroupQuintuple<T, U, V, W, X> extends AbstractPropGroup<Quintuple<T, U
    * @param fifth the fifth prop
    */
   public PropGroupQuintuple(
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth,
-      AbstractProp<X> fifth) {
+      BaseProp<T> first,
+      BaseProp<U> second,
+      BaseProp<V> third,
+      BaseProp<W> fourth,
+      BaseProp<X> fifth) {
     super(
         new AtomicReference<>(new Holder<>()),
         multiKey(first.key(), second.key(), third.key(), fourth.key(), fifth.key()));

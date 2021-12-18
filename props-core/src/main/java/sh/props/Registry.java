@@ -48,7 +48,7 @@ public class Registry {
 
   final RegistryStore store;
   final List<Layer> layers = new ArrayList<>();
-  final ConcurrentHashMap<String, HashSet<AbstractProp<?>>> notifications =
+  final ConcurrentHashMap<String, HashSet<BoundableProp<?>>> notifications =
       new ConcurrentHashMap<>();
   private final Scheduler scheduler;
 
@@ -68,7 +68,7 @@ public class Registry {
     Utilities.assertNotNull(key, "key");
 
     // check if we have any props to notify
-    Collection<AbstractProp<?>> props = this.notifications.get(key);
+    Collection<BoundableProp<?>> props = this.notifications.get(key);
     if (props == null || props.isEmpty()) {
       // nothing to do if the key is not registered or there aren't any props to notify
       return;
@@ -80,8 +80,8 @@ public class Registry {
   }
 
   /**
-   * Binds the specified {@link AbstractProp} to this registry. If the registry already contains a
-   * value for this prop, it will call {@link AbstractProp#setValue(String)} to set it.
+   * Binds the specified {@link BoundableProp} to this registry. If the registry already contains a
+   * value for this prop, it will call {@link BoundableProp#setValue(String)} to set it.
    *
    * <p>If any of the configured {@link Source}s override {@link LoadOnDemand} and signal that they
    * support on-demand loading of keys, their corresponding {@link LoadOnDemand#loadOnDemand()}
@@ -89,9 +89,9 @@ public class Registry {
    * logic of dealing with the asynchronous nature of receiving each value is left to the
    * implementing Source.
    *
-   * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
+   * <p>NOTE: In the default implementation, none of the classes extending {@link BoundableProp}
    * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
-   * multiple props with the same {@link AbstractProp#key()} to be bound to the same Registry.
+   * multiple props with the same {@link BoundableProp#key()} to be bound to the same Registry.
    *
    * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
    * Keep the implementation performant by reducing the number of Prop objects registered for the
@@ -103,11 +103,11 @@ public class Registry {
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
-   * @param <PropT> the prop's type with an upper bound of ({@link AbstractProp})
+   * @param <PropT> the prop's type with an upper bound of ({@link BoundableProp})
    * @return the bound prop
    * @throws IllegalArgumentException if a previously bound prop is passed
    */
-  public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
+  public <T, PropT extends BoundableProp<T>> PropT bind(PropT prop) {
     final String key = prop.key();
 
     // notify all layers that the specified prop was bound
@@ -172,7 +172,7 @@ public class Registry {
    * <p>Since this method retrieves the value directly from the underlying {@link RegistryStore}, it
    * is the fastest way to observe a changed value.
    *
-   * <p>It differs from any bound {@link AbstractProp} objects in that they will have to wait for
+   * <p>It differs from any bound {@link BoundableProp} objects in that they will have to wait for
    * {@link Registry#sendUpdate(String, Pair)} to asynchronously finish executing before observing
    * any changes.
    *

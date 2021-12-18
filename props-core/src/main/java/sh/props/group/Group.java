@@ -25,14 +25,13 @@
 
 package sh.props.group;
 
-import sh.props.AbstractProp;
 import sh.props.BaseProp;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
-/** Convenience class for constructing groups of {@link AbstractProp}s. */
+/** Convenience class for constructing groups of {@link BaseProp}s. */
 public final class Group {
 
   /**
@@ -45,7 +44,7 @@ public final class Group {
    * @param <U> the type of the second prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U> BaseProp<Pair<T, U>> of(AbstractProp<T> first, AbstractProp<U> second) {
+  public static <T, U> BaseProp<Pair<T, U>> of(BaseProp<T> first, BaseProp<U> second) {
     return new PropGroupPair<>(first, second);
   }
 
@@ -62,7 +61,7 @@ public final class Group {
    * @return a synchronized Quad of props, which can be retrieved together
    */
   public static <T, U, V> BaseProp<Triple<T, U, V>> of(
-      AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
+      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third) {
     return new PropGroupTriple<>(first, second, third);
   }
 
@@ -81,10 +80,7 @@ public final class Group {
    * @return a synchronized Quad of props, which can be retrieved together
    */
   public static <T, U, V, W> BaseProp<Quad<T, U, V, W>> of(
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth) {
+      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
     return new PropGroupQuad<>(first, second, third, fourth);
   }
 
@@ -105,11 +101,11 @@ public final class Group {
    * @return a synchronized Quad of props, which can be retrieved together
    */
   public static <T, U, V, W, X> BaseProp<Quintuple<T, U, V, W, X>> of(
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth,
-      AbstractProp<X> fifth) {
+      BaseProp<T> first,
+      BaseProp<U> second,
+      BaseProp<V> third,
+      BaseProp<W> fourth,
+      BaseProp<X> fifth) {
     return new PropGroupQuintuple<>(first, second, third, fourth, fifth);
   }
 }

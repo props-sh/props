@@ -39,11 +39,17 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /**
- * This class implements the base functionality required to notify subscribers asynchronously that
- * an {@link AbstractProp} has updated its value, or that an update operation failed.
+ * This class implements the base functionality required to notify subscribers asynchronously that a
+ * prop has accepted or rejected a value update.
  *
- * <p>* It's important to note that this implementation will attempt to send a single event when the
- * value in concurrently updated, but it will send each error when one is encountered.
+ * <p>It's important to note that this implementation ensures only the most recent events are sent
+ * to subscribers. Coincidentally it does not ensure that every single update event is sent to
+ * downstream subscribers. If multiple values or errors are received concurrently, events out of
+ * order (from the epoch's point of view) will not be sent.
+ *
+ * <p>For example, if events are processed in the <code>T1 T2 T3</code> order, all events will be
+ * sent, however, if events are processed in the <code>T3 T1 T2</code> order, only <code>T3</code>
+ * will be sent.
  *
  * @param <T> the type of the prop object
  */

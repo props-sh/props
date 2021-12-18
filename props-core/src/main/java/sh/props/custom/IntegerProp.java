@@ -48,8 +48,7 @@ public class IntegerProp extends CustomProp<Integer> implements IntegerConverter
    * @param key the Prop's key
    * @param defaultValue a default value, or null if one doesn't exist
    * @param description a generic description used to explain what the prop is for
-   * @param isRequired true if the Prop must have a value when {@link sh.props.AbstractProp#get()}
-   *     is called
+   * @param isRequired true if the Prop must have a value when {@link BaseProp#get()} is called
    * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
    *     when {@link Object#toString()} is called
    */

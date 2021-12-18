@@ -25,6 +25,7 @@
 
 package sh.props.custom;
 
+import sh.props.BaseProp;
 import sh.props.CustomProp;
 import sh.props.annotations.Nullable;
 import sh.props.converters.LongConverter;
@@ -48,8 +49,7 @@ public class LongProp extends CustomProp<Long> implements LongConverter {
    * @param key the Prop's key
    * @param defaultValue a default value, or null if one doesn't exist
    * @param description a generic description used to explain what the prop is for
-   * @param isRequired true if the Prop must have a value when {@link sh.props.AbstractProp#get()}
-   *     is called
+   * @param isRequired true if the Prop must have a value when {@link BaseProp#get()} is called
    * @param isSecret true if the Prop represents a secret, in which case its value will be redacted
    *     when {@link Object#toString()} is called
    */
