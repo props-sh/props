@@ -5,6 +5,6 @@ plugins {
 dependencies {
     implementation(project(":props-core"))
 
-    implementation(platform("software.amazon.awssdk:bom:2.17.80"))
+    implementation(platform("software.amazon.awssdk:bom:2.17.100"))
     implementation("software.amazon.awssdk:secretsmanager")
 }
