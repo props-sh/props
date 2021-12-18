@@ -173,8 +173,8 @@ public class Registry {
    * is the fastest way to observe a changed value.
    *
    * <p>It differs from any bound {@link AbstractProp} objects in that they will have to wait for
-   * {@link Registry#sendUpdate(String, String, Layer)} to asynchronously finish executing before
-   * observing any changes.
+   * {@link Registry#sendUpdate(String, Pair)} to asynchronously finish executing before observing
+   * any changes.
    *
    * @param key the key to retrieve
    * @param converter the type converter used to cast the value to its appropriate type
