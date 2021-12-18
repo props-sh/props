@@ -22,7 +22,7 @@ buildscript {
         "classpath"(
             group = "com.google.googlejavaformat",
             name = "google-java-format",
-            version = "1.10.0"
+            version = "1.13.0"
         )
     }
     allprojects {
