@@ -1,7 +1,7 @@
 {
   "extends": [
     "config:base",
-    "::prHourlyLimitNone",
+    ":prHourlyLimitNone",
     ":automergeMinor",
     ":automergeRequireAllStatusChecks"
   ]
