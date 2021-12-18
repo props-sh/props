@@ -27,6 +27,7 @@ package sh.props.custom;
 
 import java.time.Duration;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.DurationConverter;
 
