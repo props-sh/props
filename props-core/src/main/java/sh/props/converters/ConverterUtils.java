@@ -125,7 +125,7 @@ class ConverterUtils {
 
     try {
       return OffsetDateTime.parse(value).toInstant();
-    } catch (DateTimeParseException | NullPointerException e) {
+    } catch (DateTimeParseException e) {
       log.log(SEVERE, e, () -> "Could not parse " + value + " as a valid DateTime");
       return null;
     }
