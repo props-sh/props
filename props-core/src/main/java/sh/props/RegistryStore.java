@@ -34,9 +34,7 @@ import sh.props.tuples.Pair;
  * <p>Currently, this interface is not ready to be made public and only a single (internal)
  * implementation is provided.
  */
-// TODO(mihaibojin): superfluous for the moment, and it overcomplicates the Registry; remove
-@Deprecated(forRemoval = true)
-interface Datastore {
+interface RegistryStore {
 
   /**
    * Retrieves a value,layer pair for the specified key.
@@ -50,19 +48,13 @@ interface Datastore {
   /**
    * Updates a value and its originating layer, for the specified key.
    *
+   * <p>If a <code>null</code> value is sent, implementations should unmap the specified key.
+   *
    * @param key the key to update
-   * @param value the value to set
-   * @param layer the originating layer
+   * @param valueLayer the value, layer pair to update
    * @return a value,layer pair if the key is defined in any layer, or null if this operation
-   *     results in a deletion of the key
+   *     results in the deletion of the key
    */
   @Nullable
-  Pair<String, Layer> put(String key, @Nullable String value, Layer layer);
-
-  /**
-   * Notifies any subscribers of updates.
-   *
-   * @return a functional interface that accepts updates
-   */
-  Notifiable notifier();
+  Pair<String, Layer> put(String key, Pair<String, Layer> valueLayer);
 }

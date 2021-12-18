@@ -43,10 +43,10 @@ import sh.props.converters.Cast;
 import sh.props.converters.Converter;
 import sh.props.tuples.Pair;
 
-public class Registry implements Notifiable {
+public class Registry {
   private static final Logger log = Logger.getLogger(Registry.class.getName());
 
-  final Datastore store;
+  final RegistryStore store;
   final List<Layer> layers = new ArrayList<>();
   final ConcurrentHashMap<String, HashSet<AbstractProp<?>>> notifications =
       new ConcurrentHashMap<>();
@@ -58,8 +58,13 @@ public class Registry implements Notifiable {
     this.scheduler = scheduler;
   }
 
-  @Override
-  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+  /**
+   * Sends a value update to any bound props.
+   *
+   * @param key the key representing the updated prop
+   * @param valueLayer the value layer pair representing the update
+   */
+  void sendUpdate(String key, Pair<String, Layer> valueLayer) {
     Utilities.assertNotNull(key, "key");
 
     // check if we have any props to notify
@@ -71,7 +76,7 @@ public class Registry implements Notifiable {
 
     // alleviate the risk of blocking the main (update) thread
     // by offloading to an executor pool, since we don't control Prop subscribers
-    scheduler.forkJoinExecute(() -> props.forEach(prop -> prop.setValue(value)));
+    scheduler.forkJoinExecute(() -> props.forEach(prop -> prop.setValue(valueLayer.first)));
   }
 
   /**
@@ -164,8 +169,8 @@ public class Registry implements Notifiable {
   /**
    * Convenience method that retrieves the value associated with the given key.
    *
-   * <p>Since this method retrieves the value directly from the underlying {@link Datastore}, it is
-   * the fastest way to observe a changed value.
+   * <p>Since this method retrieves the value directly from the underlying {@link RegistryStore}, it
+   * is the fastest way to observe a changed value.
    *
    * <p>It differs from any bound {@link AbstractProp} objects in that they will have to wait for
    * {@link Registry#sendUpdate(String, String, Layer)} to asynchronously finish executing before

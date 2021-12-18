@@ -39,14 +39,14 @@ import sh.props.tuples.Tuple;
  * <p>This class is subject to future change, if for example we decide to add a different algorithm
  * for deciding the effective value from a set of layers.
  */
-class SyncStore implements Datastore {
+class SyncStore implements RegistryStore {
 
   protected final ConcurrentHashMap<String, Pair<String, Layer>> effectiveValues =
       new ConcurrentHashMap<>();
-  protected final Notifiable notifiable;
+  protected final Registry registry;
 
-  public SyncStore(Notifiable notifiable) {
-    this.notifiable = notifiable;
+  public SyncStore(Registry registry) {
+    this.registry = registry;
   }
 
   /**
@@ -76,18 +76,12 @@ class SyncStore implements Datastore {
   /**
    * Checks if the specified pair's value equals the deconstructed value, but NOT the layer.
    *
-   * @param value the value to compare
-   * @param layer the owning layer to compare
+   * @param valueLayer the (value, layer) pair to update
    * @return true if only the value is equal
    */
   private static boolean equalInValueButNotLayer(
-      Pair<String, Layer> pair, String value, Layer layer) {
-    return Objects.equals(value, pair.first) && layer != pair.second;
-  }
-
-  @Override
-  public Notifiable notifier() {
-    return this.notifiable;
+      Pair<String, Layer> pair, Pair<String, Layer> valueLayer) {
+    return Objects.equals(valueLayer.first, pair.first) && valueLayer.second != pair.second;
   }
 
   /**
@@ -104,17 +98,18 @@ class SyncStore implements Datastore {
   }
 
   /**
-   * Updates the value for the specified key.
+   * Updates a value and its originating layer, for the specified key.
+   *
+   * <p>If a <code>null</code> value is sent, implementations should unmap the specified key.
    *
    * @param key the key to update
-   * @param value the value to set (<code>null</code> unmaps the key)
-   * @param layer the originating layer
-   * @return a {@link Pair} containing the value and new owning layer, or <code>null</code> if no
-   *     other layer defines the key
+   * @param valueLayer the (value, layer) pair to update
+   * @return a value,layer pair if the key is defined in any layer, or null if this operation
+   *     results in the deletion of the key
    */
   @Override
   @Nullable
-  public Pair<String, Layer> put(String key, @Nullable String value, Layer layer) {
+  public Pair<String, Layer> put(String key, Pair<String, Layer> valueLayer) {
     return this.effectiveValues.compute(
         key,
         (k, current) -> {
@@ -122,20 +117,20 @@ class SyncStore implements Datastore {
             // if we had no mapping for this key
 
             // and if the new value is null
-            if (value == null) {
+            if (valueLayer.first == null) {
               // do not map the key
               return null;
             }
 
             // otherwise, map the effective value and its owning layer
-            return this.onValueChanged(key, Tuple.of(value, layer));
+            return this.onValueChanged(key, valueLayer);
           }
 
           // if we already defined a mapping for this key
 
           // first check the attempted mapping's priority
           int oldPriority = assertNotNull(current.second, "layer").priority();
-          int priority = layer.priority();
+          int priority = assertNotNull(valueLayer.second, "layer").priority();
           // if the layer's priority is lower than the current owner
           if (priority < oldPriority) {
             // do nothing as this layer does not hold ownership over the key
@@ -146,7 +141,7 @@ class SyncStore implements Datastore {
           // is at least equal to the current mapping's priority
 
           // if a higher priority layer unsets the value
-          if (value == null && priority > oldPriority) {
+          if (valueLayer.first == null && priority > oldPriority) {
             // this is a no-op
             // this could for example happen if a layer maps and unmaps a key
             // during the same update interval, sending only the unmap event
@@ -154,25 +149,25 @@ class SyncStore implements Datastore {
           }
 
           // if the value has not changed (note, we do not allow null value mappings)
-          if (value != null && current.equalTo(value, layer)) {
+          if (valueLayer.first != null && current.equals(valueLayer)) {
             // simply return the current value
             return current;
           }
 
           // if the layer mapping is updated but the value did not change
-          if (value != null && equalInValueButNotLayer(current, value, layer)) {
+          if (valueLayer.first != null && equalInValueButNotLayer(current, valueLayer)) {
             // we need to modify the layer/value mapping
-            // but avoid sending an update to any objects following this key
-            return Tuple.of(value, layer);
+            // but avoid sending an update to subscribers following this key
+            return valueLayer;
           }
 
           // if the owning layer unsets the value
-          if (value == null) {
+          if (valueLayer.first == null) {
             // find a lower priority layer that defines this key
             return this.onValueChanged(key, findNextPotentialOwner(key, current));
           } else {
-            // otherwise update the layer/value mapping
-            return this.onValueChanged(key, Tuple.of(value, layer));
+            // otherwise, update the layer/value mapping and send an update to subscribers
+            return this.onValueChanged(key, valueLayer);
           }
         });
   }
@@ -187,11 +182,11 @@ class SyncStore implements Datastore {
   @Nullable
   private Pair<String, Layer> onValueChanged(String key, @Nullable Pair<String, Layer> vl) {
     if (vl == null) {
-      this.notifier().sendUpdate(key, null, null);
+      this.registry.sendUpdate(key, Tuple.of(null, null));
       return null;
     }
 
-    this.notifier().sendUpdate(key, vl.first, vl.second);
+    this.registry.sendUpdate(key, vl);
     return vl;
   }
 }

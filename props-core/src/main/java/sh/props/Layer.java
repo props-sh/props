@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
+import sh.props.tuples.Tuple;
 
 /**
  * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the
@@ -149,7 +150,7 @@ public class Layer implements Consumer<Map<String, String>> {
           it.remove();
 
           // and notify the registry that this layer no longer defines this key
-          this.registry.store.put(existingKey, null, this);
+          this.registry.store.put(existingKey, Tuple.of(null, this));
           continue;
         }
 
@@ -162,7 +163,7 @@ public class Layer implements Consumer<Map<String, String>> {
           entry.setValue(maybeNewValue);
 
           // and notify that registry that we have a new value
-          this.registry.store.put(existingKey, maybeNewValue, this);
+          this.registry.store.put(existingKey, Tuple.of(maybeNewValue, this));
         }
       }
 
@@ -174,7 +175,7 @@ public class Layer implements Consumer<Map<String, String>> {
           // add the new key,value to the store
           this.store.put(e.getKey(), e.getValue());
           // and notify the registry
-          this.registry.store.put(e.getKey(), e.getValue(), this);
+          this.registry.store.put(e.getKey(), Tuple.of(e.getValue(), this));
         }
       }
     } finally {
