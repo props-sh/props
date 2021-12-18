@@ -24,7 +24,7 @@ jobs:
           cache: gradle
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+        uses: gradle/wrapper-validation-action@84d7e182ae7c7a37f200c184f64038fb0e62dd7d
 
       - name: Build the project
         env:
