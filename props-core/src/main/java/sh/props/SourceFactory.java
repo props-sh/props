@@ -23,9 +23,8 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
-import sh.props.Source;
 import sh.props.annotations.Nullable;
 
 /**

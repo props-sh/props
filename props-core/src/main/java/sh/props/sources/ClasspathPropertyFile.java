@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.Source;
+import sh.props.SourceFactory;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
 public class ClasspathPropertyFile extends Source {

@@ -33,7 +33,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.ValueCannotBeReadException;
-import sh.props.interfaces.Subscribable;
 
 /**
  * Helper class which attempts to resolve two properties, converting the second property's value to

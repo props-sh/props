@@ -27,7 +27,6 @@ package sh.props.group;
 
 import sh.props.AbstractProp;
 import sh.props.BaseProp;
-import sh.props.interfaces.Subscribable;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
@@ -37,9 +36,8 @@ import sh.props.tuples.Triple;
 public final class Group {
 
   /**
-   * Groups two Props, allowing the user to retrieve all four values concurrently. The returned type
-   * implements {@link Subscribable}, allowing the user to receive events when any of the values are
-   * updated.
+   * Groups two Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * BaseProp}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -52,9 +50,8 @@ public final class Group {
   }
 
   /**
-   * Groups three Props, allowing the user to retrieve all four values concurrently. The returned
-   * type implements {@link Subscribable}, allowing the user to receive events when any of the
-   * values are updated.
+   * Groups three Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * BaseProp}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -70,9 +67,8 @@ public final class Group {
   }
 
   /**
-   * Groups four Props, allowing the user to retrieve all four values concurrently. The returned
-   * type implements {@link Subscribable}, allowing the user to receive events when any of the
-   * values are updated.
+   * Groups four Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * BaseProp}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -93,9 +89,8 @@ public final class Group {
   }
 
   /**
-   * Groups five Props, allowing the user to retrieve all four values concurrently. The returned
-   * type implements {@link Subscribable}, allowing the user to receive events when any of the
-   * values are updated.
+   * Groups five Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * BaseProp}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop

@@ -44,7 +44,6 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sh.props.interfaces.FileWatchable;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed

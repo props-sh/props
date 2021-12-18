@@ -37,7 +37,6 @@ import java.util.function.LongUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Subscribable;
 
 /**
  * This class implements the base functionality required to notify subscribers asynchronously that

@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.SourceFactory;
 import sh.props.sources.ClasspathPropertyFile;
 import sh.props.sources.Environment;
 import sh.props.sources.PropertyFile;

@@ -23,24 +23,21 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
-import java.util.function.Consumer;
+import java.nio.file.Path;
 
 /**
- * Represents an object that sends update events, or notifies the downstream of any encountered
- * errors.
- *
- * @param <T> the type of value that the downstream consumer should accept
+ * Denotes an object that sends events based on changes on the file system (e.g., the file was
+ * updated on disk)
  */
 @FunctionalInterface
-public interface Subscribable<T> {
+public interface FileWatchable {
 
   /**
-   * Subscribes the passed update/error consumers.
+   * The file to monitor using JDK's {@link java.nio.file.WatchService}.
    *
-   * @param onUpdate called when a new value is received
-   * @param onError called when an error occurs (a value cannot be received)
+   * @return a path to a file on disk
    */
-  void subscribe(Consumer<T> onUpdate, Consumer<Throwable> onError);
+  Path file();
 }
