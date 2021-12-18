@@ -34,7 +34,7 @@ buildscript {
     }
 }
 
-allprojects {
+subprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
@@ -226,8 +226,9 @@ allprojects {
             }
         }
         publications {
-            register<MavenPublication>("gpr") {
+            register<MavenPublication>("props") {
                 group = project.group as String
+                artifactId = "library"
                 from(components["java"])
             }
         }

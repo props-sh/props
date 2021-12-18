@@ -2,6 +2,7 @@ rootProject.name = "props"
 
 include("props-core")
 include("props-aws")
+include("props-mongodb")
 
 pluginManagement {
     repositories {
@@ -14,6 +15,9 @@ pluginManagement {
         id("me.champeau.jmh").version("0.6.6")
     }
 }
+
+// For when we will need to define constraints in our dependency tree
+// https://docs.gradle.org/current/userguide/dependency_constraints.html#dependency-constraints
 
 // https://docs.gradle.org/current/userguide/platforms.html#header
 // https://docs.gradle.org/current/userguide/dependency_version_alignment.html#header
@@ -43,4 +47,3 @@ dependencyResolutionManagement {
         }
     }
 }
-include("props-mongodb")
