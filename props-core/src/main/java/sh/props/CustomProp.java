@@ -43,7 +43,7 @@ import sh.props.exceptions.ValueCannotBeSetException;
  *
  * @param <T> the property's type
  */
-public abstract class CustomProp<T> extends AbstractProp<T> implements Converter<T> {
+public abstract class CustomProp<T> extends BoundableProp<T> implements Converter<T> {
 
   public final String key;
 

@@ -28,16 +28,16 @@ package sh.props.group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import sh.props.AbstractProp;
 import sh.props.Holder;
+import sh.props.Prop;
 import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
 class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
-  private final AbstractProp<T> first;
-  private final AbstractProp<U> second;
-  private final AbstractProp<V> third;
+  private final Prop<T> first;
+  private final Prop<U> second;
+  private final Prop<V> third;
 
   /**
    * Constructs a synchronized quintuple of values.
@@ -46,7 +46,7 @@ class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
    * @param second the second prop
    * @param third the third prop
    */
-  public PropGroupTriple(AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
+  public PropGroupTriple(Prop<T> first, Prop<U> second, Prop<V> third) {
     super(new AtomicReference<>(new Holder<>()), multiKey(first.key(), second.key(), third.key()));
     this.first = first;
     this.second = second;

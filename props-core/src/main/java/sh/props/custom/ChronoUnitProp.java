@@ -27,9 +27,9 @@ package sh.props.custom;
 
 import java.time.temporal.ChronoUnit;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.ChronoUnitConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class ChronoUnitProp extends CustomProp<ChronoUnit> implements ChronoUnitConverter {

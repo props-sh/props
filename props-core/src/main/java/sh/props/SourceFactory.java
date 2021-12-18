@@ -23,21 +23,22 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
-import java.util.function.Supplier;
+import sh.props.annotations.Nullable;
 
 /**
- * Interface that is returned to the caller to explicitly call out the public contract exported by
- * this library.
+ * Interface for {@link Source} factories.
  *
- * @param <T> the property's type
+ * @param <T> the source subclass
  */
-public interface Prop<T> extends Supplier<T>, Subscribable<T> {
+@FunctionalInterface
+public interface SourceFactory<T extends Source> {
   /**
-   * Designates this {@link Prop}'s key identifier.
+   * Constructs a {@link Source} object, using the specified options.
    *
-   * @return a string id
+   * @param options configuration for the constructed source; null if not needed
+   * @return a constructed Source object
    */
-  String key();
+  T create(@Nullable String options);
 }

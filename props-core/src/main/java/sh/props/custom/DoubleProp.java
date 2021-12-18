@@ -26,9 +26,9 @@
 package sh.props.custom;
 
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.DoubleConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class DoubleProp extends CustomProp<Double> implements DoubleConverter {

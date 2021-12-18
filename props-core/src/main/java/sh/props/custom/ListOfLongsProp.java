@@ -27,9 +27,9 @@ package sh.props.custom;
 
 import java.util.List;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.ListOfLongConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class ListOfLongsProp extends CustomProp<List<Long>> implements ListOfLongConverter {

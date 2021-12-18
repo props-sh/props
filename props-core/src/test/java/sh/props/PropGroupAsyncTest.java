@@ -46,7 +46,7 @@ import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 public class PropGroupAsyncTest extends AwaitAssertionTest {
-  public static final int HOW_MANY_TIMES = 100;
+  public static final int HOW_MANY_TIMES = 10;
 
   @RepeatedTest(value = HOW_MANY_TIMES)
   void pair() {

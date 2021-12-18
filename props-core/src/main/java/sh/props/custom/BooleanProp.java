@@ -26,9 +26,9 @@
 package sh.props.custom;
 
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.BooleanConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class BooleanProp extends CustomProp<Boolean> implements BooleanConverter {

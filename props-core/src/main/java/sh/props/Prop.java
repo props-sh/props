@@ -23,23 +23,24 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
-import sh.props.Source;
-import sh.props.annotations.Nullable;
+import java.util.function.Supplier;
 
 /**
- * Interface for {@link Source} factories.
+ * Base type that designates property objects that can be read and consumed. Consider this type as a
+ * read-only type, with values supplied from 'somewhere'.
  *
- * @param <T> the source subclass
+ * <p>This is everything you need to consume values, but this base type cannot, for example, be
+ * bound to a {@link Registry}.
+ *
+ * @param <T> the type of the underlying value
  */
-@FunctionalInterface
-public interface SourceFactory<T extends Source> {
+public abstract class Prop<T> extends SubscribableProp<T> implements Supplier<T> {
   /**
-   * Constructs a {@link Source} object, using the specified options.
+   * Designates this {@link Prop}'s key.
    *
-   * @param options configuration for the constructed source; null if not needed
-   * @return a constructed Source object
+   * @return a string identifier that indicates the underlying property
    */
-  T create(@Nullable String options);
+  public abstract String key();
 }

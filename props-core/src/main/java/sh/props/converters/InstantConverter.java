@@ -35,7 +35,7 @@ public interface InstantConverter extends Converter<Instant> {
 
   @Override
   @Nullable
-  default Instant decode(String value) {
+  default Instant decode(@Nullable String value) {
     return safeParseInstant(value);
   }
 }

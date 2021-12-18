@@ -41,31 +41,34 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Cast;
 import sh.props.converters.Converter;
-import sh.props.interfaces.LoadOnDemand;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 
-public class Registry implements Notifiable {
+public class Registry {
   private static final Logger log = Logger.getLogger(Registry.class.getName());
 
-  final Datastore store;
+  final RegistryStore store;
   final List<Layer> layers = new ArrayList<>();
-  final ConcurrentHashMap<String, HashSet<AbstractProp<?>>> notifications =
+  final ConcurrentHashMap<String, HashSet<BoundableProp<?>>> notifications =
       new ConcurrentHashMap<>();
   private final Scheduler scheduler;
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry(Scheduler scheduler) {
-    this.store = new SyncStore(this);
+    this.store = new RegistryStoreImpl(this);
     this.scheduler = scheduler;
   }
 
-  @Override
-  public void sendUpdate(String key, @Nullable String value, @Nullable Layer layer) {
+  /**
+   * Sends a value update to any bound props.
+   *
+   * @param key the key representing the updated prop
+   * @param valueLayer the value layer pair representing the update
+   */
+  void sendUpdate(String key, Pair<String, Layer> valueLayer) {
     Utilities.assertNotNull(key, "key");
 
     // check if we have any props to notify
-    Collection<AbstractProp<?>> props = this.notifications.get(key);
+    Collection<BoundableProp<?>> props = this.notifications.get(key);
     if (props == null || props.isEmpty()) {
       // nothing to do if the key is not registered or there aren't any props to notify
       return;
@@ -73,12 +76,12 @@ public class Registry implements Notifiable {
 
     // alleviate the risk of blocking the main (update) thread
     // by offloading to an executor pool, since we don't control Prop subscribers
-    scheduler.forkJoinExecute(() -> props.forEach(prop -> prop.setValue(value)));
+    scheduler.forkJoinExecute(() -> props.forEach(prop -> prop.setValue(valueLayer.first)));
   }
 
   /**
-   * Binds the specified {@link AbstractProp} to this registry. If the registry already contains a
-   * value for this prop, it will call {@link AbstractProp#setValue(String)} to set it.
+   * Binds the specified {@link BoundableProp} to this registry. If the registry already contains a
+   * value for this prop, it will call {@link BoundableProp#setValue(String)} to set it.
    *
    * <p>If any of the configured {@link Source}s override {@link LoadOnDemand} and signal that they
    * support on-demand loading of keys, their corresponding {@link LoadOnDemand#loadOnDemand()}
@@ -86,9 +89,9 @@ public class Registry implements Notifiable {
    * logic of dealing with the asynchronous nature of receiving each value is left to the
    * implementing Source.
    *
-   * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
+   * <p>NOTE: In the default implementation, none of the classes extending {@link BoundableProp}
    * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
-   * multiple props with the same {@link Prop#key()} to be bound to the same Registry.
+   * multiple props with the same {@link BoundableProp#key()} to be bound to the same Registry.
    *
    * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
    * Keep the implementation performant by reducing the number of Prop objects registered for the
@@ -100,11 +103,11 @@ public class Registry implements Notifiable {
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
-   * @param <PropT> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
+   * @param <PropT> the prop's type with an upper bound of ({@link BoundableProp})
    * @return the bound prop
    * @throws IllegalArgumentException if a previously bound prop is passed
    */
-  public <T, PropT extends AbstractProp<T>> PropT bind(PropT prop) {
+  public <T, PropT extends BoundableProp<T>> PropT bind(PropT prop) {
     final String key = prop.key();
 
     // notify all layers that the specified prop was bound
@@ -166,11 +169,11 @@ public class Registry implements Notifiable {
   /**
    * Convenience method that retrieves the value associated with the given key.
    *
-   * <p>Since this method retrieves the value directly from the underlying {@link Datastore}, it is
-   * the fastest way to observe a changed value.
+   * <p>Since this method retrieves the value directly from the underlying {@link RegistryStore}, it
+   * is the fastest way to observe a changed value.
    *
-   * <p>It differs from any bound {@link Prop} objects in that they will have to wait for {@link
-   * Registry#sendUpdate(String, String, Layer)} to asynchronously finish executing before observing
+   * <p>It differs from any bound {@link BoundableProp} objects in that they will have to wait for
+   * {@link Registry#sendUpdate(String, Pair)} to asynchronously finish executing before observing
    * any changes.
    *
    * @param key the key to retrieve

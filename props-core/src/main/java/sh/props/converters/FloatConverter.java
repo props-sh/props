@@ -34,7 +34,7 @@ public interface FloatConverter extends Converter<Float> {
 
   @Override
   @Nullable
-  default Float decode(String value) {
+  default Float decode(@Nullable String value) {
     Number number = safeParseNumber(value);
     if (number == null) {
       return null;

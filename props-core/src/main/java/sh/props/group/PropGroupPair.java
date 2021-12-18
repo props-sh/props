@@ -28,15 +28,15 @@ package sh.props.group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import sh.props.AbstractProp;
 import sh.props.Holder;
+import sh.props.Prop;
 import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
 class PropGroupPair<T, U> extends AbstractPropGroup<Pair<T, U>> {
-  private final AbstractProp<T> first;
-  private final AbstractProp<U> second;
+  private final Prop<T> first;
+  private final Prop<U> second;
 
   /**
    * Constructs a synchronized quintuple of values.
@@ -44,7 +44,7 @@ class PropGroupPair<T, U> extends AbstractPropGroup<Pair<T, U>> {
    * @param first the first prop
    * @param second the second prop
    */
-  public PropGroupPair(AbstractProp<T> first, AbstractProp<U> second) {
+  public PropGroupPair(Prop<T> first, Prop<U> second) {
     super(new AtomicReference<>(new Holder<>()), multiKey(first.key(), second.key()));
     this.first = first;
     this.second = second;

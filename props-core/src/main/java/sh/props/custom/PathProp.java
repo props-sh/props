@@ -27,9 +27,9 @@ package sh.props.custom;
 
 import java.nio.file.Path;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.PathConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class PathProp extends CustomProp<Path> implements PathConverter {

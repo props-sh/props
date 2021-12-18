@@ -28,9 +28,9 @@ package sh.props.custom;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.NumericDurationConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class NumericDurationProp extends CustomProp<Duration> implements NumericDurationConverter {

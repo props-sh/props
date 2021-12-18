@@ -28,6 +28,7 @@ package sh.props.converters;
 import static sh.props.converters.ConverterUtils.splitStringAsNumbers;
 
 import java.util.List;
+import sh.props.annotations.Nullable;
 
 /**
  * Converter that splits the inputted {@link String} into a {@link List} of {@link Float}s. The
@@ -36,7 +37,7 @@ import java.util.List;
 public interface ListOfFloatConverter extends Converter<List<Float>>, ListConverter {
 
   @Override
-  default List<Float> decode(String value) {
+  default List<Float> decode(@Nullable String value) {
     return splitStringAsNumbers(value, this.separator(), Number::floatValue);
   }
 }

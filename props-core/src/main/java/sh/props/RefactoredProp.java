@@ -33,7 +33,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.ValueCannotBeReadException;
-import sh.props.interfaces.Prop;
 
 /**
  * Helper class which attempts to resolve two properties, converting the second property's value to
@@ -43,9 +42,9 @@ import sh.props.interfaces.Prop;
  *
  * <ul>
  *   <li>- firstly, it attempts to retrieve the refactored prop's value
- *   <li>- if an exception is encountered while calling {@link AbstractProp#get()} (usually an
- *       {@link ValueCannotBeReadException}), it will be thrown or passed to any subscribers,
- *       regardless of the value of the original prop
+ *   <li>- if an exception is encountered while calling {@link Prop#get()} (usually an {@link
+ *       ValueCannotBeReadException}), it will be thrown or passed to any subscribers, regardless of
+ *       the value of the original prop
  *   <li>- if the refactored prop is <code>null</code>, the class will then attempt to load a value
  *       from the original (old) prop
  *   <li>- the value will be convereted to the desired type, using the provided <code>converter
@@ -59,10 +58,10 @@ import sh.props.interfaces.Prop;
  * @param <T> the type of the property being refactored
  * @param <R> the type of the new property
  */
-public class RefactoredProp<T, R> implements Prop<R> {
+public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
 
-  private final AbstractProp<T> originalProp;
-  private final AbstractProp<R> refactoredProp;
+  private final Prop<T> originalProp;
+  private final Prop<R> refactoredProp;
   private final String key;
   private final Function<T, R> converter;
 
@@ -74,8 +73,7 @@ public class RefactoredProp<T, R> implements Prop<R> {
    * @param converter a converter function that can transform the old data type into the new
    *     datatype
    */
-  public RefactoredProp(
-      AbstractProp<T> originalProp, AbstractProp<R> refactoredProp, Function<T, R> converter) {
+  public RefactoredProp(Prop<T> originalProp, Prop<R> refactoredProp, Function<T, R> converter) {
     this.originalProp = originalProp;
     this.refactoredProp = refactoredProp;
     this.key = refactoredProp.key();
@@ -157,7 +155,6 @@ public class RefactoredProp<T, R> implements Prop<R> {
    *
    * @return this prop's key
    */
-  @Override
   public String key() {
     return this.key;
   }

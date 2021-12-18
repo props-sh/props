@@ -37,7 +37,7 @@ public interface Converter<T> {
    * @return the value parsed as <code>T</code>
    */
   @Nullable
-  T decode(String value);
+  T decode(@Nullable String value);
 
   /**
    * Encodes the value as a {@link String}.

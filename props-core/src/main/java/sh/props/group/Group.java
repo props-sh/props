@@ -25,21 +25,18 @@
 
 package sh.props.group;
 
-import sh.props.AbstractProp;
-import sh.props.SubscribableProp;
-import sh.props.interfaces.Subscribable;
+import sh.props.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
-/** Convenience class for constructing groups of {@link sh.props.interfaces.Prop}s. */
+/** Convenience class for constructing groups of {@link Prop}s. */
 public final class Group {
 
   /**
-   * Groups two Props, allowing the user to retrieve all four values concurrently. The returned type
-   * implements {@link Subscribable}, allowing the user to receive events when any of the values are
-   * updated.
+   * Groups two Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -47,15 +44,13 @@ public final class Group {
    * @param <U> the type of the second prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U> SubscribableProp<Pair<T, U>> of(
-      AbstractProp<T> first, AbstractProp<U> second) {
+  public static <T, U> Prop<Pair<T, U>> of(Prop<T> first, Prop<U> second) {
     return new PropGroupPair<>(first, second);
   }
 
   /**
-   * Groups three Props, allowing the user to retrieve all four values concurrently. The returned
-   * type implements {@link Subscribable}, allowing the user to receive events when any of the
-   * values are updated.
+   * Groups three Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -65,15 +60,13 @@ public final class Group {
    * @param <V> the type of the third prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V> SubscribableProp<Triple<T, U, V>> of(
-      AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
+  public static <T, U, V> Prop<Triple<T, U, V>> of(Prop<T> first, Prop<U> second, Prop<V> third) {
     return new PropGroupTriple<>(first, second, third);
   }
 
   /**
-   * Groups four Props, allowing the user to retrieve all four values concurrently. The returned
-   * type implements {@link Subscribable}, allowing the user to receive events when any of the
-   * values are updated.
+   * Groups four Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -85,18 +78,14 @@ public final class Group {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> SubscribableProp<Quad<T, U, V, W>> of(
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth) {
+  public static <T, U, V, W> Prop<Quad<T, U, V, W>> of(
+      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     return new PropGroupQuad<>(first, second, third, fourth);
   }
 
   /**
-   * Groups five Props, allowing the user to retrieve all four values concurrently. The returned
-   * type implements {@link Subscribable}, allowing the user to receive events when any of the
-   * values are updated.
+   * Groups five Props, allowing the user to retrieve all four values concurrently, via a {@link
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -110,12 +99,8 @@ public final class Group {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> SubscribableProp<Quintuple<T, U, V, W, X>> of(
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth,
-      AbstractProp<X> fifth) {
+  public static <T, U, V, W, X> Prop<Quintuple<T, U, V, W, X>> of(
+      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
     return new PropGroupQuintuple<>(first, second, third, fourth, fifth);
   }
 }

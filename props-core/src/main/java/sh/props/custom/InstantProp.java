@@ -27,9 +27,9 @@ package sh.props.custom;
 
 import java.time.Instant;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.InstantConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class InstantProp extends CustomProp<Instant> implements InstantConverter {

@@ -27,8 +27,8 @@ package sh.props.sources;
 
 import java.util.Map;
 import sh.props.Source;
+import sh.props.SourceFactory;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.SourceFactory;
 
 /** Retrieves all environment variables. */
 public class Environment extends Source {

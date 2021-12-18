@@ -36,7 +36,7 @@ public interface DateConverter extends Converter<Date> {
 
   @Override
   @Nullable
-  default Date decode(String value) {
+  default Date decode(@Nullable String value) {
     Instant instant = safeParseInstant(value);
     if (instant == null) {
       return null;

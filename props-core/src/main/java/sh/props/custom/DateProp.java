@@ -27,9 +27,9 @@ package sh.props.custom;
 
 import java.util.Date;
 import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.DateConverter;
-import sh.props.interfaces.Prop;
 
 /** Convenience implementation that constructs a {@link CustomProp} of the underlying type. */
 public class DateProp extends CustomProp<Date> implements DateConverter {

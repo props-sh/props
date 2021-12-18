@@ -25,11 +25,14 @@
 
 package sh.props.converters;
 
+import sh.props.annotations.Nullable;
+
 /** Converter that returns the inputted {@link String}. */
 public interface StringConverter extends Converter<String> {
 
   @Override
-  default String decode(String value) {
+  @Nullable
+  default String decode(@Nullable String value) {
     return value;
   }
 }

@@ -28,6 +28,7 @@ package sh.props.converters;
 import static sh.props.converters.ConverterUtils.splitStringAsNumbers;
 
 import java.util.List;
+import sh.props.annotations.Nullable;
 
 /**
  * Converter that splits the inputted {@link String} into a {@link List} of {@link Double}s. The
@@ -36,7 +37,7 @@ import java.util.List;
 public interface ListOfDoubleConverter extends Converter<List<Double>>, ListConverter {
 
   @Override
-  default List<Double> decode(String value) {
+  default List<Double> decode(@Nullable String value) {
     return splitStringAsNumbers(value, this.separator(), Number::doubleValue);
   }
 }

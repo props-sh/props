@@ -23,19 +23,17 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import sh.props.Source;
 
 /**
  * A contract that allows {@link Source}s to partially load values and avoid retrieving the whole
  * list from the underlying store.
  *
- * <p>This interface is highly useful in cases where retrieving all {@link
- * sh.props.interfaces.Prop}s eagerly is costly (e.g., pay per API call, or large number of props
- * that may not be needed).
+ * <p>This interface is highly useful in cases where retrieving all {@link Prop}s eagerly is costly
+ * (e.g., pay per API call, or large number of props that may not be needed).
  */
 public interface LoadOnDemand {
 

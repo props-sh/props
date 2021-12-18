@@ -34,7 +34,7 @@ public interface DoubleConverter extends Converter<Double> {
 
   @Override
   @Nullable
-  default Double decode(String value) {
+  default Double decode(@Nullable String value) {
     Number number = safeParseNumber(value);
     if (number == null) {
       return null;

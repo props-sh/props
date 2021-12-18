@@ -29,14 +29,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import sh.props.AbstractProp;
 import sh.props.Holder;
-import sh.props.SubscribableProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Tuple;
 
-abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends Prop<TupleT> {
   protected final AtomicReference<Holder<TupleT>> holderRef;
   private final String key;
 
@@ -69,21 +67,6 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
       sb.append("∪").append(part);
     }
     return sb.toString();
-  }
-
-  /**
-   * Ensures thrown exceptions are unchecked.
-   *
-   * @param t the exception to be thrown
-   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
-   *     throwable
-   */
-  static RuntimeException ensureUnchecked(Throwable t) {
-    if (t instanceof RuntimeException) {
-      return (RuntimeException) t;
-    }
-
-    return new RuntimeException(t);
   }
 
   /**
@@ -151,7 +134,7 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
    * @return the read value, or null
    */
   @Nullable
-  protected <T> T readVal(AbstractProp<T> prop, List<Throwable> errors) {
+  protected <T> T readVal(Prop<T> prop, List<Throwable> errors) {
     try {
       return prop.get();
     } catch (RuntimeException e) {

@@ -35,7 +35,7 @@ public interface DurationConverter extends Converter<Duration> {
 
   @Override
   @Nullable
-  default Duration decode(String value) {
+  default Duration decode(@Nullable String value) {
     return safeParseDuration(value);
   }
 }

@@ -37,10 +37,10 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
+import sh.props.FileWatchable;
 import sh.props.Source;
+import sh.props.SourceFactory;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.FileWatchable;
-import sh.props.interfaces.SourceFactory;
 
 /** Retrieves properties from a Java properties file, located on disk. */
 public class PropertyFile extends Source implements FileWatchable {

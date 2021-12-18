@@ -27,18 +27,18 @@ package sh.props;
 
 import sh.props.annotations.Nullable;
 
-/** Denotes classes that can be notified of key,value updates from a designated layer. */
-// TODO(mihaibojin): remove, superfluous; can be re-added later if needs be
-@Deprecated(forRemoval = true)
-@FunctionalInterface
-interface Notifiable {
-
+/**
+ * Abstract class that encompasses the contract required by the {@link Registry} class to update its
+ * values, when an update event is computed.
+ *
+ * @param <T> the property's type
+ */
+public abstract class BoundableProp<T> extends Prop<T> {
   /**
-   * Called when the value of a specified key is updated by a {@link Layer}.
+   * Setter method that should update the underlying implementation's value.
    *
-   * @param key the key that is updated
-   * @param value the updated value
-   * @param layer the layer that sent the update
+   * @param value the new value to set
+   * @return true if the update succeeded
    */
-  void sendUpdate(String key, @Nullable String value, @Nullable Layer layer);
+  protected abstract boolean setValue(@Nullable String value);
 }

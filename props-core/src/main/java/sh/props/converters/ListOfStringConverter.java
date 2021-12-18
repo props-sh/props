@@ -28,6 +28,7 @@ package sh.props.converters;
 import static sh.props.converters.ConverterUtils.splitString;
 
 import java.util.List;
+import sh.props.annotations.Nullable;
 
 /**
  * Converter that splits the inputted {@link String} into a {@link List} of {@link String}s. The
@@ -36,7 +37,7 @@ import java.util.List;
 public interface ListOfStringConverter extends Converter<List<String>>, ListConverter {
 
   @Override
-  default List<String> decode(String value) {
+  default List<String> decode(@Nullable String value) {
     return splitString(value, this.separator());
   }
 }

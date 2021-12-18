@@ -42,12 +42,12 @@ import sh.props.textfixtures.TestOnDemandSource;
 @SuppressWarnings({"NullAway", "VariableDeclarationUsageDistance"})
 class LoadOnDemandTest extends AwaitAssertionTest {
 
-  @RepeatedTest(100)
+  @RepeatedTest(10)
   void testLoadPropOnDemandSuperFast() {
     internalOnDemandSourceTest(10L);
   }
 
-  @RepeatedTest(20)
+  @RepeatedTest(10)
   void testLoadPropOnDemandFast() {
     internalOnDemandSourceTest(50L);
   }

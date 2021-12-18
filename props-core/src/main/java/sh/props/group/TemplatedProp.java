@@ -28,10 +28,10 @@ package sh.props.group;
 import static java.lang.String.format;
 
 import java.util.function.Consumer;
-import sh.props.AbstractProp;
+import sh.props.CustomProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
@@ -43,7 +43,7 @@ import sh.props.tuples.Triple;
  *
  * @param <T> the type of the backing prop
  */
-public abstract class TemplatedProp<T> implements Prop<String> {
+public abstract class TemplatedProp<T> extends Prop<String> {
 
   private final Prop<T> prop;
 
@@ -69,10 +69,10 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param template the template that will be populated with the prop
    * @param prop the first value supplier
    * @param <T> the type of the first prop
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
-  public static <T> TemplatedProp<T> of(String template, AbstractProp<T> prop) {
+  public static <T> TemplatedProp<T> of(String template, CustomProp<T> prop) {
     return new TemplatedProp<>(prop) {
       @Override
       protected String renderTemplate(T value) {
@@ -89,11 +89,11 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param second the second value supplier
    * @param <T> the type of the first prop
    * @param <U> the type of the second prop
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U> TemplatedProp<Pair<T, U>> of(
-      String template, AbstractProp<T> first, AbstractProp<U> second) {
+      String template, CustomProp<T> first, CustomProp<U> second) {
     return new TemplatedProp<>(Group.of(first, second)) {
       @Override
       protected String renderTemplate(Pair<T, U> value) {
@@ -115,11 +115,11 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param first the first value supplier
    * @param second the second value supplier
    * @param third the third value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U, V> TemplatedProp<Triple<T, U, V>> of(
-      String template, AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
+      String template, CustomProp<T> first, CustomProp<U> second, CustomProp<V> third) {
     return new TemplatedProp<>(Group.of(first, second, third)) {
       @Override
       protected String renderTemplate(Triple<T, U, V> value) {
@@ -144,15 +144,15 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param second the second value supplier
    * @param third the third value supplier
    * @param fourth the fourth value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U, V, W> TemplatedProp<Quad<T, U, V, W>> of(
       String template,
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth) {
+      CustomProp<T> first,
+      CustomProp<U> second,
+      CustomProp<V> third,
+      CustomProp<W> fourth) {
     return new TemplatedProp<>(Group.of(first, second, third, fourth)) {
       @Override
       protected String renderTemplate(Quad<T, U, V, W> value) {
@@ -180,16 +180,16 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param third the third value supplier
    * @param fourth the fourth value supplier
    * @param fifth the fifth value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U, V, W, X> TemplatedProp<Quintuple<T, U, V, W, X>> of(
       String template,
-      AbstractProp<T> first,
-      AbstractProp<U> second,
-      AbstractProp<V> third,
-      AbstractProp<W> fourth,
-      AbstractProp<X> fifth) {
+      CustomProp<T> first,
+      CustomProp<U> second,
+      CustomProp<V> third,
+      CustomProp<W> fourth,
+      CustomProp<X> fifth) {
     return new TemplatedProp<>(Group.of(first, second, third, fourth, fifth)) {
       @Override
       protected String renderTemplate(Quintuple<T, U, V, W, X> value) {
@@ -223,6 +223,11 @@ public abstract class TemplatedProp<T> implements Prop<String> {
     return converter.encode(value);
   }
 
+  @Override
+  public String key() {
+    return this.prop.key();
+  }
+
   /**
    * Implement this method and render a string template using the provided value.
    *
@@ -230,11 +235,6 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @return the rendered template
    */
   protected abstract String renderTemplate(T value);
-
-  @Override
-  public String key() {
-    return this.prop.key();
-  }
 
   @Override
   public String get() {
