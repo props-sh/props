@@ -25,11 +25,13 @@
 
 package sh.props.converters;
 
+import sh.props.annotations.Nullable;
+
 /** Converter that casts the inputted {@link String} to a {@link Boolean} value. */
 public interface BooleanConverter extends Converter<Boolean> {
 
   @Override
-  default Boolean decode(String value) {
+  default Boolean decode(@Nullable String value) {
     return Boolean.parseBoolean(value);
   }
 }

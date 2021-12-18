@@ -69,7 +69,7 @@ public class CustomPropBuilder<T> {
         new CustomProp<>(key, this.defaultValue, this.description, this.isRequired, this.isSecret) {
           @Override
           @Nullable
-          public T decode(String value) {
+          public T decode(@Nullable String value) {
             return CustomPropBuilder.this.converter.decode(value);
           }
 

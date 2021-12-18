@@ -55,7 +55,11 @@ class ConverterUtils {
    * ParseException}s.
    */
   @Nullable
-  static Number safeParseNumber(String value) {
+  static Number safeParseNumber(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+
     try {
       return NumberFormat.getInstance().parse(value);
     } catch (ParseException e) {
@@ -72,10 +76,14 @@ class ConverterUtils {
    * IllegalArgumentException}s or {@link NullPointerException}s.
    */
   @Nullable
-  static ChronoUnit safeParseChronoUnit(String value) {
+  static ChronoUnit safeParseChronoUnit(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+
     try {
       return ChronoUnit.valueOf(value);
-    } catch (IllegalArgumentException | NullPointerException e) {
+    } catch (IllegalArgumentException e) {
       log.log(SEVERE, e, () -> "Could not parse " + value + " as a ChronoUnit");
       return null;
     }
@@ -89,7 +97,11 @@ class ConverterUtils {
    * DateTimeParseException}s.
    */
   @Nullable
-  static Duration safeParseDuration(String value) {
+  static Duration safeParseDuration(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+
     try {
       return Duration.parse(value);
     } catch (DateTimeParseException e) {
@@ -106,17 +118,25 @@ class ConverterUtils {
    * DateTimeParseException}s.
    */
   @Nullable
-  static Instant safeParseInstant(String value) {
+  static Instant safeParseInstant(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+
     try {
       return OffsetDateTime.parse(value).toInstant();
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeParseException | NullPointerException e) {
       log.log(SEVERE, e, () -> "Could not parse " + value + " as a valid DateTime");
       return null;
     }
   }
 
   /** Splits a {@link String} by the given <code>separator</code>. */
-  static List<String> splitString(String input, String separator) {
+  static List<String> splitString(@Nullable String input, String separator) {
+    if (input == null) {
+      return List.of();
+    }
+
     return List.of(input.split(Pattern.quote(separator)));
   }
 
@@ -128,7 +148,11 @@ class ConverterUtils {
    * removed after the string is split.
    */
   static <T extends Number> List<T> splitStringAsNumbers(
-      String input, String separator, Function<Number, T> mapper) {
+      @Nullable String input, String separator, Function<Number, T> mapper) {
+    if (input == null) {
+      return List.of();
+    }
+
     return Stream.of(input.split(Pattern.quote(separator)))
         .map(String::trim)
         .map(ConverterUtils::safeParseNumber)

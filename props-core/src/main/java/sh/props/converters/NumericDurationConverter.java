@@ -36,7 +36,7 @@ public interface NumericDurationConverter extends Converter<Duration> {
 
   @Override
   @Nullable
-  default Duration decode(String value) {
+  default Duration decode(@Nullable String value) {
     Number number = safeParseNumber(value);
     if (number == null) {
       return null;

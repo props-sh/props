@@ -34,7 +34,7 @@ public interface IntegerConverter extends Converter<Integer> {
 
   @Override
   @Nullable
-  default Integer decode(String value) {
+  default Integer decode(@Nullable String value) {
     Number number = safeParseNumber(value);
     if (number == null) {
       return null;

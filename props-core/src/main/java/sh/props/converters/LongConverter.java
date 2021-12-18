@@ -34,7 +34,7 @@ public interface LongConverter extends Converter<Long> {
 
   @Override
   @Nullable
-  default Long decode(String value) {
+  default Long decode(@Nullable String value) {
     Number number = safeParseNumber(value);
     if (number == null) {
       return null;

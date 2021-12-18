@@ -35,7 +35,7 @@ public interface ChronoUnitConverter extends Converter<ChronoUnit> {
 
   @Override
   @Nullable
-  default ChronoUnit decode(String value) {
+  default ChronoUnit decode(@Nullable String value) {
     return safeParseChronoUnit(value);
   }
 }

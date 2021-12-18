@@ -26,6 +26,7 @@
 package sh.props.converters;
 
 import java.nio.file.Path;
+import sh.props.annotations.Nullable;
 
 /** Converter that returns the inputted {@link String}. */
 public interface PathConverter extends Converter<Path> {
@@ -69,7 +70,12 @@ public interface PathConverter extends Converter<Path> {
    * expand to <code>/path/to/home/usernameusername</code>.
    */
   @Override
-  default Path decode(String value) {
+  @Nullable
+  default Path decode(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+
     // determine if we are allowed to expand '~' to the user's home dir
     if (this.expandUserHomeDir()) {
       return Path.of(replaceTildeWithUserHomeDir(value));
