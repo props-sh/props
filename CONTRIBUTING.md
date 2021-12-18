@@ -51,6 +51,13 @@ The projects follows [semantic versioning](https://semver.org/) (MAJOR.MINOR.PAT
 - MINOR version when you add functionality in a backwards compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+## Dependency management
+
+This projects
+integrates [Renovate](https://www.whitesourcesoftware.com/free-developer-tools/renovate/) to
+automatically detect newer releases for all third-party dependencies and upgrade them to the latest
+available version.
+
 # License
 
 Copyright (c) 2021 Mihai Bojin
