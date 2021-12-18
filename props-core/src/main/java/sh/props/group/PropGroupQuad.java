@@ -28,17 +28,17 @@ package sh.props.group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import sh.props.BaseProp;
 import sh.props.Holder;
+import sh.props.Prop;
 import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
 class PropGroupQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>> {
-  private final BaseProp<T> first;
-  private final BaseProp<U> second;
-  private final BaseProp<V> third;
-  private final BaseProp<W> fourth;
+  private final Prop<T> first;
+  private final Prop<U> second;
+  private final Prop<V> third;
+  private final Prop<W> fourth;
 
   /**
    * Constructs a synchronized quintuple of values.
@@ -48,8 +48,7 @@ class PropGroupQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>> {
    * @param third the third prop
    * @param fourth the fourth prop
    */
-  public PropGroupQuad(
-      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
+  public PropGroupQuad(Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     super(
         new AtomicReference<>(new Holder<>()),
         multiKey(first.key(), second.key(), third.key(), fourth.key()));

@@ -36,9 +36,9 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of the underlying value
  */
-public abstract class BaseProp<T> extends SubscribableProp<T> implements Supplier<T> {
+public abstract class Prop<T> extends SubscribableProp<T> implements Supplier<T> {
   /**
-   * Designates this {@link BaseProp}'s key.
+   * Designates this {@link Prop}'s key.
    *
    * @return a string identifier that indicates the underlying property
    */

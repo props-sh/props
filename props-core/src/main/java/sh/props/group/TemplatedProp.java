@@ -28,8 +28,8 @@ package sh.props.group;
 import static java.lang.String.format;
 
 import java.util.function.Consumer;
-import sh.props.BaseProp;
 import sh.props.BoundableProp;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;
 import sh.props.tuples.Pair;
@@ -38,14 +38,14 @@ import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
 /**
- * Partial implementation that can be used to combine a string template with a backing {@link
- * BaseProp}, rendering the template with the provided value.
+ * Partial implementation that can be used to combine a string template with a backing {@link Prop},
+ * rendering the template with the provided value.
  *
  * @param <T> the type of the backing prop
  */
-public abstract class TemplatedProp<T> extends BaseProp<String> {
+public abstract class TemplatedProp<T> extends Prop<String> {
 
-  private final BaseProp<T> prop;
+  private final Prop<T> prop;
 
   /**
    * Converts the passed Prop into a Templated Prop, capable of merging the tuple's values into the
@@ -59,7 +59,7 @@ public abstract class TemplatedProp<T> extends BaseProp<String> {
    *
    * @param prop the prop to wrap
    */
-  protected TemplatedProp(BaseProp<T> prop) {
+  protected TemplatedProp(Prop<T> prop) {
     this.prop = prop;
   }
 

@@ -42,7 +42,7 @@ import sh.props.exceptions.ValueCannotBeReadException;
  *
  * <ul>
  *   <li>- firstly, it attempts to retrieve the refactored prop's value
- *   <li>- if an exception is encountered while calling {@link BaseProp#get()} (usually an {@link
+ *   <li>- if an exception is encountered while calling {@link Prop#get()} (usually an {@link
  *       ValueCannotBeReadException}), it will be thrown or passed to any subscribers, regardless of
  *       the value of the original prop
  *   <li>- if the refactored prop is <code>null</code>, the class will then attempt to load a value
@@ -60,8 +60,8 @@ import sh.props.exceptions.ValueCannotBeReadException;
  */
 public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
 
-  private final BaseProp<T> originalProp;
-  private final BaseProp<R> refactoredProp;
+  private final Prop<T> originalProp;
+  private final Prop<R> refactoredProp;
   private final String key;
   private final Function<T, R> converter;
 
@@ -73,8 +73,7 @@ public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
    * @param converter a converter function that can transform the old data type into the new
    *     datatype
    */
-  public RefactoredProp(
-      BaseProp<T> originalProp, BaseProp<R> refactoredProp, Function<T, R> converter) {
+  public RefactoredProp(Prop<T> originalProp, Prop<R> refactoredProp, Function<T, R> converter) {
     this.originalProp = originalProp;
     this.refactoredProp = refactoredProp;
     this.key = refactoredProp.key();

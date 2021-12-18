@@ -29,12 +29,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import sh.props.BaseProp;
 import sh.props.Holder;
+import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.tuples.Tuple;
 
-abstract class AbstractPropGroup<TupleT> extends BaseProp<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends Prop<TupleT> {
   protected final AtomicReference<Holder<TupleT>> holderRef;
   private final String key;
 
@@ -71,8 +71,8 @@ abstract class AbstractPropGroup<TupleT> extends BaseProp<TupleT> {
 
   /**
    * Retrieves a {@link Tuple} of values. If any errors were encountered via the underlying {@link
-   * BaseProp}s, this method will throw an exception. This method will continue to throw an
-   * exception until all errors are cleared.
+   * Prop}s, this method will throw an exception. This method will continue to throw an exception
+   * until all errors are cleared.
    *
    * @return a tuple, containing the current values
    * @throws RuntimeException in case any errors were set by any of the underlying props
@@ -134,7 +134,7 @@ abstract class AbstractPropGroup<TupleT> extends BaseProp<TupleT> {
    * @return the read value, or null
    */
   @Nullable
-  protected <T> T readVal(BaseProp<T> prop, List<Throwable> errors) {
+  protected <T> T readVal(Prop<T> prop, List<Throwable> errors) {
     try {
       return prop.get();
     } catch (RuntimeException e) {

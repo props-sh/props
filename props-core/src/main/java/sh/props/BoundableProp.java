@@ -34,7 +34,7 @@ import sh.props.converters.Converter;
  *
  * @param <T> the property's type
  */
-public abstract class BoundableProp<T> extends BaseProp<T> implements Converter<T> {
+public abstract class BoundableProp<T> extends Prop<T> implements Converter<T> {
   /**
    * Setter method that should update the underlying implementation's value.
    *

@@ -25,18 +25,18 @@
 
 package sh.props.group;
 
-import sh.props.BaseProp;
+import sh.props.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
-/** Convenience class for constructing groups of {@link BaseProp}s. */
+/** Convenience class for constructing groups of {@link Prop}s. */
 public final class Group {
 
   /**
    * Groups two Props, allowing the user to retrieve all four values concurrently, via a {@link
-   * BaseProp}, which can be read and consumed.
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -44,13 +44,13 @@ public final class Group {
    * @param <U> the type of the second prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U> BaseProp<Pair<T, U>> of(BaseProp<T> first, BaseProp<U> second) {
+  public static <T, U> Prop<Pair<T, U>> of(Prop<T> first, Prop<U> second) {
     return new PropGroupPair<>(first, second);
   }
 
   /**
    * Groups three Props, allowing the user to retrieve all four values concurrently, via a {@link
-   * BaseProp}, which can be read and consumed.
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -60,14 +60,13 @@ public final class Group {
    * @param <V> the type of the third prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V> BaseProp<Triple<T, U, V>> of(
-      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third) {
+  public static <T, U, V> Prop<Triple<T, U, V>> of(Prop<T> first, Prop<U> second, Prop<V> third) {
     return new PropGroupTriple<>(first, second, third);
   }
 
   /**
    * Groups four Props, allowing the user to retrieve all four values concurrently, via a {@link
-   * BaseProp}, which can be read and consumed.
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -79,14 +78,14 @@ public final class Group {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> BaseProp<Quad<T, U, V, W>> of(
-      BaseProp<T> first, BaseProp<U> second, BaseProp<V> third, BaseProp<W> fourth) {
+  public static <T, U, V, W> Prop<Quad<T, U, V, W>> of(
+      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth) {
     return new PropGroupQuad<>(first, second, third, fourth);
   }
 
   /**
    * Groups five Props, allowing the user to retrieve all four values concurrently, via a {@link
-   * BaseProp}, which can be read and consumed.
+   * Prop}, which can be read and consumed.
    *
    * @param first the first prop
    * @param second the second prop
@@ -100,12 +99,8 @@ public final class Group {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> BaseProp<Quintuple<T, U, V, W, X>> of(
-      BaseProp<T> first,
-      BaseProp<U> second,
-      BaseProp<V> third,
-      BaseProp<W> fourth,
-      BaseProp<X> fifth) {
+  public static <T, U, V, W, X> Prop<Quintuple<T, U, V, W, X>> of(
+      Prop<T> first, Prop<U> second, Prop<V> third, Prop<W> fourth, Prop<X> fifth) {
     return new PropGroupQuintuple<>(first, second, third, fourth, fifth);
   }
 }
