@@ -54,7 +54,7 @@ public class Registry {
 
   /** Ensures a registry can only be constructed through a builder. */
   Registry(Scheduler scheduler) {
-    this.store = new SyncStore(this);
+    this.store = new RegistryStoreImpl(this);
     this.scheduler = scheduler;
   }
 

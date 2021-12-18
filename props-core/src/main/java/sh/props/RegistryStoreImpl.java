@@ -39,13 +39,13 @@ import sh.props.tuples.Tuple;
  * <p>This class is subject to future change, if for example we decide to add a different algorithm
  * for deciding the effective value from a set of layers.
  */
-class SyncStore implements RegistryStore {
+class RegistryStoreImpl implements RegistryStore {
 
   protected final ConcurrentHashMap<String, Pair<String, Layer>> effectiveValues =
       new ConcurrentHashMap<>();
   protected final Registry registry;
 
-  public SyncStore(Registry registry) {
+  public RegistryStoreImpl(Registry registry) {
     this.registry = registry;
   }
 
