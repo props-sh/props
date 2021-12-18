@@ -26,15 +26,14 @@
 package sh.props;
 
 import sh.props.annotations.Nullable;
-import sh.props.converters.Converter;
 
 /**
- * Abstract class that encompasses all the methods needed by the {@link Registry} to reason about a
- * property.
+ * Abstract class that encompasses the contract required by the {@link Registry} class to update its
+ * values, when an update event is computed.
  *
  * @param <T> the property's type
  */
-public abstract class BoundableProp<T> extends Prop<T> implements Converter<T> {
+public abstract class BoundableProp<T> extends Prop<T> {
   /**
    * Setter method that should update the underlying implementation's value.
    *

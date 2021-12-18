@@ -28,7 +28,7 @@ package sh.props.group;
 import static java.lang.String.format;
 
 import java.util.function.Consumer;
-import sh.props.BoundableProp;
+import sh.props.CustomProp;
 import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;
@@ -69,10 +69,10 @@ public abstract class TemplatedProp<T> extends Prop<String> {
    * @param template the template that will be populated with the prop
    * @param prop the first value supplier
    * @param <T> the type of the first prop
-   * @return a <code>Prop</code> that returns the rendered template on {@link BoundableProp#get()}
-   *     and also supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
-  public static <T> TemplatedProp<T> of(String template, BoundableProp<T> prop) {
+  public static <T> TemplatedProp<T> of(String template, CustomProp<T> prop) {
     return new TemplatedProp<>(prop) {
       @Override
       protected String renderTemplate(T value) {
@@ -89,11 +89,11 @@ public abstract class TemplatedProp<T> extends Prop<String> {
    * @param second the second value supplier
    * @param <T> the type of the first prop
    * @param <U> the type of the second prop
-   * @return a <code>Prop</code> that returns the rendered template on {@link BoundableProp#get()}
-   *     and also supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U> TemplatedProp<Pair<T, U>> of(
-      String template, BoundableProp<T> first, BoundableProp<U> second) {
+      String template, CustomProp<T> first, CustomProp<U> second) {
     return new TemplatedProp<>(Group.of(first, second)) {
       @Override
       protected String renderTemplate(Pair<T, U> value) {
@@ -115,11 +115,11 @@ public abstract class TemplatedProp<T> extends Prop<String> {
    * @param first the first value supplier
    * @param second the second value supplier
    * @param third the third value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link BoundableProp#get()}
-   *     and also supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U, V> TemplatedProp<Triple<T, U, V>> of(
-      String template, BoundableProp<T> first, BoundableProp<U> second, BoundableProp<V> third) {
+      String template, CustomProp<T> first, CustomProp<U> second, CustomProp<V> third) {
     return new TemplatedProp<>(Group.of(first, second, third)) {
       @Override
       protected String renderTemplate(Triple<T, U, V> value) {
@@ -144,15 +144,15 @@ public abstract class TemplatedProp<T> extends Prop<String> {
    * @param second the second value supplier
    * @param third the third value supplier
    * @param fourth the fourth value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link BoundableProp#get()}
-   *     and also supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U, V, W> TemplatedProp<Quad<T, U, V, W>> of(
       String template,
-      BoundableProp<T> first,
-      BoundableProp<U> second,
-      BoundableProp<V> third,
-      BoundableProp<W> fourth) {
+      CustomProp<T> first,
+      CustomProp<U> second,
+      CustomProp<V> third,
+      CustomProp<W> fourth) {
     return new TemplatedProp<>(Group.of(first, second, third, fourth)) {
       @Override
       protected String renderTemplate(Quad<T, U, V, W> value) {
@@ -180,16 +180,16 @@ public abstract class TemplatedProp<T> extends Prop<String> {
    * @param third the third value supplier
    * @param fourth the fourth value supplier
    * @param fifth the fifth value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link BoundableProp#get()}
-   *     and also supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link CustomProp#get()} and
+   *     also supports subscriptions
    */
   public static <T, U, V, W, X> TemplatedProp<Quintuple<T, U, V, W, X>> of(
       String template,
-      BoundableProp<T> first,
-      BoundableProp<U> second,
-      BoundableProp<V> third,
-      BoundableProp<W> fourth,
-      BoundableProp<X> fifth) {
+      CustomProp<T> first,
+      CustomProp<U> second,
+      CustomProp<V> third,
+      CustomProp<W> fourth,
+      CustomProp<X> fifth) {
     return new TemplatedProp<>(Group.of(first, second, third, fourth, fifth)) {
       @Override
       protected String renderTemplate(Quintuple<T, U, V, W, X> value) {
