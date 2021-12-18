@@ -29,23 +29,23 @@ import static java.lang.String.format;
 
 import java.util.function.Consumer;
 import sh.props.AbstractProp;
+import sh.props.BaseProp;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
 /**
- * Partial implementation that can be used to combine a string template with a backing {@link Prop},
- * rendering the template with the provided value.
+ * Partial implementation that can be used to combine a string template with a backing {@link
+ * BaseProp}, rendering the template with the provided value.
  *
  * @param <T> the type of the backing prop
  */
-public abstract class TemplatedProp<T> implements Prop<String> {
+public abstract class TemplatedProp<T> extends BaseProp<String> {
 
-  private final Prop<T> prop;
+  private final BaseProp<T> prop;
 
   /**
    * Converts the passed Prop into a Templated Prop, capable of merging the tuple's values into the
@@ -59,7 +59,7 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    *
    * @param prop the prop to wrap
    */
-  protected TemplatedProp(Prop<T> prop) {
+  protected TemplatedProp(BaseProp<T> prop) {
     this.prop = prop;
   }
 
@@ -69,8 +69,8 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param template the template that will be populated with the prop
    * @param prop the first value supplier
    * @param <T> the type of the first prop
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link AbstractProp#get()}
+   *     and also supports subscriptions
    */
   public static <T> TemplatedProp<T> of(String template, AbstractProp<T> prop) {
     return new TemplatedProp<>(prop) {
@@ -89,8 +89,8 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param second the second value supplier
    * @param <T> the type of the first prop
    * @param <U> the type of the second prop
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link
+   *     sh.props.AbstractProp#get()} and also supports subscriptions
    */
   public static <T, U> TemplatedProp<Pair<T, U>> of(
       String template, AbstractProp<T> first, AbstractProp<U> second) {
@@ -115,8 +115,8 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param first the first value supplier
    * @param second the second value supplier
    * @param third the third value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link
+   *     sh.props.AbstractProp#get()} and also supports subscriptions
    */
   public static <T, U, V> TemplatedProp<Triple<T, U, V>> of(
       String template, AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
@@ -144,8 +144,8 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param second the second value supplier
    * @param third the third value supplier
    * @param fourth the fourth value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link
+   *     sh.props.AbstractProp#get()} and also supports subscriptions
    */
   public static <T, U, V, W> TemplatedProp<Quad<T, U, V, W>> of(
       String template,
@@ -180,8 +180,8 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @param third the third value supplier
    * @param fourth the fourth value supplier
    * @param fifth the fifth value supplier
-   * @return a <code>Prop</code> that returns the rendered template on {@link Prop#get()} and also
-   *     supports subscriptions
+   * @return a <code>Prop</code> that returns the rendered template on {@link
+   *     sh.props.AbstractProp#get()} and also supports subscriptions
    */
   public static <T, U, V, W, X> TemplatedProp<Quintuple<T, U, V, W, X>> of(
       String template,
@@ -223,6 +223,11 @@ public abstract class TemplatedProp<T> implements Prop<String> {
     return converter.encode(value);
   }
 
+  @Override
+  public String key() {
+    return this.prop.key();
+  }
+
   /**
    * Implement this method and render a string template using the provided value.
    *
@@ -230,11 +235,6 @@ public abstract class TemplatedProp<T> implements Prop<String> {
    * @return the rendered template
    */
   protected abstract String renderTemplate(T value);
-
-  @Override
-  public String key() {
-    return this.prop.key();
-  }
 
   @Override
   public String get() {

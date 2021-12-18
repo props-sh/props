@@ -23,14 +23,24 @@
  *
  */
 
-package sh.props.interfaces;
+package sh.props;
 
 import java.util.function.Supplier;
 
 /**
- * Interface that is returned to the caller to explicitly call out the public contract exported by
- * this library.
+ * Base type that designates property objects that can be read and consumed. Consider this type as a
+ * read-only type, with values supplied from 'somewhere'.
  *
- * @param <T> the property's type
+ * <p>This is everything you need to consume values, but this base type cannot, for example, be
+ * bound to a {@link Registry}.
+ *
+ * @param <T> the type of the underlying value
  */
-public interface Prop<T> extends Supplier<T>, Subscribable<T> {}
+public abstract class BaseProp<T> extends SubscribableProp<T> implements Supplier<T> {
+  /**
+   * Designates this {@link BaseProp}'s key.
+   *
+   * @return a string identifier that indicates the underlying property
+   */
+  public abstract String key();
+}

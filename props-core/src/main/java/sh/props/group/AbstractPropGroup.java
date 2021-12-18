@@ -30,13 +30,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import sh.props.AbstractProp;
+import sh.props.BaseProp;
 import sh.props.Holder;
-import sh.props.SubscribableProp;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Tuple;
 
-abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
+abstract class AbstractPropGroup<TupleT> extends BaseProp<TupleT> {
   protected final AtomicReference<Holder<TupleT>> holderRef;
   private final String key;
 
@@ -72,24 +71,9 @@ abstract class AbstractPropGroup<TupleT> extends SubscribableProp<TupleT> {
   }
 
   /**
-   * Ensures thrown exceptions are unchecked.
-   *
-   * @param t the exception to be thrown
-   * @return the object cast as {@link RuntimeException} or a new exception, wrapping the passed
-   *     throwable
-   */
-  static RuntimeException ensureUnchecked(Throwable t) {
-    if (t instanceof RuntimeException) {
-      return (RuntimeException) t;
-    }
-
-    return new RuntimeException(t);
-  }
-
-  /**
    * Retrieves a {@link Tuple} of values. If any errors were encountered via the underlying {@link
-   * Prop}s, this method will throw an exception. This method will continue to throw an exception
-   * until all errors are cleared.
+   * BaseProp}s, this method will throw an exception. This method will continue to throw an
+   * exception until all errors are cleared.
    *
    * @return a tuple, containing the current values
    * @throws RuntimeException in case any errors were set by any of the underlying props

@@ -26,14 +26,14 @@
 package sh.props.group;
 
 import sh.props.AbstractProp;
-import sh.props.SubscribableProp;
+import sh.props.BaseProp;
 import sh.props.interfaces.Subscribable;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Triple;
 
-/** Convenience class for constructing groups of {@link sh.props.interfaces.Prop}s. */
+/** Convenience class for constructing groups of {@link AbstractProp}s. */
 public final class Group {
 
   /**
@@ -47,8 +47,7 @@ public final class Group {
    * @param <U> the type of the second prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U> SubscribableProp<Pair<T, U>> of(
-      AbstractProp<T> first, AbstractProp<U> second) {
+  public static <T, U> BaseProp<Pair<T, U>> of(AbstractProp<T> first, AbstractProp<U> second) {
     return new PropGroupPair<>(first, second);
   }
 
@@ -65,7 +64,7 @@ public final class Group {
    * @param <V> the type of the third prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V> SubscribableProp<Triple<T, U, V>> of(
+  public static <T, U, V> BaseProp<Triple<T, U, V>> of(
       AbstractProp<T> first, AbstractProp<U> second, AbstractProp<V> third) {
     return new PropGroupTriple<>(first, second, third);
   }
@@ -85,7 +84,7 @@ public final class Group {
    * @param <W> the type of the fourth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W> SubscribableProp<Quad<T, U, V, W>> of(
+  public static <T, U, V, W> BaseProp<Quad<T, U, V, W>> of(
       AbstractProp<T> first,
       AbstractProp<U> second,
       AbstractProp<V> third,
@@ -110,7 +109,7 @@ public final class Group {
    * @param <X> the type of the fifth prop
    * @return a synchronized Quad of props, which can be retrieved together
    */
-  public static <T, U, V, W, X> SubscribableProp<Quintuple<T, U, V, W, X>> of(
+  public static <T, U, V, W, X> BaseProp<Quintuple<T, U, V, W, X>> of(
       AbstractProp<T> first,
       AbstractProp<U> second,
       AbstractProp<V> third,

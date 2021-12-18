@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import sh.props.annotations.Nullable;
 import sh.props.exceptions.ValueCannotBeReadException;
-import sh.props.interfaces.Prop;
+import sh.props.interfaces.Subscribable;
 
 /**
  * Helper class which attempts to resolve two properties, converting the second property's value to
@@ -59,7 +59,7 @@ import sh.props.interfaces.Prop;
  * @param <T> the type of the property being refactored
  * @param <R> the type of the new property
  */
-public class RefactoredProp<T, R> implements Prop<R> {
+public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
 
   private final AbstractProp<T> originalProp;
   private final AbstractProp<R> refactoredProp;
@@ -157,7 +157,6 @@ public class RefactoredProp<T, R> implements Prop<R> {
    *
    * @return this prop's key
    */
-  @Override
   public String key() {
     return this.key;
   }

@@ -37,7 +37,6 @@ import java.util.function.LongUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
-import sh.props.interfaces.Prop;
 import sh.props.interfaces.Subscribable;
 
 /**
@@ -49,7 +48,7 @@ import sh.props.interfaces.Subscribable;
  *
  * @param <T> the type of the prop object
  */
-public abstract class SubscribableProp<T> implements Subscribable<T>, Prop<T> {
+public abstract class SubscribableProp<T> implements Subscribable<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());
   protected final List<Consumer<T>> updateHandlers = new CopyOnWriteArrayList<>();

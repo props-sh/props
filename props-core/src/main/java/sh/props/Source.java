@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import sh.props.converters.Converter;
-import sh.props.interfaces.LoadOnDemand;
 
 /**
  * Abstract class that permits subscribers to register for updates.

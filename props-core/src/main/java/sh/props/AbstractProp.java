@@ -27,19 +27,14 @@ package sh.props;
 
 import sh.props.annotations.Nullable;
 import sh.props.converters.Converter;
-import sh.props.interfaces.Prop;
 
 /**
- * Abstract {@link Prop} class which encompasses all the methods needed by the {@link Registry} to
- * reason about a prop.
+ * Abstract class that encompasses all the methods needed by the {@link Registry} to reason about a
+ * property.
  *
  * @param <T> the property's type
  */
-// TODO(mihaibojin): get rid of the extra OOP complexity and redefine this class a Prop<T>
-//                   make all implementation rely on this class, basically making this class the
-//                   contract of any Prop sub-implementations
-public abstract class AbstractProp<T> extends SubscribableProp<T> implements Prop<T>, Converter<T> {
-
+public abstract class AbstractProp<T> extends BaseProp<T> implements Converter<T> {
   /**
    * Setter method that should update the underlying implementation's value.
    *

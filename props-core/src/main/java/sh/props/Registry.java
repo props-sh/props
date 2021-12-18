@@ -41,8 +41,6 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 import sh.props.converters.Cast;
 import sh.props.converters.Converter;
-import sh.props.interfaces.LoadOnDemand;
-import sh.props.interfaces.Prop;
 import sh.props.tuples.Pair;
 
 public class Registry implements Notifiable {
@@ -88,7 +86,7 @@ public class Registry implements Notifiable {
    *
    * <p>NOTE: In the default implementation, none of the classes extending {@link AbstractProp}
    * override {@link Object#equals(Object)} and {@link Object#hashCode()}. This ensures that
-   * multiple props with the same {@link Prop#key()} to be bound to the same Registry.
+   * multiple props with the same {@link AbstractProp#key()} to be bound to the same Registry.
    *
    * <p>IMPORTANT: the update performance will decrease as the number of Prop objects increases.
    * Keep the implementation performant by reducing the number of Prop objects registered for the
@@ -100,7 +98,7 @@ public class Registry implements Notifiable {
    *
    * @param prop the prop object to bind
    * @param <T> the prop's type
-   * @param <PropT> the class of the {@link Prop} with its upper bound ({@link AbstractProp})
+   * @param <PropT> the prop's type with an upper bound of ({@link AbstractProp})
    * @return the bound prop
    * @throws IllegalArgumentException if a previously bound prop is passed
    */
@@ -169,9 +167,9 @@ public class Registry implements Notifiable {
    * <p>Since this method retrieves the value directly from the underlying {@link Datastore}, it is
    * the fastest way to observe a changed value.
    *
-   * <p>It differs from any bound {@link Prop} objects in that they will have to wait for {@link
-   * Registry#sendUpdate(String, String, Layer)} to asynchronously finish executing before observing
-   * any changes.
+   * <p>It differs from any bound {@link AbstractProp} objects in that they will have to wait for
+   * {@link Registry#sendUpdate(String, String, Layer)} to asynchronously finish executing before
+   * observing any changes.
    *
    * @param key the key to retrieve
    * @param converter the type converter used to cast the value to its appropriate type
