@@ -213,6 +213,7 @@ subprojects {
 
     // Publish to GitHub Packages
     apply(plugin = "maven-publish")
+    apply(plugin = "signing")
     publishing {
         repositories {
             maven {
@@ -225,13 +226,5 @@ subprojects {
                 }
             }
         }
-        publications {
-            register<MavenPublication>("props") {
-                group = project.group as String
-                artifactId = "library"
-                from(components["java"])
-            }
-        }
     }
-
 }
