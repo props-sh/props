@@ -14,6 +14,11 @@ publishing {
             group = project.group as String
             from(components["java"])
 
+            // conditional signing: https://docs.gradle.org/current/userguide/signing_plugin.html#sec:conditional_signing
+            signing {
+                sign(publishing.publications["mavenJava"])
+            }
+
             pom {
                 name.set("Props Core")
                 description.set("Layered application property management library for Java")
@@ -40,12 +45,4 @@ publishing {
         }
 
     }
-}
-
-// conditional signing: https://docs.gradle.org/current/userguide/signing_plugin.html#sec:conditional_signing
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications["mavenJava"])
 }
