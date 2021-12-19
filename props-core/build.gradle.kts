@@ -10,7 +10,7 @@ jmh {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = "props-core"
+            artifactId = project.name
             group = project.group as String
             from(components["java"])
 
@@ -20,7 +20,7 @@ publishing {
             }
 
             pom {
-                name.set(project.group as String + ":props-core")
+                name.set("${project.group}:${project.name}")
                 description.set("Layered application property management library for Java")
                 url.set("https://github.com/props-sh/props")
                 licenses {
