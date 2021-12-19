@@ -1,4 +1,8 @@
 import net.ltgt.gradle.errorprone.errorprone
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.*
 
 plugins {
     `java-library`
@@ -7,6 +11,7 @@ plugins {
     checkstyle
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
+    `maven-publish`
 }
 
 group = project.group
@@ -33,7 +38,7 @@ buildscript {
     }
 }
 
-allprojects {
+subprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
@@ -53,6 +58,11 @@ allprojects {
         options.isIncremental = true
         options.isFork = true
         options.isFailOnError = true
+    }
+    tasks.javadoc {
+        if (JavaVersion.current().isJava9Compatible) {
+            (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+        }
     }
 
     // Tests
@@ -207,6 +217,96 @@ allprojects {
 
             testSourceDirs.addAll(java.sourceSets["intTest"].java.srcDirs)
             testSourceDirs.addAll(java.sourceSets["intTest"].resources.srcDirs)
+        }
+    }
+
+    // Publish to GitHub Packages
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
+    publishing {
+        repositories {
+            val isSnapshot = version.toString().endsWith("SNAPSHOT")
+
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/props-sh/props")
+                credentials {
+                    username =
+                        project.findProperty("gpr.username") as String? ?: System.getenv("USERNAME")
+                    password =
+                        project.findProperty("gpr.password") as String? ?: System.getenv("TOKEN")
+                }
+            }
+
+            // determine where to publish the artifacts
+            val releasesRepoUrl =
+                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
+            val snapshotsRepoUrl =
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+            val mavenUrl =
+                if (isSnapshot) snapshotsRepoUrl else releasesRepoUrl
+            maven {
+                name = "MavenCentral"
+                url = mavenUrl
+                credentials {
+                    username =
+                        project.findProperty("ossrh.username") as String?
+                            ?: System.getenv("OSSRH_USERNAME")
+                    password = project.findProperty("ossrh.password") as String?
+                        ?: System.getenv("OSSRH_PASSWORD")
+                }
+            }
+        }
+        // Custom artifact IDs for subprojects
+        // https://stackoverflow.com/a/67779953/7169815
+    }
+
+    // do not publish test fixtures
+    val javaComponent = components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+}
+
+// Update gradle.properties with the version designated by the current git tag
+tasks.register("setReleaseVersionBasedOnGitTag") {
+    val currentGitHash: String = ByteArrayOutputStream().use { outputStream ->
+        project.exec {
+            commandLine("git", "log", "-n1", "--pretty=%H")
+            standardOutput = outputStream
+        }
+        outputStream.toString().trim()
+    }
+
+    doLast {
+        val gitTag: String? = ByteArrayOutputStream().use { outputStream ->
+            project.exec {
+                isIgnoreExitValue = true
+                commandLine(
+                    "git",
+                    "describe",
+                    "--exact-match",
+                    "--tags",
+                    currentGitHash,
+                )
+                standardOutput = outputStream
+            }
+            outputStream.toString().trim().replace("^v".toRegex(), "")
+        }
+
+        // only proceed if there's a tag
+        if (gitTag.isNullOrEmpty()) {
+            logger.warn("Will not update the project's version, since the current commit hash ($currentGitHash) is not tagged.")
+        } else {
+            // update the project's version property
+            var gradlePropFilePath = File(projectDir, "gradle.properties").path
+            val fis = FileInputStream(gradlePropFilePath)
+            val prop = Properties()
+            prop.load(fis)
+            prop.setProperty("version", gitTag)
+            val output = FileOutputStream(gradlePropFilePath)
+            prop.store(output, null)
+
+            println("Updated the project's version to: $gitTag")
         }
     }
 }

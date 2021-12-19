@@ -51,6 +51,19 @@ The projects follows [semantic versioning](https://semver.org/) (MAJOR.MINOR.PAT
 - MINOR version when you add functionality in a backwards compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+Every commit on the `main` branch is published
+on [GitHub Packages](https://github.com/orgs/props-sh/packages?repo_name=props) and as
+on [Sonatype](https://s01.oss.sonatype.org/#nexus-search;quick~sh.props).
+
+For that to work,
+the [project's version](https://github.com/props-sh/props/blob/main/gradle.properties) must be a
+snapshot. **Never commit a version that is not end in `-SNAPSHOT`!**  To release to Maven Central,
+you must tag a commit on one of
+the [supported branches](https://github.com/props-sh/props/blob/main/.github/workflows/publish-maven.yml#L5)
+, which when pushed will trigger the release to be staged to Sonatype.
+
+Staged repositories will be manually verified, closed, and then released.
+
 ## Dependency management
 
 This projects
