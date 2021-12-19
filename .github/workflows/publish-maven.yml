@@ -1,8 +1,13 @@
-name: Publish to Maven Repositories
+name: Publish artifacts to Maven Repositories
 
 on:
   push:
-    branches: [ 'main', 'feature/16-publish-all-projects' ]
+    branches:
+      - main
+      - release/*
+      - feature/16-publish-all-projects
+    tags:
+      - v0.1.*
 
 jobs:
   build-and-publish-package:
@@ -18,8 +23,8 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: 11
+          distribution: adopt
           architecture: x64
           cache: gradle
 
