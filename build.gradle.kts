@@ -226,5 +226,7 @@ subprojects {
                 }
             }
         }
+        // Custom artifact IDs for subprojects
+        // https://stackoverflow.com/a/67779953/7169815
     }
 }

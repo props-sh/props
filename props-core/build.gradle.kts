@@ -6,6 +6,7 @@ jmh {
     iterations.set(1)
 }
 
+// https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:complete_example
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -39,4 +40,12 @@ publishing {
         }
 
     }
+}
+
+// conditional signing: https://docs.gradle.org/current/userguide/signing_plugin.html#sec:conditional_signing
+signing {
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["mavenJava"])
 }
