@@ -39,7 +39,7 @@ dependencyResolutionManagement {
             alias("org-mockito-core").to("org.mockito:mockito-core:4.2.0")
             alias("org-awaitility-awaitility").to("org.awaitility:awaitility:4.1.0")
 
-            alias("guava").to("com.google.guava:guava:30.1.1-jre")
+            alias("guava").to("com.google.guava:guava:31.0.1-jre")
         }
     }
 }
