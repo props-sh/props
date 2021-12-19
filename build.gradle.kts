@@ -231,20 +231,18 @@ subprojects {
                         project.findProperty("gpr.password") as String? ?: System.getenv("TOKEN")
                 }
             }
+
+            // determine where to publish the artifacts
+            val releasesRepoUrl =
+                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
+            val snapshotsRepoUrl =
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+            val mavenUrl =
+                if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+
             maven {
-                name = "MavenCentralSnapshots"
-                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
-                credentials {
-                    username =
-                        project.findProperty("ossrh.username") as String?
-                            ?: System.getenv("OSSRH_USERNAME")
-                    password = project.findProperty("ossrh.password") as String?
-                        ?: System.getenv("OSSRH_PASSWORD")
-                }
-            }
-            maven {
-                name = "MavenCentralReleases"
-                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
+                name = "MavenCentral"
+                url = mavenUrl
                 credentials {
                     username =
                         project.findProperty("ossrh.username") as String?
