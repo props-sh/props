@@ -279,8 +279,9 @@ tasks.register("setReleaseVersionBasedOnGitTag") {
     }
 
     doLast {
-        val gitTag: String = ByteArrayOutputStream().use { outputStream ->
+        val gitTag: String? = ByteArrayOutputStream().use { outputStream ->
             project.exec {
+                isIgnoreExitValue = true
                 commandLine(
                     "git",
                     "describe",
@@ -293,15 +294,20 @@ tasks.register("setReleaseVersionBasedOnGitTag") {
             outputStream.toString().trim().replace("^v".toRegex(), "")
         }
 
-        // update the project's version property
-        var gradlePropFilePath = File(projectDir, "gradle.properties").path
-        val fis = FileInputStream(gradlePropFilePath)
-        val prop = Properties()
-        prop.load(fis)
-        prop.setProperty("version", gitTag)
-        val output = FileOutputStream(gradlePropFilePath)
-        prop.store(output, null)
+        // only proceed if there's a tag
+        if (gitTag.isNullOrEmpty()) {
+            logger.warn("Will not update the project's version, since the current commit hash ($currentGitHash) is not tagged.")
+        } else {
+            // update the project's version property
+            var gradlePropFilePath = File(projectDir, "gradle.properties").path
+            val fis = FileInputStream(gradlePropFilePath)
+            val prop = Properties()
+            prop.load(fis)
+            prop.setProperty("version", gitTag)
+            val output = FileOutputStream(gradlePropFilePath)
+            prop.store(output, null)
 
-        println("Updated project version to: $gitTag")
+            println("Updated the project's version to: $gitTag")
+        }
     }
 }
