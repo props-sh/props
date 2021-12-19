@@ -232,8 +232,19 @@ subprojects {
                 }
             }
             maven {
-                name = "MavenCentral"
-                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+                name = "MavenCentralSnapshots"
+                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                credentials {
+                    username =
+                        project.findProperty("ossrh.username") as String?
+                            ?: System.getenv("OSSRH_USERNAME")
+                    password = project.findProperty("ossrh.password") as String?
+                        ?: System.getenv("OSSRH_PASSWORD")
+                }
+            }
+            maven {
+                name = "MavenCentralReleases"
+                url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
                 credentials {
                     username =
                         project.findProperty("ossrh.username") as String?
