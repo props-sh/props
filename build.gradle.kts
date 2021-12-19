@@ -225,6 +225,8 @@ subprojects {
     apply(plugin = "signing")
     publishing {
         repositories {
+            val isSnapshot = version.toString().endsWith("SNAPSHOT")
+
             maven {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/props-sh/props")
@@ -242,7 +244,7 @@ subprojects {
             val snapshotsRepoUrl =
                 uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
             val mavenUrl =
-                if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+                if (isSnapshot) snapshotsRepoUrl else releasesRepoUrl
 
             maven {
                 name = "MavenCentral"
@@ -266,9 +268,7 @@ subprojects {
     javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 }
 
-
 // Update gradle.properties with the version designated by the current git tag
-//val gradlePropertiesProp: String? by project
 tasks.register("setReleaseVersionBasedOnGitTag") {
     val currentGitHash: String = ByteArrayOutputStream().use { outputStream ->
         project.exec {
