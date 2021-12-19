@@ -230,7 +230,6 @@ subprojects {
             maven {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/props-sh/props")
-                println("Publishing artifacts to $url")
                 credentials {
                     username =
                         project.findProperty("gpr.username") as String? ?: System.getenv("USERNAME")
@@ -249,7 +248,6 @@ subprojects {
             maven {
                 name = "MavenCentral"
                 url = mavenUrl
-                println("Publishing artifacts to $url")
                 credentials {
                     username =
                         project.findProperty("ossrh.username") as String?
