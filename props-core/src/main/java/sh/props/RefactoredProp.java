@@ -58,6 +58,7 @@ import sh.props.exceptions.ValueCannotBeReadException;
  * @param <T> the type of the property being refactored
  * @param <R> the type of the new property
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize", "PMD.AvoidFieldNameMatchingMethodName"})
 public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
 
   private final Prop<T> originalProp;

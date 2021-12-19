@@ -13,6 +13,7 @@ plugins {
     id("net.ltgt.errorprone")
     `maven-publish`
     id("org.sonarqube")
+    pmd
 }
 
 group = project.group
@@ -219,6 +220,14 @@ subprojects {
                 "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
             )
         )
+    }
+
+    // PMD
+    apply(plugin = "pmd")
+    pmd {
+        isConsoleOutput = true
+        rulesMinimumPriority.set(4)
+        ruleSets = listOf("category/java/errorprone.xml", "category/java/bestpractices.xml")
     }
 
     // IntelliJ IDE

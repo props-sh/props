@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import sh.props.annotations.Nullable;
 
 /** Standard implementation of a {@link Source} capable of loading keys on-demand. */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public abstract class OnDemandSource extends Source {
   private static final Logger log = Logger.getLogger(OnDemandSource.class.getName());
 

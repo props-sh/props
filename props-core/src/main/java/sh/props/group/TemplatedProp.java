@@ -43,6 +43,7 @@ import sh.props.tuples.Triple;
  *
  * @param <T> the type of the backing prop
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public abstract class TemplatedProp<T> extends Prop<String> {
 
   private final Prop<T> prop;

@@ -36,6 +36,7 @@ import sh.props.annotations.Nullable;
  * @param <T> the type of the first object
  * @param <U> the type of the second object
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class Pair<T, U> {
 
   @Nullable public final T first;

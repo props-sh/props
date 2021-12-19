@@ -34,6 +34,7 @@ import sh.props.Prop;
 import sh.props.annotations.Nullable;
 import sh.props.tuples.Tuple;
 
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 abstract class AbstractPropGroup<TupleT> extends Prop<TupleT> {
   protected final AtomicReference<Holder<TupleT>> holderRef;
   private final String key;

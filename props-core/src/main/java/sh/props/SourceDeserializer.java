@@ -54,6 +54,7 @@ import sh.props.tuples.Tuple;
  * desired source. The configuration line is then passed to the factory object, allowing it to
  * appropriately parse it and construct the {@link Source}.
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class SourceDeserializer {
   private final Map<String, SourceFactory<? extends Source>> deserializers;
 

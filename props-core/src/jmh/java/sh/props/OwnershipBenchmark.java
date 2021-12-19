@@ -41,31 +41,38 @@ import org.openjdk.jmh.infra.Blackhole;
 import sh.props.converters.Cast;
 import sh.props.sources.InMemory;
 
-@SuppressWarnings({"NullAway", "checkstyle:MissingJavadocMethod"})
+@SuppressWarnings({
+  "NullAway",
+  "checkstyle:MissingJavadocMethod",
+  "PMD.BeanMembersShouldSerialize",
+  "PMD.JUnit4TestShouldUseBeforeAnnotation"
+})
 @Fork(value = 1, warmups = 1)
 @Warmup(iterations = 1, time = 5)
 @Measurement(iterations = 1, time = 10)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class OwnershipBenchmark {
+  private static final String KEY = "key";
+  private static final String PRESET = "preset";
 
   @Benchmark
   public static void setUnset(ExecutionPlan plan) {
     // set
-    plan.source1.put("key", "v1");
+    plan.source1.put(KEY, "v1");
     plan.source1.refresh();
 
     // unset
-    plan.source1.remove("key");
+    plan.source1.remove(KEY);
     plan.source1.refresh();
   }
 
   @Benchmark
   public static void setUnsetSameUpdate(ExecutionPlan plan) {
     // set
-    plan.source1.put("key", "v1");
+    plan.source1.put(KEY, "v1");
 
     // unset
-    plan.source1.remove("key");
+    plan.source1.remove(KEY);
 
     // update
     plan.source1.refresh();
@@ -74,7 +81,7 @@ public class OwnershipBenchmark {
   @Benchmark
   public static void set(ExecutionPlan plan) {
     // set
-    plan.source1.put("key", "v1");
+    plan.source1.put(KEY, "v1");
     plan.source1.refresh();
   }
 
@@ -85,12 +92,12 @@ public class OwnershipBenchmark {
 
   @Benchmark
   public static void get(ExecutionPlan plan, Blackhole blackhole) {
-    blackhole.consume(plan.registry.get("preset", Cast.asString()));
+    blackhole.consume(plan.registry.get(PRESET, Cast.asString()));
   }
 
   @Benchmark
   public static void getFromHashMap(ExecutionPlan plan, Blackhole blackhole) {
-    blackhole.consume(plan.control.get("preset"));
+    blackhole.consume(plan.control.get(PRESET));
   }
 
   @State(Scope.Benchmark)
@@ -106,13 +113,13 @@ public class OwnershipBenchmark {
       this.registry = new RegistryBuilder(this.source1).build();
 
       // set initial values
-      this.source1.put("key", "v1");
-      this.source1.put("preset", "preset-value");
+      this.source1.put(KEY, "v1");
+      this.source1.put(PRESET, "preset-value");
       this.source1.refresh();
 
       // control
       this.control = new HashMap<>();
-      this.control.put("preset", "preset-value");
+      this.control.put(PRESET, "preset-value");
     }
   }
 }

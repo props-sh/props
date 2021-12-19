@@ -53,6 +53,7 @@ import sh.props.annotations.Nullable;
  *
  * @param <T> the type of the prop object
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public abstract class SubscribableProp<T> implements Subscribable<T> {
 
   private static final Logger log = Logger.getLogger(SubscribableProp.class.getName());

@@ -46,6 +46,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 
 /** {@link Source} implementation that loads secrets from AWS SecretsManager. */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class AwsSecretsManager extends Source {
   private static final Logger log = Logger.getLogger(AwsSecretsManager.class.getName());
   private final Map<String, String> secrets = new ConcurrentHashMap<>();

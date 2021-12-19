@@ -43,6 +43,7 @@ import sh.props.converters.Cast;
 import sh.props.converters.Converter;
 import sh.props.tuples.Pair;
 
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class Registry {
   private static final Logger log = Logger.getLogger(Registry.class.getName());
 

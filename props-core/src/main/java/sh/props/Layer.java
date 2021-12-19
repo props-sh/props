@@ -40,6 +40,7 @@ import sh.props.tuples.Tuple;
  * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the
  * effective value for each requested key.
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize", "PMD.AvoidFieldNameMatchingMethodName"})
 public class Layer implements Consumer<Map<String, String>> {
 
   protected final String alias;

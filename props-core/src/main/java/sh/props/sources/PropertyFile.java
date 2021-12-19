@@ -43,6 +43,7 @@ import sh.props.SourceFactory;
 import sh.props.annotations.Nullable;
 
 /** Retrieves properties from a Java properties file, located on disk. */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class PropertyFile extends Source implements FileWatchable {
   private static final Logger log = Logger.getLogger(PropertyFile.class.getName());
   private final Path location;

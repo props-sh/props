@@ -34,6 +34,7 @@ import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Quintuple;
 import sh.props.tuples.Tuple;
 
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 class PropGroupQuintuple<T, U, V, W, X> extends AbstractPropGroup<Quintuple<T, U, V, W, X>> {
   private final Prop<T> first;
   private final Prop<U> second;

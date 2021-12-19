@@ -32,6 +32,7 @@ import sh.props.Source;
 import sh.props.annotations.Nullable;
 
 /** Useful for tests, when the implementation requires overriding values. */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class InMemory extends Source {
   public static final boolean UPDATE_REGISTRY_ON_EVERY_WRITE = true;
   public static final boolean UPDATE_REGISTRY_MANUALLY = false;

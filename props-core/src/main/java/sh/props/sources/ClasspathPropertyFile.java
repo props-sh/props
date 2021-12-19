@@ -39,6 +39,7 @@ import sh.props.SourceFactory;
 import sh.props.annotations.Nullable;
 
 /** Retrieves properties from a Java properties file, located on the classpath. */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class ClasspathPropertyFile extends Source {
   private static final Logger log = Logger.getLogger(ClasspathPropertyFile.class.getName());
   private final String location;

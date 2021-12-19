@@ -34,6 +34,7 @@ import sh.props.annotations.Nullable;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class RegistryBuilder {
 
   private final ArrayDeque<Pair<Source, String>> sources = new ArrayDeque<>();

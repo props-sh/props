@@ -49,6 +49,7 @@ import java.util.logging.Logger;
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
  * when the backing file is created, modified, or deleted.
  */
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class FileWatchSvc implements Runnable {
 
   private static final Logger log = Logger.getLogger(FileWatchSvc.class.getName());

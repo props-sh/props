@@ -44,10 +44,11 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
  * {@link Source} implementation that loads secrets from AWS SecretsManager, on-demand (only when
  * they are requested by a {@link sh.props.Registry}.
  */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class AwsSecretsManagerOnDemand extends OnDemandSource {
   public static final String ID = "aws-secretsmanager-ondemand";
+  private static final int CAN_RANDOMLY_LOAD_BALANCE_REQUESTS = 1;
   private final Random random = new Random();
-
   private final List<SecretsManagerAsyncClient> clients;
 
   /**
@@ -102,7 +103,7 @@ public class AwsSecretsManagerOnDemand extends OnDemandSource {
   protected String loadKey(String key) {
     // choose a client
     int i = 0;
-    if (clients.size() > 1) {
+    if (clients.size() > CAN_RANDOMLY_LOAD_BALANCE_REQUESTS) {
       // if more than one region was provided, randomly choose one
       // load balancing requests over all provided clients
       i = random.nextInt(clients.size());

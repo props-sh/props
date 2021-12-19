@@ -34,6 +34,7 @@ import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Quad;
 import sh.props.tuples.Tuple;
 
+@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 class PropGroupQuad<T, U, V, W> extends AbstractPropGroup<Quad<T, U, V, W>> {
   private final Prop<T> first;
   private final Prop<U> second;
