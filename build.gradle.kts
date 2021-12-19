@@ -55,6 +55,11 @@ subprojects {
         options.isFork = true
         options.isFailOnError = true
     }
+    tasks.javadoc {
+        if (JavaVersion.current().isJava9Compatible) {
+            (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+        }
+    }
 
     // Tests
     tasks.getByName<Test>("test") {
@@ -221,8 +226,20 @@ subprojects {
                 url = uri("https://maven.pkg.github.com/props-sh/props")
                 credentials {
                     username =
-                        project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                        project.findProperty("gpr.username") as String? ?: System.getenv("USERNAME")
+                    password =
+                        project.findProperty("gpr.password") as String? ?: System.getenv("TOKEN")
+                }
+            }
+            maven {
+                name = "MavenCentral"
+                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+                credentials {
+                    username =
+                        project.findProperty("ossrh.username") as String?
+                            ?: System.getenv("OSSRH_USERNAME")
+                    password = project.findProperty("ossrh.password") as String?
+                        ?: System.getenv("OSSRH_PASSWORD")
                 }
             }
         }

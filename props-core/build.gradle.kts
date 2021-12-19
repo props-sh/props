@@ -20,13 +20,13 @@ publishing {
             }
 
             pom {
-                name.set("Props Core")
+                name.set(project.group as String + ":props-core")
                 description.set("Layered application property management library for Java")
                 url.set("https://github.com/props-sh/props")
                 licenses {
                     license {
                         name.set("MIT License")
-                        url.set("https://github.com/props-sh/props/blob/8243ea7c9c27c47be49dec70a3479dcd131ae2b0/LICENSE")
+                        url.set("http://www.opensource.org/licenses/mit-license.php")
                     }
                 }
                 developers {
@@ -34,6 +34,7 @@ publishing {
                         id.set("mihaibojin")
                         name.set("Mihai Bojin")
                         email.set("mihai.bojin@gmail.com")
+                        organizationUrl.set("https://MihaiBojin.com")
                     }
                 }
                 scm {
@@ -43,6 +44,5 @@ publishing {
                 }
             }
         }
-
     }
 }
