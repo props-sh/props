@@ -1,4 +1,8 @@
 import net.ltgt.gradle.errorprone.errorprone
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.*
 
 plugins {
     `java-library`
@@ -260,4 +264,44 @@ subprojects {
     val javaComponent = components["java"] as AdhocComponentWithVariants
     javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
     javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+}
+
+
+// Update gradle.properties with the version designated by the current git tag
+//val gradlePropertiesProp: String? by project
+tasks.register("setReleaseVersionBasedOnGitTag") {
+    val currentGitHash: String = ByteArrayOutputStream().use { outputStream ->
+        project.exec {
+            commandLine("git", "log", "-n1", "--pretty=%H")
+            standardOutput = outputStream
+        }
+        outputStream.toString().trim()
+    }
+
+    doLast {
+        val gitTag: String = ByteArrayOutputStream().use { outputStream ->
+            project.exec {
+                commandLine(
+                    "git",
+                    "describe",
+                    "--exact-match",
+                    "--tags",
+                    currentGitHash,
+                )
+                standardOutput = outputStream
+            }
+            outputStream.toString().trim().replace("^v".toRegex(), "")
+        }
+
+        // update the project's version property
+        var gradlePropFilePath = File(projectDir, "gradle.properties").path
+        val fis = FileInputStream(gradlePropFilePath)
+        val prop = Properties()
+        prop.load(fis)
+        prop.setProperty("version", gitTag)
+        val output = FileOutputStream(gradlePropFilePath)
+        prop.store(output, null)
+
+        println("Updated project version to: $gitTag")
+    }
 }
