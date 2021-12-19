@@ -1,4 +1,4 @@
-name: Publish a package to GitHub Package Repo
+name: Publish to Maven Repositories
 
 on:
   push:

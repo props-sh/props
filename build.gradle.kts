@@ -255,4 +255,9 @@ subprojects {
         // Custom artifact IDs for subprojects
         // https://stackoverflow.com/a/67779953/7169815
     }
+
+    // do not publish test fixtures
+    val javaComponent = components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 }
