@@ -5,9 +5,8 @@ on:
     branches:
       - main
       - release/*
-      - feature/16-publish-all-projects
     tags:
-      - v0.1.*
+      - v0.*.*
 
 jobs:
   build-and-publish-package:
