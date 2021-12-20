@@ -113,7 +113,7 @@ public class Registry {
     // notify all layers that the specified prop was bound
     // but do not wait for the key to be loaded
     for (Layer layer : layers) {
-      @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
+      @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable", "PMD.UnusedLocalVariable"})
       var future = layer.source.registerKey(key);
     }
 

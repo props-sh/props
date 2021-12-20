@@ -26,15 +26,18 @@
 package sh.props.textfixtures;
 
 import java.util.ArrayDeque;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 
-/** Test-only implementation. */
-public class StoreAllValuesConsumer<T> implements Consumer<T> {
+/**
+ * Test-only implementation that accepts values and deduplicates them, also keeping track of the
+ * order in which it received the values.
+ */
+public class StoreAllUniqueValuesConsumer<T> implements Consumer<T> {
 
-  private final LinkedHashSet<T> store = new LinkedHashSet<>();
+  private final Set<T> store = new LinkedHashSet<>();
 
   @Override
   public synchronized void accept(T t) {
@@ -52,11 +55,6 @@ public class StoreAllValuesConsumer<T> implements Consumer<T> {
    */
   @Nullable
   public synchronized T getLast() {
-    T val = null;
-    Iterator<T> it = this.store.iterator();
-    while (it.hasNext()) {
-      val = it.next();
-    }
-    return val;
+    return this.store.stream().skip(this.store.size() - 1).findFirst().orElse(null);
   }
 }

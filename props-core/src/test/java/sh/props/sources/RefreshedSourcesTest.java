@@ -45,16 +45,13 @@ import sh.props.custom.BooleanProp;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestFileUtil;
 
-public class RefreshedSourcesTest extends AwaitAssertionTest {
+class RefreshedSourcesTest extends AwaitAssertionTest {
+  private static final String A_BOOLEAN = "a.boolean";
 
   @Test
   void propertyFileWithFileWatcher() throws IOException {
     // ARRANGE
     Path propFile = TestFileUtil.createTempFilePath("input.properties");
-
-    // load existing test properties
-    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
 
     // define the source
     var source = new PropertyFile(propFile);
@@ -62,7 +59,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     // initialize the registry and bind a prop
     var registry = new RegistryBuilder(source).build();
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
+    BooleanProp prop = registry.bind(new BooleanProp(A_BOOLEAN));
 
     // ACT / ASSERT
 
@@ -70,10 +67,14 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     FileWatchSvc.instance().refreshOnChanges(source);
 
     assertThat(
-        "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
+        "Expecting the key to be null", registry.get(A_BOOLEAN, Cast.asBoolean()), nullValue());
 
-    // copy the properties to a temp file
-    Files.copy(testData, propFile);
+    // load existing test properties and copy them to a temporary file
+    try (InputStream testData =
+        this.getClass().getResourceAsStream("/source/standard-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // and expect the prop to eventually be updated
     await().until(prop::get, equalTo(true));
@@ -84,17 +85,13 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     // ARRANGE
     Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
-    // load existing test properties
-    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
-
     // define the source
     var source = new PropertyFile(propFile);
 
     // initialize the registry and bind a prop
     var registry = new RegistryBuilder(source).build();
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
+    BooleanProp prop = registry.bind(new BooleanProp(A_BOOLEAN));
 
     // ACT / ASSERT
 
@@ -103,10 +100,14 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     Scheduler.instance().refreshEagerly(source, interval);
 
     assertThat(
-        "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
+        "Expecting the key to be null", registry.get(A_BOOLEAN, Cast.asBoolean()), nullValue());
 
-    // copy the properties to a temp file
-    Files.copy(testData, propFile);
+    // load existing test properties
+    try (InputStream testData =
+        this.getClass().getResourceAsStream("/source/standard-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // and expect the prop to eventually be updated
     await().until(prop::get, equalTo(true));

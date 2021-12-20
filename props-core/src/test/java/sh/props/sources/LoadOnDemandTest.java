@@ -41,18 +41,29 @@ import sh.props.textfixtures.TestOnDemandSource;
 
 @SuppressWarnings({"NullAway", "VariableDeclarationUsageDistance"})
 class LoadOnDemandTest extends AwaitAssertionTest {
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String VALUE_1 = "value1";
+  private static final String VALUE_2 = "value2";
+  private static final String VALUE_3 = "value3";
 
   @RepeatedTest(10)
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void testLoadPropOnDemandSuperFast() {
     internalOnDemandSourceTest(10L);
   }
 
   @RepeatedTest(10)
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void testLoadPropOnDemandFast() {
     internalOnDemandSourceTest(50L);
   }
 
   @Test
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void testLoadPropOnDemandSlow() {
     internalOnDemandSourceTest(500L);
   }
@@ -60,25 +71,27 @@ class LoadOnDemandTest extends AwaitAssertionTest {
   private void internalOnDemandSourceTest(long sleepMillis) {
     // ARRANGE
     Map<String, String> data = new HashMap<>();
-    data.put("key1", "value1");
-    data.put("key2", "value2");
+    data.put(KEY_1, VALUE_1);
+    data.put(KEY_2, VALUE_2);
 
     var source = new TestOnDemandSource(data, sleepMillis);
 
     var registry = new RegistryBuilder(source).build();
-    var prop = registry.builder(asString()).build("key1");
+    var prop = registry.builder(asString()).build(KEY_1);
 
     // ACT / ASSERT
-    assertThat(registry.get("key0"), nullValue());
-    assertThat(registry.get("key1"), equalTo("value1"));
-    assertThat(registry.get("key2"), equalTo("value2"));
+    assertThat("Expecting no value for undefined keys", registry.get("UNSET_KEY"), nullValue());
+    assertThat("Expecting key to be set", registry.get(KEY_1), equalTo(VALUE_1));
+    assertThat("Expecting key to be set", registry.get(KEY_2), equalTo(VALUE_2));
 
-    data.put("key1", "value3");
+    data.put(KEY_1, VALUE_3);
     source.refresh();
-    await().until(prop::get, equalTo("value3"));
+    // expecting value to be updated
+    await().until(prop::get, equalTo(VALUE_3));
 
-    data.remove("key1");
+    data.remove(KEY_1);
     source.refresh();
+    // expecting value to be updated
     await().until(prop::get, nullValue());
   }
 }

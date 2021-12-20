@@ -53,7 +53,6 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 import software.amazon.awssdk.services.secretsmanager.model.CreateSecretRequest;
 import software.amazon.awssdk.services.secretsmanager.model.DeleteSecretRequest;
 
-@SuppressWarnings("NullAway")
 class AwsSecretsManagerIntTest {
   private static final String SECRET_VALUE = UUID.randomUUID().toString();
   // ensure we have two random secret names
@@ -127,7 +126,7 @@ class AwsSecretsManagerIntTest {
         .pollInterval(Duration.ofNanos(100))
         .until(prop2::get, equalTo(SECRET_VALUE));
 
-    assertThat(prop3.get(), equalTo(null));
+    assertThat("Prop3 is never set so it should not resolve", prop3.get(), equalTo(null));
   }
 
   @Test
@@ -149,7 +148,7 @@ class AwsSecretsManagerIntTest {
         .pollDelay(Duration.ZERO)
         .pollInterval(Duration.ofNanos(100))
         .until(prop1::get, equalTo(SECRET_VALUE));
-    assertThat(value2, equalTo(SECRET_VALUE));
-    assertThat(invalid, nullValue());
+    assertThat("The secret's value should have been retrieved", value2, equalTo(SECRET_VALUE));
+    assertThat("Undefined secrets should not have a value", invalid, nullValue());
   }
 }

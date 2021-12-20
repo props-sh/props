@@ -29,6 +29,8 @@ import java.util.List;
 
 public class MultiValueReadException extends ValueCannotBeReadException {
 
+  private static final long serialVersionUID = 168928758596856317L;
+
   /**
    * Standard constructor that takes an error message.
    *

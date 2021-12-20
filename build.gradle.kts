@@ -13,6 +13,7 @@ plugins {
     id("net.ltgt.errorprone")
     `maven-publish`
     id("org.sonarqube")
+    pmd
 }
 
 group = project.group
@@ -199,7 +200,8 @@ subprojects {
             disableWarningsInGeneratedCode.set(true)
 
             option("NullAway:AnnotatedPackages", "sh.props")
-            // The check defaults to a warning, bump it up to an error for the main sources
+            option("NullAway:CheckOptionalEmptiness", "true")
+            // The check defaults to a warning, bump it up to an error
             error("NullAway")
         }
 
@@ -218,6 +220,16 @@ subprojects {
                 "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                 "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
             )
+        )
+    }
+
+    // PMD
+    apply(plugin = "pmd")
+    pmd {
+        isConsoleOutput = true
+        rulesMinimumPriority.set(4)
+        ruleSets = listOf(
+            "config/pmd/rules.xml",
         )
     }
 

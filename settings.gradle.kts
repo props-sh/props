@@ -14,6 +14,7 @@ pluginManagement {
         id("net.ltgt.errorprone").version("2.0.2")
         id("me.champeau.jmh").version("0.6.6")
         id("org.sonarqube").version("3.3")
+        id("pmd").version("6.41.0")
     }
 }
 
@@ -45,6 +46,9 @@ dependencyResolutionManagement {
             alias("org-awaitility-awaitility").to("org.awaitility:awaitility:4.1.1")
 
             alias("guava").to("com.google.guava:guava:31.0.1-jre")
+        }
+        create("testcontainers") {
+            version("mongo", "5.0.5-focal")
         }
     }
 }

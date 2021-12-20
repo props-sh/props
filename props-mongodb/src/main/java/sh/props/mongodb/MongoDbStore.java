@@ -56,14 +56,13 @@ import sh.props.BackgroundExecutorFactory;
 import sh.props.Source;
 import sh.props.annotations.Nullable;
 
+/** A Source that loads values from a MongoDB database. */
 public class MongoDbStore extends Source {
-  public static final String ID = "mongodb";
   public static final boolean WATCH_CHANGE_STREAM = true;
   public static final boolean RELOAD_ON_DEMAND = false;
   private static final int BATCH_SIZE = 100;
   private static final Logger log = Logger.getLogger(MongoDbStore.class.getName());
   private static final Map<String, String> store = new ConcurrentHashMap<>();
-  protected final String connectionString;
   protected final String dbName;
   protected final String collectionName;
   protected final boolean changeStreamEnabled;
@@ -87,24 +86,44 @@ public class MongoDbStore extends Source {
    */
   public MongoDbStore(
       String connectionString, String dbName, String collectionName, boolean changeStreamEnabled) {
-    // ensure the client connection is valid
-    mongoClient = initClient(connectionString);
+    this(MongoDbStore.initClient(connectionString), dbName, collectionName, changeStreamEnabled);
+  }
 
-    this.connectionString = connectionString;
+  /**
+   * Class constructor that initializes the MongoDB database that will provide key,value pairs.
+   *
+   * <p>This constructor is useful if a subclass desires to customize the client connection past
+   * what can be provided via a MongoDB connection string.
+   *
+   * <p>If change streams are enabled, the client connecting to the database must have the <code>
+   * changeStream</code> and <code>find</code> privileges on the underlying collection.
+   *
+   * @see <a href="https://docs.mongodb.com/manual/changeStreams/#access-control">Change Streams
+   *     Access Control</a>
+   * @param mongoClient an initialized {@link MongoClient} that represents connections to the
+   *     backing MongoDB instance
+   * @param dbName the database to connect to
+   * @param collectionName the collection that holds the key,value pairs
+   * @param changeStreamEnabled if <code>true</code>, the implementation will load all Props once
+   *     and then open a change stream and watch for any insert/update/delete operations. The stream
+   *     will be restarted on errors and invalidate operations; if <code>false</code>, the full list
+   *     of Props will be synchronously re-read on every {@link #get()} operation.
+   */
+  public MongoDbStore(
+      MongoClient mongoClient, String dbName, String collectionName, boolean changeStreamEnabled) {
+    this.mongoClient = mongoClient;
     this.dbName = dbName;
     this.collectionName = collectionName;
 
     // change streams do not work without an oplog
-    Document replSetStatus = getReplSetStatus(mongoClient);
+    Document replSetStatus = getReplSetStatus(this.mongoClient);
     boolean clientSupportsChangeStreams =
-        isReplicaSet(replSetStatus) || isShardedCluster(mongoClient);
+        isReplicaSet(replSetStatus) || isShardedCluster(this.mongoClient);
     if (!clientSupportsChangeStreams && changeStreamEnabled) {
-      // print a warning in case the user assumes change streams will function
+      // print a warning in case the user assumes change streams will correctly work in a standalone
       log.warning(
           () ->
-              format(
-                  "%s did not connect to a replica set or cluster; change streams cannot be enabled",
-                  connectionString));
+              "Change streams only work on replica sets or clusters; updates will not be observed");
     }
 
     store.putAll(loadAllKeyValues());
@@ -114,7 +133,7 @@ public class MongoDbStore extends Source {
       // schedule the async processing of the change stream
       // starting at the cluster time reported by the initial status call
       var watcher = new ChangeStreamWatcher();
-      @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable"})
+      @SuppressWarnings({"FutureReturnValueIgnored", "UnusedVariable", "PMD.UnusedLocalVariable"})
       Future<?> future = BackgroundExecutorFactory.create(1).submit(watcher);
 
       try {
@@ -189,6 +208,16 @@ public class MongoDbStore extends Source {
   }
 
   /**
+   * Initializes a {@link MongoClient} from the specified connection string.
+   *
+   * @param connectionString the MongoDB connection string
+   * @return an initialized connection to a valid cluster
+   */
+  private static MongoClient initClient(String connectionString) {
+    return MongoClients.create(new ConnectionString(connectionString));
+  }
+
+  /**
    * Initializes a {@link MongoCollection}.
    *
    * <p>This method can be overwritten by a subclass, if a different configuration is required.
@@ -201,19 +230,6 @@ public class MongoDbStore extends Source {
         .getCollection(collectionName)
         .withReadPreference(ReadPreference.primaryPreferred())
         .withReadConcern(ReadConcern.MAJORITY);
-  }
-
-  /**
-   * Initializes a {@link MongoClient} from the specified connection string.
-   *
-   * <p>This method can be overwritten by a subclass, if a more advanced client configuration is
-   * required.
-   *
-   * @param connectionString the MongoDB connection string
-   * @return an initialized connection to a valid cluster
-   */
-  protected MongoClient initClient(String connectionString) {
-    return MongoClients.create(new ConnectionString(connectionString));
   }
 
   /**

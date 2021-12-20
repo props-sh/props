@@ -42,8 +42,8 @@ import sh.props.exceptions.ValueCannotBeSetException;
 import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestErrorOnSetProp;
 
-@SuppressWarnings("NullAway")
 class CustomPropTest {
+  private static final String KEY = "key";
 
   @Test
   void secretProp() {
@@ -56,11 +56,12 @@ class CustomPropTest {
         new CustomPropBuilder<>(registry, Cast.asString())
             .defaultValue("A_SECRET")
             .secret(true)
-            .build("key");
+            .build(KEY);
 
     // ACT / ASSERT
-    assertThat(prop.get(), equalTo("A_SECRET"));
-    assertThat(prop.toString(), not(containsString("A_SECRET")));
+    assertThat("Expecting value to resolve", prop.get(), equalTo("A_SECRET"));
+    assertThat(
+        "Expecting the secret to not be exposed", prop.toString(), not(containsString("A_SECRET")));
   }
 
   @Test
@@ -71,12 +72,10 @@ class CustomPropTest {
     Registry registry = new RegistryBuilder(source).build();
 
     var prop =
-        new CustomPropBuilder<>(registry, Cast.asString())
-            .description("a_description")
-            .build("key");
+        new CustomPropBuilder<>(registry, Cast.asString()).description("a_description").build(KEY);
 
     // ACT / ASSERT
-    assertThat(prop.description(), equalTo("a_description"));
+    assertThat("Expecting a description", prop.description(), equalTo("a_description"));
   }
 
   @Test
@@ -86,12 +85,12 @@ class CustomPropTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop = new CustomPropBuilder<>(registry, Cast.asString()).required(true).build("key");
+    var prop = new CustomPropBuilder<>(registry, Cast.asString()).required(true).build(KEY);
 
     // ACT / ASSERT
     assertThrows(ValueCannotBeReadException.class, prop::get);
 
-    source.put("key", "value");
+    source.put(KEY, "value");
     await().until(prop::get, equalTo("value"));
   }
 
@@ -105,13 +104,13 @@ class CustomPropTest {
 
     AtomicReference<Throwable> capture = new AtomicReference<>();
 
-    var prop = registry.bind(new TestErrorOnSetProp("key", 0));
+    var prop = registry.bind(new TestErrorOnSetProp(KEY, 0));
     prop.subscribe((ignore) -> {}, capture::set);
 
     // ACT / ASSERT
-    assertThat(prop.get(), equalTo(0));
+    assertThat("Expecting a non-error state", prop.get(), equalTo(0));
 
-    source.put("key", "2");
+    source.put(KEY, "2");
     await().until(capture::get, instanceOf(ValueCannotBeSetException.class));
   }
 }

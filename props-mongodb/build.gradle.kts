@@ -16,6 +16,16 @@ dependencies {
     intTestImplementation("ch.qos.logback:logback-core:1.2.9")
 }
 
+// specify the Testcontainers MongoDB container image version to use in integration tests
+tasks.getByName<Test>("integrationTest") {
+    val version = rootProject.testcontainers.versions.mongo.get()
+
+    systemProperty(
+        "testcontainers:mongo",
+        "mongo:${version}"
+    )
+}
+
 // https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:complete_example
 publishing {
     publications {

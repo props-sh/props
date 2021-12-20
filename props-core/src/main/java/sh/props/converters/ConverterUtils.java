@@ -25,6 +25,7 @@
 
 package sh.props.converters;
 
+import static java.lang.String.format;
 import static java.util.logging.Level.SEVERE;
 
 import java.text.NumberFormat;
@@ -37,6 +38,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,7 +65,9 @@ class ConverterUtils {
     try {
       return NumberFormat.getInstance().parse(value);
     } catch (ParseException e) {
-      log.log(SEVERE, e, () -> "Could not parse " + value + " to a number");
+      if (log.isLoggable(SEVERE)) {
+        log.log(SEVERE, e, parseExceptionDetails(value, Number.class));
+      }
       return null;
     }
   }
@@ -84,7 +88,9 @@ class ConverterUtils {
     try {
       return ChronoUnit.valueOf(value);
     } catch (IllegalArgumentException e) {
-      log.log(SEVERE, e, () -> "Could not parse " + value + " as a ChronoUnit");
+      if (log.isLoggable(SEVERE)) {
+        log.log(SEVERE, e, parseExceptionDetails(value, ChronoUnit.class));
+      }
       return null;
     }
   }
@@ -105,7 +111,9 @@ class ConverterUtils {
     try {
       return Duration.parse(value);
     } catch (DateTimeParseException e) {
-      log.log(SEVERE, e, () -> "Could not parse " + value + " as a valid Duration");
+      if (log.isLoggable(SEVERE)) {
+        log.log(SEVERE, e, parseExceptionDetails(value, Duration.class));
+      }
       return null;
     }
   }
@@ -126,7 +134,9 @@ class ConverterUtils {
     try {
       return OffsetDateTime.parse(value).toInstant();
     } catch (DateTimeParseException e) {
-      log.log(SEVERE, e, () -> "Could not parse " + value + " as a valid DateTime");
+      if (log.isLoggable(SEVERE)) {
+        log.log(SEVERE, e, parseExceptionDetails(value, Instant.class));
+      }
       return null;
     }
   }
@@ -159,5 +169,16 @@ class ConverterUtils {
         .filter(Objects::nonNull)
         .map(mapper)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Helper method that standardizes the error messages returned by this class.
+   *
+   * @param value the value that was attempted to be cast
+   * @param type the type we tried to cast to
+   * @return an error message
+   */
+  static Supplier<String> parseExceptionDetails(Object value, Class<?> type) {
+    return () -> format("Could not parse %s as a %s", value, type.getSimpleName());
   }
 }

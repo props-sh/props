@@ -45,8 +45,9 @@ import sh.props.custom.BooleanProp;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestFileUtil;
 
-@SuppressWarnings("NullAway")
 class SourcesTest extends AwaitAssertionTest {
+  private static final String KEY = "key";
+  private static final String A_BOOLEAN = "a.boolean";
 
   @Test
   void classpathPropertyFile() {
@@ -55,13 +56,15 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    Boolean value = registry.get("a.boolean", Cast.asBoolean());
+    Boolean value = registry.get(A_BOOLEAN, Cast.asBoolean());
 
     // ASSERT
-    assertThat(value, equalTo(true));
+    assertThat(
+        "Expecting a value from a classpath-based property file source", value, equalTo(true));
   }
 
   @Test
+  @SuppressWarnings("NullAway") // NullAway does not support JUnit assumptions
   void environment() {
     // ARRANGE
     var source = new Environment();
@@ -77,7 +80,7 @@ class SourcesTest extends AwaitAssertionTest {
     String value = registry.get(envVar.getKey());
 
     // ASSERT
-    assertThat(value, equalTo(envVar.getValue()));
+    assertThat("Expecting a value from an Environment source", value, equalTo(envVar.getValue()));
   }
 
   @Test
@@ -87,10 +90,10 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    Boolean value = registry.get("key", Cast.asBoolean());
+    Boolean value = registry.get(KEY, Cast.asBoolean());
 
     // ASSERT
-    assertThat(value, nullValue());
+    assertThat("Expecting a value from an in-memory source", value, nullValue());
   }
 
   @Test
@@ -100,11 +103,12 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    source.put("key", "true");
-    Boolean value = registry.get("key", Cast.asBoolean());
+    source.put(KEY, "true");
+    Boolean value = registry.get(KEY, Cast.asBoolean());
 
     // ASSERT
-    assertThat(value, equalTo(true));
+    assertThat(
+        "Expecting a value from an in-memory source, which is auto-updated", value, equalTo(true));
   }
 
   @Test
@@ -113,18 +117,23 @@ class SourcesTest extends AwaitAssertionTest {
     var source = new InMemory(UPDATE_REGISTRY_MANUALLY);
     var registry = new RegistryBuilder(source).build();
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    BooleanProp prop = registry.bind(new BooleanProp("key"));
+    BooleanProp prop = registry.bind(new BooleanProp(KEY));
 
     // ACT
-    source.put("key", "true");
-    assertThat(registry.get("key"), nullValue());
+    source.put(KEY, "true");
+    assertThat(
+        "Expecting a value to not be set before the source is refreshed",
+        registry.get(KEY),
+        nullValue());
 
     // ASSERT
     source.refresh();
+    // expecting the prop to eventually receive the update
     await().until(prop::get, equalTo(true));
   }
 
   @Test
+  @SuppressWarnings("NullAway") // NullAway does not support JUnit assumptions
   void systemProperties() {
     // ARRANGE
     var source = new SystemProperties();
@@ -140,7 +149,8 @@ class SourcesTest extends AwaitAssertionTest {
 
     // ASSERT
     String value = registry.get(sysPropKey);
-    assertThat(value, equalTo(System.getProperty(sysPropKey)));
+    assertThat(
+        "Expecting a value from a System source", value, equalTo(System.getProperty(sysPropKey)));
   }
 
   @Test
@@ -148,21 +158,21 @@ class SourcesTest extends AwaitAssertionTest {
     // ARRANGE
     Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
-    // load existing test properties
-    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
-
-    // copy the properties to a temp file
-    Files.copy(testData, propFile);
+    // load existing test properties and copy them to a temporary file
+    try (InputStream testData =
+        this.getClass().getResourceAsStream("/source/standard-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // load the test file
     var source = new PropertyFile(propFile);
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    Boolean value = registry.get("a.boolean", Cast.asBoolean());
+    Boolean value = registry.get(A_BOOLEAN, Cast.asBoolean());
 
     // ASSERT
-    assertThat(value, equalTo(true));
+    assertThat("Expecting a value from a property file source", value, equalTo(true));
   }
 }

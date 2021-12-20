@@ -39,6 +39,7 @@ import sh.props.annotations.Nullable;
  *
  * @param <V> the type of the value held by this class
  */
+@SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName"})
 public class Holder<V> {
 
   public final long epoch;

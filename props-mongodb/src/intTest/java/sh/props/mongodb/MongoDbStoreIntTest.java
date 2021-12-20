@@ -58,13 +58,24 @@ import sh.props.Registry;
 import sh.props.RegistryBuilder;
 
 @Testcontainers
-@SuppressWarnings("NullAway")
+@SuppressWarnings({
+  "NullAway",
+})
 class MongoDbStoreIntTest {
+
+  public static final String PROP_SHOULD_BE_LOADED =
+      "Expecting the Registry to have loaded values from the MongoDB source";
+  private static final String PROPS = "props";
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String VALUE_1 = "value1";
+  private static final String VALUE_2 = "value2";
+
   @Container
   private static final MongoDBContainer mongoDBContainer =
-      new MongoDBContainer(DockerImageName.parse("mongo:5.0.4-focal")).withExposedPorts(27017);
+      new MongoDBContainer(DockerImageName.parse(System.getProperty("testcontainers:mongo")))
+          .withExposedPorts(27017);
 
-  private static final String PROPS = "props";
   private MongoClient mongoClient;
   private String connString;
   private String dbName;
@@ -73,7 +84,7 @@ class MongoDbStoreIntTest {
   @BeforeAll
   static void beforeAll() {
     mongoDBContainer.start();
-    assertThat(mongoDBContainer.isRunning(), equalTo(true));
+    assertThat("This test needs a running container", mongoDBContainer.isRunning(), equalTo(true));
   }
 
   @AfterAll
@@ -90,7 +101,7 @@ class MongoDbStoreIntTest {
 
     // create database prop(s)
     collection = getCollection(mongoClient, dbName, PROPS);
-    collection.insertOne(createProp("my.prop", "value"));
+    collection.insertOne(createProp(KEY_1, VALUE_1));
   }
 
   @AfterEach
@@ -99,6 +110,7 @@ class MongoDbStoreIntTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't support awaitility
   void watchCollectionChangeStream() {
     // ARRANGE
     var source = new MongoDbStore(connString, dbName, PROPS, WATCH_CHANGE_STREAM);
@@ -107,13 +119,13 @@ class MongoDbStoreIntTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), equalTo("value"));
+    await().until(() -> registry.get(KEY_1), equalTo(VALUE_1));
 
-    collection.insertOne(createProp("my.prop2", "value"));
-    await().until(() -> registry.get("my.prop2"), equalTo("value"));
+    collection.insertOne(createProp(KEY_2, VALUE_1));
+    await().until(() -> registry.get(KEY_2), equalTo(VALUE_1));
 
-    collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
-    await().until(() -> registry.get("my.prop2"), equalTo("value2"));
+    collection.replaceOne(createFilter(KEY_2), createProp(KEY_2, VALUE_2));
+    await().until(() -> registry.get(KEY_2), equalTo(VALUE_2));
   }
 
   @Test
@@ -125,19 +137,28 @@ class MongoDbStoreIntTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), equalTo("value"));
+    await().until(() -> registry.get(KEY_1), equalTo(VALUE_1));
 
-    collection.insertOne(createProp("my.prop2", "value"));
-    assertThat(registry.get("my.prop2"), nullValue());
-
-    source.refresh();
-    assertThat(registry.get("my.prop2"), equalTo("value"));
-
-    collection.replaceOne(createFilter("my.prop2"), createProp("my.prop2", "value2"));
-    assertThat(registry.get("my.prop2"), equalTo("value"));
+    collection.insertOne(createProp(KEY_2, VALUE_1));
+    assertThat(
+        "Expecting value to not have been propagated without a refresh",
+        registry.get(KEY_2),
+        nullValue());
 
     source.refresh();
-    assertThat(registry.get("my.prop2"), equalTo("value2"));
+    assertThat(
+        "Expecting value update to have been propagated after refresh",
+        registry.get(KEY_2),
+        equalTo(VALUE_1));
+
+    collection.replaceOne(createFilter(KEY_2), createProp(KEY_2, VALUE_2));
+    assertThat("Expecting value update to not propagate", registry.get(KEY_2), equalTo(VALUE_1));
+
+    source.refresh();
+    assertThat(
+        "Expecting value to have been updated after refresh",
+        registry.get(KEY_2),
+        equalTo(VALUE_2));
   }
 
   @Test
@@ -147,12 +168,14 @@ class MongoDbStoreIntTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    assertThat(registry.get("my.prop"), equalTo("value"));
+    assertThat(PROP_SHOULD_BE_LOADED, registry.get(KEY_1), equalTo(VALUE_1));
     mongoClient.getDatabase(dbName).drop();
-    collection.insertOne(createProp("my.prop", "value2"));
+    collection.insertOne(createProp(KEY_1, VALUE_2));
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+    // expecting a value update, regardless of the collection drop
+    // and the change stream having to have been reinitialized
+    await().until(() -> registry.get(KEY_1), equalTo(VALUE_2));
   }
 
   @Test
@@ -162,12 +185,14 @@ class MongoDbStoreIntTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    assertThat(registry.get("my.prop"), equalTo("value"));
+    assertThat(PROP_SHOULD_BE_LOADED, registry.get(KEY_1), equalTo(VALUE_1));
     mongoClient.getDatabase(dbName).getCollection(PROPS).drop();
-    collection.insertOne(createProp("my.prop", "value2"));
+    collection.insertOne(createProp(KEY_1, VALUE_2));
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+    // expecting a value update, regardless of the collection drop
+    // and the change stream having to have been reinitialized
+    await().until(() -> registry.get(KEY_1), equalTo(VALUE_2));
   }
 
   @Test
@@ -177,15 +202,17 @@ class MongoDbStoreIntTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    assertThat(registry.get("my.prop"), equalTo("value"));
+    assertThat(PROP_SHOULD_BE_LOADED, registry.get(KEY_1), equalTo(VALUE_1));
     mongoClient
         .getDatabase(dbName)
         .getCollection(PROPS)
         .renameCollection(new MongoNamespace(dbName, PROPS + "_renamed"));
-    collection.insertOne(createProp("my.prop", "value2"));
+    collection.insertOne(createProp(KEY_1, VALUE_2));
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+    // expecting a value update, regardless of the collection rename
+    // and the change stream having to have been reinitialized
+    await().until(() -> registry.get(KEY_1), equalTo(VALUE_2));
   }
 
   @Test
@@ -196,13 +223,15 @@ class MongoDbStoreIntTest {
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    assertThat(registry.get("my.prop"), equalTo("value"));
+    assertThat(PROP_SHOULD_BE_LOADED, registry.get(KEY_1), equalTo(VALUE_1));
+
     replicaSetPrimaryStepDown(mongoClient, 1);
 
+    // repeatedly update one key,value pair, waiting for a PRIMARY to be elected
     boolean inserted = false;
     while (!inserted) {
       try {
-        collection.replaceOne(createFilter("my.prop"), createProp("my.prop", "value2"));
+        collection.replaceOne(createFilter(KEY_1), createProp(KEY_1, VALUE_2));
         inserted = true;
       } catch (MongoNotPrimaryException e) {
         // while the primary is not elected
@@ -211,6 +240,8 @@ class MongoDbStoreIntTest {
     }
 
     // ASSERT
-    await().until(() -> registry.get("my.prop"), equalTo("value2"));
+    // expecting a value update, regardless of the Primary step-down operation
+    // and the change stream having to have been reinitialized
+    await().until(() -> registry.get(KEY_1), equalTo(VALUE_2));
   }
 }

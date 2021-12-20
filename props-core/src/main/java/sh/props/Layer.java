@@ -40,12 +40,13 @@ import sh.props.tuples.Tuple;
  * Wraps a {@link Source} and holds the logic for prioritizing which Source will return the
  * effective value for each requested key.
  */
+@SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName"})
 public class Layer implements Consumer<Map<String, String>> {
 
   protected final String alias;
   final Source source;
   private final Registry registry;
-  private final HashMap<String, String> store = new HashMap<>();
+  private final Map<String, String> store = new HashMap<>();
 
   private final ReentrantLock lock = new ReentrantLock();
   private final int priority;

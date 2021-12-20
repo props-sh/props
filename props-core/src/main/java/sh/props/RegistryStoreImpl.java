@@ -81,7 +81,8 @@ class RegistryStoreImpl implements RegistryStore {
    */
   private static boolean equalInValueButNotLayer(
       Pair<String, Layer> pair, Pair<String, Layer> valueLayer) {
-    return Objects.equals(valueLayer.first, pair.first) && valueLayer.second != pair.second;
+    return Objects.equals(valueLayer.first, pair.first)
+        && !Objects.equals(valueLayer.second, pair.second);
   }
 
   /**

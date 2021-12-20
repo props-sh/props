@@ -36,36 +36,44 @@ import sh.props.textfixtures.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropSyncTest {
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String KEY_3 = "key3";
+  private static final String KEY_4 = "key4";
+  private static final String KEY_5 = "key5";
 
   @Test
   void singlePropTemplate() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key1", "1");
+    source.put(KEY_1, "1");
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
     final var expected = "I am expecting 1";
 
     // ACT
     var templatedProp = TemplatedProp.of("I am expecting %s", prop1);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by a single prop",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
   void pairTemplate() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key1", "1");
-    source.put("key2", "2");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
 
     final var expected = "I am expecting 1 and 2";
 
@@ -73,22 +81,25 @@ class TemplatedPropSyncTest {
     var templatedProp = TemplatedProp.of("I am expecting %s and %s", prop1, prop2);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by two props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
   void tripleTemplate() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
 
     final var expected = "I am expecting 1, 2, and 3";
 
@@ -96,24 +107,27 @@ class TemplatedPropSyncTest {
     var templatedProp = TemplatedProp.of("I am expecting %s, %s, and %s", prop1, prop2, prop3);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by three props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
   void quadTemplate() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
 
     final var expected = "I am expecting 1, 2, 3, and 4";
 
@@ -122,26 +136,29 @@ class TemplatedPropSyncTest {
         TemplatedProp.of("I am expecting %s, %s, %s, and %s", prop1, prop2, prop3, prop4);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by four props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
   void tupleTemplate() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
-    source.put("key5", "5");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
+    source.put(KEY_5, "5");
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
-    var prop5 = registry.bind(new TestIntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
+    var prop5 = registry.bind(new TestIntProp(KEY_5, null));
 
     final var expected = "I am expecting 1, 2, 3, 4, and 5";
 
@@ -151,6 +168,9 @@ class TemplatedPropSyncTest {
             "I am expecting %s, %s, %s, %s, and %s", prop1, prop2, prop3, prop4, prop5);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by five props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 }

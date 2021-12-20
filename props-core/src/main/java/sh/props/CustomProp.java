@@ -43,6 +43,7 @@ import sh.props.exceptions.ValueCannotBeSetException;
  *
  * @param <T> the property's type
  */
+@SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName"})
 public abstract class CustomProp<T> extends BoundableProp<T> implements Converter<T> {
 
   public final String key;

@@ -36,8 +36,16 @@ import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({
+  "NullAway",
+  "PMD.JUnitTestsShouldIncludeAssert"
+}) // PMD doesn't support awaitility
 class PropGroupSyncTest extends AwaitAssertionTest {
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String KEY_3 = "key3";
+  private static final String KEY_4 = "key4";
+  private static final String KEY_5 = "key5";
 
   @Test
   void pair() {
@@ -46,14 +54,14 @@ class PropGroupSyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
 
     var supplier = Group.of(prop1, prop2);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
 
     // ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 2)));
@@ -66,17 +74,17 @@ class PropGroupSyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Group.of(prop1, prop2, prop3);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
 
     // ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 2, 3)));
@@ -89,19 +97,19 @@ class PropGroupSyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Group.of(prop1, prop2, prop3, prop4);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
 
     // ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4)));
@@ -114,21 +122,21 @@ class PropGroupSyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
-    var prop5 = registry.bind(new TestIntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
+    var prop5 = registry.bind(new TestIntProp(KEY_5, null));
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     var supplier = Group.of(prop1, prop2, prop3, prop4, prop5);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
-    source.put("key5", "5");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
+    source.put(KEY_5, "5");
 
     // ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 2, 3, 4, 5)));

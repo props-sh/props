@@ -58,6 +58,7 @@ import sh.props.exceptions.ValueCannotBeReadException;
  * @param <T> the type of the property being refactored
  * @param <R> the type of the new property
  */
+@SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName", "PMD.AvoidFieldNameMatchingTypeName"})
 public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
 
   private final Prop<T> originalProp;
@@ -218,7 +219,7 @@ public class RefactoredProp<T, R> implements Subscribable<R>, Supplier<R> {
     try {
       // the operation succeeded, send a value update
       onUpdate.accept(result.value());
-    } catch (Throwable err) {
+    } catch (Exception err) {
       // the operation failed, send the error to downstream subscribers
       onError.accept(err);
     }
