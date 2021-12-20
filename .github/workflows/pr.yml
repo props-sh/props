@@ -25,8 +25,12 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'eu-west-1'
-        run: ./gradlew build check test integrationTest
+          AWS_REGION: eu-west-1
+        run: |
+          # Build, perform static analysis, run tests
+          ./gradlew build check test integrationTest
+          # Generate the code coverage report
+          ./gradlew jacocoTestReport
 
       - name: Store the build report
         if: always()
@@ -36,11 +40,10 @@ jobs:
           path: ./**/build/reports
           retention-days: 5
 
-      - name: Generate Code Coverage report
+      - name: Upload the Code Coverage report
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          ./gradlew jacocoTestReport
           bash <(curl -s https://codecov.io/bash)
 
       - name: Cleanup Gradle Cache
