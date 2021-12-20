@@ -14,6 +14,7 @@ plugins {
     `maven-publish`
     id("org.sonarqube")
     pmd
+    jacoco
 }
 
 group = project.group
@@ -231,6 +232,47 @@ subprojects {
         ruleSets = listOf(
             "config/pmd/rules.xml",
         )
+    }
+
+    // Code Coverage
+    apply(plugin = "jacoco")
+    jacoco {
+        reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
+    }
+    tasks.test {
+        // run all tests before generating coverage report
+        finalizedBy(tasks.jacocoTestReport)
+    }
+    tasks.named<Test>("integrationTest") {
+        // run all integration tests before generating coverage report
+        finalizedBy(tasks.jacocoTestReport)
+    }
+    tasks.jacocoTestReport {
+        // run tests and integrationTests before generating the coverage report
+        dependsOn(tasks.test) // tests are required to run before generating the report
+        dependsOn(tasks.named<Test>("integrationTest")) // tests are required to run before generating the report
+
+        executionData.setFrom(fileTree(project.buildDir) {
+            include("**/build/jacoco/*.exec")
+        })
+
+        sourceDirectories.setFrom(fileTree(project.projectDir) {
+            include("**/src/main/java")
+        })
+
+        classDirectories.setFrom(fileTree(project.buildDir) {
+            include("classes")
+        })
+
+        reports {
+            xml.required.set(true)
+            xml.outputLocation.set(
+                layout.buildDirectory.file("reports/jacoco/report.xml").get().asFile
+            )
+
+            html.required.set(false)
+            csv.required.set(false)
+        }
     }
 
     // IntelliJ IDE

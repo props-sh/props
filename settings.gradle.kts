@@ -15,6 +15,7 @@ pluginManagement {
         id("me.champeau.jmh").version("0.6.6")
         id("org.sonarqube").version("3.3")
         id("pmd").version("6.41.0")
+        id("jacoco").version("0.8.7")
     }
 }
 

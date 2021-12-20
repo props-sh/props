@@ -36,6 +36,13 @@ jobs:
           path: ./**/build/reports
           retention-days: 5
 
+      - name: Generate Code Coverage report
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          ./gradlew jacocoTestReport
+          bash <(curl -s https://codecov.io/bash)
+
       - name: Cleanup Gradle Cache
         if: always()
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
