@@ -43,7 +43,7 @@ import sh.props.textfixtures.TestErrorOnSetProp;
 import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
-public class PropGroupExceptionTest {
+class PropGroupExceptionTest {
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
   private static final String KEY_3 = "key3";
