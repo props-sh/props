@@ -12,6 +12,7 @@ plugins {
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
     `maven-publish`
+    id("org.sonarqube")
 }
 
 group = project.group
@@ -206,6 +207,15 @@ subprojects {
                 "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
             )
         )
+    }
+
+    // SonarQube
+    sonarqube {
+        properties {
+            setProperty("sonar.projectKey", "props-sh_props")
+            setProperty("sonar.organization", "props-sh")
+            setProperty("sonar.host.url", "https://sonarcloud.io")
+        }
     }
 
     // IntelliJ IDE

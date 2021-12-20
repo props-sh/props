@@ -13,6 +13,7 @@ pluginManagement {
         id("com.diffplug.spotless").version("5.17.1")
         id("net.ltgt.errorprone").version("2.0.2")
         id("me.champeau.jmh").version("0.6.6")
+        id("org.sonarqube").version("3.3")
     }
 }
 
