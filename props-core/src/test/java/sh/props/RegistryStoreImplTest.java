@@ -57,6 +57,8 @@ class RegistryStoreImplTest {
   void tearDown() {}
 
   @Test
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void ensureMultiLayerOperations() {
     // ARRANGE
     InMemory source1 = new InMemory();

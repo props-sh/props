@@ -59,17 +59,20 @@ class SourceDeserializerTest {
 
     // make a copy of file-based properties to a temporary file
     propFile = TestFileUtil.createTempFilePath("-types.properties");
-    InputStream testData =
-        SourceDeserializerTest.class.getResourceAsStream("/source/extended-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
-    Files.copy(testData, propFile);
+    try (InputStream testData =
+        SourceDeserializerTest.class.getResourceAsStream("/source/extended-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // make a copy of the source configuration to a temporary file
     Path configFile = TestFileUtil.createTempFilePath("source-configuration.properties");
-    InputStream configData =
-        SourceDeserializerTest.class.getResourceAsStream("/source/source-configuration.properties");
-    assertThat("Could not find config data, cannot proceed", configData, notNullValue());
-    Files.copy(configData, configFile);
+    try (InputStream configData =
+        SourceDeserializerTest.class.getResourceAsStream(
+            "/source/source-configuration.properties")) {
+      assertThat("Could not find config data, cannot proceed", configData, notNullValue());
+      Files.copy(configData, configFile);
+    }
 
     // append a file-based configuration
     TestFileUtil.appendLine("file=" + propFile, configFile);

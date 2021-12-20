@@ -54,10 +54,6 @@ class RefreshedSourcesTest extends AwaitAssertionTest {
     // ARRANGE
     Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
-    // load existing test properties
-    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
-
     // define the source
     var source = new PropertyFile(propFile);
 
@@ -74,8 +70,12 @@ class RefreshedSourcesTest extends AwaitAssertionTest {
     assertThat(
         "Expecting the key to be null", registry.get(A_BOOLEAN, Cast.asBoolean()), nullValue());
 
-    // copy the properties to a temp file
-    Files.copy(testData, propFile);
+    // load existing test properties and copy them to a temporary file
+    try (InputStream testData =
+        this.getClass().getResourceAsStream("/source/standard-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // and expect the prop to eventually be updated
     await().until(prop::get, equalTo(true));
@@ -85,10 +85,6 @@ class RefreshedSourcesTest extends AwaitAssertionTest {
   void propertyFileWithScheduler() throws IOException {
     // ARRANGE
     Path propFile = TestFileUtil.createTempFilePath("input.properties");
-
-    // load existing test properties
-    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
 
     // define the source
     var source = new PropertyFile(propFile);
@@ -107,8 +103,12 @@ class RefreshedSourcesTest extends AwaitAssertionTest {
     assertThat(
         "Expecting the key to be null", registry.get(A_BOOLEAN, Cast.asBoolean()), nullValue());
 
-    // copy the properties to a temp file
-    Files.copy(testData, propFile);
+    // load existing test properties
+    try (InputStream testData =
+        this.getClass().getResourceAsStream("/source/standard-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // and expect the prop to eventually be updated
     await().until(prop::get, equalTo(true));

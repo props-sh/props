@@ -36,7 +36,10 @@ import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({
+  "NullAway",
+  "PMD.JUnitTestsShouldIncludeAssert"
+}) // PMD doesn't support awaitility
 class PropGroupSyncTest extends AwaitAssertionTest {
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";

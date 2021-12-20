@@ -103,6 +103,7 @@ class RegistryTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't support awaitility
   void propCanBeBoundAndUpdated() {
     // ARRANGE
     InMemory source = new InMemory();
@@ -152,6 +153,7 @@ class RegistryTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't support awaitility
   void propBoundAndReceivesAsyncUpdates() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
@@ -173,6 +175,7 @@ class RegistryTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't support awaitility
   void bindMultipleProps() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);

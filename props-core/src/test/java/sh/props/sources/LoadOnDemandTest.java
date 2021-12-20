@@ -48,16 +48,22 @@ class LoadOnDemandTest extends AwaitAssertionTest {
   private static final String VALUE_3 = "value3";
 
   @RepeatedTest(10)
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void testLoadPropOnDemandSuperFast() {
     internalOnDemandSourceTest(10L);
   }
 
   @RepeatedTest(10)
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void testLoadPropOnDemandFast() {
     internalOnDemandSourceTest(50L);
   }
 
   @Test
+  @SuppressWarnings(
+      "PMD.JUnitTestsShouldIncludeAssert") // PMD doesn't detect assertions in private static helper
   void testLoadPropOnDemandSlow() {
     internalOnDemandSourceTest(500L);
   }

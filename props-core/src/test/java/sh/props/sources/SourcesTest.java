@@ -150,12 +150,12 @@ class SourcesTest extends AwaitAssertionTest {
     // ARRANGE
     Path propFile = TestFileUtil.createTempFilePath("input.properties");
 
-    // load existing test properties
-    InputStream testData = this.getClass().getResourceAsStream("/source/standard-types.properties");
-    assertThat("Could not find test data, cannot proceed", testData, notNullValue());
-
-    // copy the properties to a temp file
-    Files.copy(testData, propFile);
+    // load existing test properties and copy them to a temporary file
+    try (InputStream testData =
+        this.getClass().getResourceAsStream("/source/standard-types.properties")) {
+      assertThat("Could not find test data, cannot proceed", testData, notNullValue());
+      Files.copy(testData, propFile);
+    }
 
     // load the test file
     var source = new PropertyFile(propFile);
