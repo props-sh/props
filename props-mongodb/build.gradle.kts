@@ -18,7 +18,11 @@ dependencies {
 
 // specify the Testcontainers MongoDB container image version to use in integration tests
 tasks.getByName<Test>("integrationTest") {
-    systemProperty("testcontainers:mongodb:version", "mongo:5.0.4-focal")
+    val version = rootProject.testcontainers.versions.org.mongodb.mongo.get()
+    systemProperty(
+        "testcontainers:org.mongodb.mongo",
+        "mongo:${version}"
+    )
 }
 
 // https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:complete_example
