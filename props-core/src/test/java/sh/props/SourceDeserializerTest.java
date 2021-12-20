@@ -46,7 +46,7 @@ import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestFileUtil;
 import sh.props.textfixtures.TestSource;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class SourceDeserializerTest {
   static Path propFile;
   static Source[] sources;

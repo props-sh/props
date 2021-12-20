@@ -42,7 +42,7 @@ import sh.props.textfixtures.TestErrorOnGetProp;
 import sh.props.textfixtures.TestErrorOnSetProp;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 public class PropGroupExceptionTest {
 
   @Test

@@ -38,7 +38,7 @@ import sh.props.sources.InMemory;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestIntProp;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class RegistryTest extends AwaitAssertionTest {
 
   @Test

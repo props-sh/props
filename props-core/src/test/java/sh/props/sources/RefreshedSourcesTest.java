@@ -45,6 +45,7 @@ import sh.props.custom.BooleanProp;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestFileUtil;
 
+@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 public class RefreshedSourcesTest extends AwaitAssertionTest {
 
   @Test

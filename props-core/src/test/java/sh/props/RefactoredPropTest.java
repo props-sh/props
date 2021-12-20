@@ -49,7 +49,7 @@ import sh.props.textfixtures.TestErrorOnSetProp;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.textfixtures.TestStringProp;
 
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class RefactoredPropTest extends AwaitAssertionTest {
 
   @Test
