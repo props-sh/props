@@ -237,17 +237,6 @@ subprojects {
     // Code Coverage
     // https://docs.gradle.org/current/userguide/jacoco_plugin.html
     apply(plugin = "jacoco")
-    jacoco {
-        reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
-    }
-    tasks.test {
-        // run all tests before generating coverage report
-        finalizedBy(tasks.jacocoTestReport)
-    }
-    tasks.named<Test>("integrationTest") {
-        // run all integration tests before generating coverage report
-        finalizedBy(tasks.jacocoTestReport)
-    }
     tasks.jacocoTestReport {
         // run tests and integrationTests before generating the coverage report
         dependsOn(tasks.test) // tests are required to run before generating the report
