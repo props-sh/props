@@ -24,6 +24,7 @@ buildscript {
         // mavenLocal()
         mavenCentral()
     }
+
     dependencies {
         "classpath"(
             group = "com.google.googlejavaformat",
@@ -31,11 +32,22 @@ buildscript {
             version = "1.13.0"
         )
     }
+
     allprojects {
         repositories {
             // uncomment if you need to use the local Maven cache
             // mavenLocal()
         }
+    }
+}
+
+
+// SonarQube
+sonarqube {
+    properties {
+        property("sonar.projectKey", "props-sh_props")
+        property("sonar.organization", "props-sh")
+        property("sonar.host.url", "https://sonarcloud.io")
     }
 }
 
@@ -207,15 +219,6 @@ subprojects {
                 "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED"
             )
         )
-    }
-
-    // SonarQube
-    sonarqube {
-        properties {
-            setProperty("sonar.projectKey", "props-sh_props")
-            setProperty("sonar.organization", "props-sh")
-            setProperty("sonar.host.url", "https://sonarcloud.io")
-        }
     }
 
     // IntelliJ IDE

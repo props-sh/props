@@ -8,7 +8,7 @@ git stash --keep-index --include-untracked | grep -vi "No local changes to save"
 STASHED=$?
 
 # run all checks before committing
-./gradlew check
+./gradlew check -x sonarqube
 RESULT=$?
 
 # unstash any stashed changes
