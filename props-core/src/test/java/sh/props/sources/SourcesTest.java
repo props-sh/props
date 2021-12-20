@@ -47,6 +47,8 @@ import sh.props.textfixtures.TestFileUtil;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class SourcesTest extends AwaitAssertionTest {
+  private static final String KEY = "key";
+  private static final String A_BOOLEAN = "a.boolean";
 
   @Test
   void classpathPropertyFile() {
@@ -55,7 +57,7 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    Boolean value = registry.get("a.boolean", Cast.asBoolean());
+    Boolean value = registry.get(A_BOOLEAN, Cast.asBoolean());
 
     // ASSERT
     assertThat(value, equalTo(true));
@@ -87,7 +89,7 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    Boolean value = registry.get("key", Cast.asBoolean());
+    Boolean value = registry.get(KEY, Cast.asBoolean());
 
     // ASSERT
     assertThat(value, nullValue());
@@ -100,8 +102,8 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    source.put("key", "true");
-    Boolean value = registry.get("key", Cast.asBoolean());
+    source.put(KEY, "true");
+    Boolean value = registry.get(KEY, Cast.asBoolean());
 
     // ASSERT
     assertThat(value, equalTo(true));
@@ -113,11 +115,11 @@ class SourcesTest extends AwaitAssertionTest {
     var source = new InMemory(UPDATE_REGISTRY_MANUALLY);
     var registry = new RegistryBuilder(source).build();
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    BooleanProp prop = registry.bind(new BooleanProp("key"));
+    BooleanProp prop = registry.bind(new BooleanProp(KEY));
 
     // ACT
-    source.put("key", "true");
-    assertThat(registry.get("key"), nullValue());
+    source.put(KEY, "true");
+    assertThat(registry.get(KEY), nullValue());
 
     // ASSERT
     source.refresh();
@@ -160,7 +162,7 @@ class SourcesTest extends AwaitAssertionTest {
     var registry = new RegistryBuilder(source).build();
 
     // ACT
-    Boolean value = registry.get("a.boolean", Cast.asBoolean());
+    Boolean value = registry.get(A_BOOLEAN, Cast.asBoolean());
 
     // ASSERT
     assertThat(value, equalTo(true));

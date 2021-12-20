@@ -38,6 +38,7 @@ import sh.props.sources.InMemory;
 
 @SuppressWarnings("NullAway")
 class RegistryStoreImplTest {
+  private static final String KEY = "key";
 
   private static void assertValueIs(String result, String value) {
     if (value == null) {
@@ -66,41 +67,41 @@ class RegistryStoreImplTest {
     // ACT/ASSERT
 
     // the value is not defined yet
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), null);
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), null);
 
     // Layer 1 defines v1
-    source1.put("key", "v1");
+    source1.put(KEY, "v1");
     source1.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), "v1");
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), "v1");
 
     // Layer 2 defines v2
-    source2.put("key", "v2");
+    source2.put(KEY, "v2");
     source2.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), "v2");
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), "v2");
 
     // Layer 1 unsets v1
-    source1.remove("key");
+    source1.remove(KEY);
     source1.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), "v2");
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), "v2");
 
     // Layer 1 defines v3
-    source1.put("key", "v3");
+    source1.put(KEY, "v3");
     source1.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), "v2");
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), "v2");
 
     // Layer 2 updates v4
-    source2.put("key", "v4");
+    source2.put(KEY, "v4");
     source2.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), "v4");
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), "v4");
 
     // Layer 2 unsets v4
-    source2.remove("key");
+    source2.remove(KEY);
     source2.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), "v3");
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), "v3");
 
     // Layer 1 unsets v3
-    source1.remove("key");
+    source1.remove(KEY);
     source1.refresh();
-    RegistryStoreImplTest.assertValueIs(registry.get("key", Cast.asString()), null);
+    RegistryStoreImplTest.assertValueIs(registry.get(KEY, Cast.asString()), null);
   }
 }

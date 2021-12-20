@@ -38,6 +38,11 @@ import sh.props.textfixtures.TestIntProp;
 
 @SuppressWarnings("NullAway")
 class TemplatedPropAsyncTest {
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String KEY_3 = "key3";
+  private static final String KEY_4 = "key4";
+  private static final String KEY_5 = "key5";
 
   @Test
   void singlePropTemplate() {
@@ -48,14 +53,14 @@ class TemplatedPropAsyncTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
     var templatedProp = TemplatedProp.of("I am expecting %s", prop1);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
+    source.put(KEY_1, "1");
 
     // ASSERT
     verify(consumer, timeout(1_000)).accept(expected);
@@ -70,16 +75,16 @@ class TemplatedPropAsyncTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
     var templatedProp = TemplatedProp.of("I am expecting %s and %s", prop1, prop2);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
 
     // ASSERT
     verify(consumer, timeout(3_000)).accept(expected);
@@ -94,18 +99,18 @@ class TemplatedPropAsyncTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
     var templatedProp = TemplatedProp.of("I am expecting %s, %s, and %s", prop1, prop2, prop3);
 
     DummyConsumer<String> consumer = spy(new DummyConsumer<>());
     templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
 
     // ASSERT
     verify(consumer, timeout(1_000)).accept(expected);
@@ -120,10 +125,10 @@ class TemplatedPropAsyncTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
     var templatedProp =
         TemplatedProp.of("I am expecting %s, %s, %s, and %s", prop1, prop2, prop3, prop4);
 
@@ -131,10 +136,10 @@ class TemplatedPropAsyncTest {
     templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
 
     // ASSERT
     verify(consumer, timeout(1_000)).accept(expected);
@@ -149,11 +154,11 @@ class TemplatedPropAsyncTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
-    var prop5 = registry.bind(new TestIntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
+    var prop5 = registry.bind(new TestIntProp(KEY_5, null));
     var templatedProp =
         TemplatedProp.of(
             "I am expecting %s, %s, %s, %s, and %s", prop1, prop2, prop3, prop4, prop5);
@@ -162,11 +167,11 @@ class TemplatedPropAsyncTest {
     templatedProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
-    source.put("key5", "5");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
+    source.put(KEY_5, "5");
 
     // ASSERT
     verify(consumer, timeout(1_000)).accept(expected);

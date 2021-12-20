@@ -47,6 +47,7 @@ import sh.props.textfixtures.TestFileUtil;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 public class RefreshedSourcesTest extends AwaitAssertionTest {
+  private static final String A_BOOLEAN = "a.boolean";
 
   @Test
   void propertyFileWithFileWatcher() throws IOException {
@@ -63,7 +64,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     // initialize the registry and bind a prop
     var registry = new RegistryBuilder(source).build();
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
+    BooleanProp prop = registry.bind(new BooleanProp(A_BOOLEAN));
 
     // ACT / ASSERT
 
@@ -71,7 +72,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     FileWatchSvc.instance().refreshOnChanges(source);
 
     assertThat(
-        "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
+        "Expecting the key to be null", registry.get(A_BOOLEAN, Cast.asBoolean()), nullValue());
 
     // copy the properties to a temp file
     Files.copy(testData, propFile);
@@ -95,7 +96,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     // initialize the registry and bind a prop
     var registry = new RegistryBuilder(source).build();
     @SuppressWarnings("VariableDeclarationUsageDistance")
-    BooleanProp prop = registry.bind(new BooleanProp("a.boolean"));
+    BooleanProp prop = registry.bind(new BooleanProp(A_BOOLEAN));
 
     // ACT / ASSERT
 
@@ -104,7 +105,7 @@ public class RefreshedSourcesTest extends AwaitAssertionTest {
     Scheduler.instance().refreshEagerly(source, interval);
 
     assertThat(
-        "Expecting the key to be null", registry.get("a.boolean", Cast.asBoolean()), nullValue());
+        "Expecting the key to be null", registry.get(A_BOOLEAN, Cast.asBoolean()), nullValue());
 
     // copy the properties to a temp file
     Files.copy(testData, propFile);

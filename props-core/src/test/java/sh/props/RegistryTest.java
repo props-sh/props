@@ -40,36 +40,39 @@ import sh.props.textfixtures.TestIntProp;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class RegistryTest extends AwaitAssertionTest {
+  private static final String KEY = "key";
+  private static final String VALUE_1 = "value1";
+  private static final String VALUE_2 = "value2";
 
   @Test
   void updateValue() {
     // ARRANGE
     InMemory source = new InMemory();
-    source.put("key", "value");
+    source.put(KEY, VALUE_1);
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    source.put("key", "value2");
+    source.put(KEY, VALUE_2);
     source.refresh();
 
     // ASSERT
-    assertThat(registry.get("key", Cast.asString()), equalTo("value2"));
+    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_2));
   }
 
   @Test
   void updateValueButNotSubscribers() {
     // ARRANGE
     InMemory source = new InMemory();
-    source.put("key", "value");
+    source.put(KEY, VALUE_1);
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    source.put("key", "value2");
+    source.put(KEY, VALUE_2);
 
     // ASSERT
-    assertThat(registry.get("key", Cast.asString()), equalTo("value"));
+    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_1));
   }
 
   @Test
@@ -87,12 +90,12 @@ class RegistryTest extends AwaitAssertionTest {
   void propCanBeBoundAndItsValueIsSet() {
     // ARRANGE
     InMemory source = new InMemory();
-    source.put("key", "1");
+    source.put(KEY, "1");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = new TestIntProp("key", null);
+    var prop = new TestIntProp(KEY, null);
     registry.bind(prop);
 
     // ASSERT
@@ -103,15 +106,15 @@ class RegistryTest extends AwaitAssertionTest {
   void propCanBeBoundAndUpdated() {
     // ARRANGE
     InMemory source = new InMemory();
-    source.put("key", "1");
+    source.put(KEY, "1");
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop = new TestIntProp("key", null);
+    var prop = new TestIntProp(KEY, null);
     registry.bind(prop);
 
     // ACT
-    source.put("key", "2");
+    source.put(KEY, "2");
     source.refresh();
 
     // ASSERT
@@ -122,30 +125,30 @@ class RegistryTest extends AwaitAssertionTest {
   void autoUpdated() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "value");
+    source.put(KEY, VALUE_1);
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    source.put("key", "value2");
+    source.put(KEY, VALUE_2);
 
     // ASSERT
-    assertThat(registry.get("key", Cast.asString()), equalTo("value2"));
+    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_2));
   }
 
   @Test
   void manuallyUpdated() {
     // ARRANGE
     InMemory source = new InMemory();
-    source.put("key", "value");
+    source.put(KEY, VALUE_1);
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    source.put("key", "value2");
+    source.put(KEY, VALUE_2);
 
     // ASSERT
-    assertThat(registry.get("key", Cast.asString()), equalTo("value"));
+    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_1));
   }
 
   @Test
@@ -157,13 +160,13 @@ class RegistryTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop = new TestIntProp("key", null);
+    var prop = new TestIntProp(KEY, null);
     registry.bind(prop);
 
     prop.subscribe(localValue::set, (ignored) -> {});
 
     // ACT
-    source.put("key", "2");
+    source.put(KEY, "2");
 
     // ASSERT
     await().until(localValue::get, equalTo(2));
@@ -177,17 +180,17 @@ class RegistryTest extends AwaitAssertionTest {
     Registry registry = new RegistryBuilder(source).build();
 
     AtomicInteger localValue1 = new AtomicInteger(0);
-    var prop1 = new TestIntProp("key", null);
+    var prop1 = new TestIntProp(KEY, null);
     registry.bind(prop1);
     prop1.subscribe(localValue1::set, (ignored) -> {});
 
     AtomicInteger localValue2 = new AtomicInteger(0);
-    var prop2 = new TestIntProp("key", null);
+    var prop2 = new TestIntProp(KEY, null);
     registry.bind(prop2);
     prop2.subscribe(localValue2::set, (ignored) -> {});
 
     // ACT
-    source.put("key", "2");
+    source.put(KEY, "2");
 
     // ASSERT
     await().until(localValue1::get, equalTo(2));
@@ -201,12 +204,12 @@ class RegistryTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop = registry.builder(Cast.asInteger()).defaultValue(1).build("key");
+    var prop = registry.builder(Cast.asInteger()).defaultValue(1).build(KEY);
 
     // ACT / ASSERT
     assertThat(prop.get(), equalTo(1));
 
-    source.put("key", "2");
+    source.put(KEY, "2");
     await().until(prop::get, equalTo(2));
   }
 
@@ -218,17 +221,15 @@ class RegistryTest extends AwaitAssertionTest {
     var registry =
         new RegistryBuilder().withSource(source1, "mem1").withSource(source2, "mem2").build();
 
-    source1.put("key", "1");
-    source2.put("key", "2");
+    source1.put(KEY, "1");
+    source2.put(KEY, "2");
 
     // ACT // ASSERT
-    assertThat("Effective value expected", registry.get("key", Cast.asInteger()), equalTo(2));
-    assertThat("Effective value expected", registry.get("key", Cast.asInteger(), null), equalTo(2));
+    assertThat("Effective value expected", registry.get(KEY, Cast.asInteger()), equalTo(2));
+    assertThat("Effective value expected", registry.get(KEY, Cast.asInteger(), null), equalTo(2));
 
-    assertThat(
-        "Value from mem1 expected", registry.get("key", Cast.asInteger(), "mem1"), equalTo(1));
-    assertThat(
-        "Value from mem2 expected", registry.get("key", Cast.asInteger(), "mem2"), equalTo(2));
+    assertThat("Value from mem1 expected", registry.get(KEY, Cast.asInteger(), "mem1"), equalTo(1));
+    assertThat("Value from mem2 expected", registry.get(KEY, Cast.asInteger(), "mem2"), equalTo(2));
   }
 
   @Test
@@ -237,7 +238,7 @@ class RegistryTest extends AwaitAssertionTest {
     var source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
     var registry = new RegistryBuilder().withSource(source, "mem").build();
 
-    source.put("key", "1");
+    source.put(KEY, "1");
 
     // ACT // ASSERT
     Assertions.assertThrows(

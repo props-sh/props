@@ -44,6 +44,9 @@ import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 public class PropGroupExceptionTest {
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String KEY_3 = "key3";
 
   @Test
   void pair() {
@@ -52,25 +55,25 @@ public class PropGroupExceptionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestErrorOnGetProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
+    var prop1 = registry.bind(new TestErrorOnGetProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnGetProp(KEY_2, null));
 
     AtomicReference<Throwable> capture = new AtomicReference<>();
     var supplier = Group.of(prop1, prop2);
     supplier.subscribe(ignore -> {}, capture::set);
 
-    source.put("key1", "1");
-    source.put("key2", "1");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "1");
 
     // ACT / ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 1)));
 
-    source.put("key1", "2");
+    source.put(KEY_1, "2");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(2)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(2)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
 
-    source.put("key2", "3");
+    source.put(KEY_2, "3");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(3)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(3)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
@@ -83,25 +86,25 @@ public class PropGroupExceptionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestErrorOnSetProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnSetProp("key2", null));
+    var prop1 = registry.bind(new TestErrorOnSetProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnSetProp(KEY_2, null));
 
     AtomicReference<Throwable> capture = new AtomicReference<>();
     var supplier = Group.of(prop1, prop2);
     supplier.subscribe(ignore -> {}, capture::set);
 
-    source.put("key1", "1");
-    source.put("key2", "1");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "1");
 
     // ACT / ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 1)));
 
-    source.put("key2", "2");
+    source.put(KEY_2, "2");
     await().until(capture::get, hasExceptionMessage(TestErrorOnSetProp.errorMessage(2)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnSetProp.errorMessage(2)));
     assertThrows(ValueCannotBeSetException.class, supplier::get);
 
-    source.put("key1", "3");
+    source.put(KEY_1, "3");
     await().until(capture::get, hasExceptionMessage(TestErrorOnSetProp.errorMessage(3)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnSetProp.errorMessage(3)));
     assertThrows(ValueCannotBeSetException.class, supplier::get);
@@ -114,32 +117,32 @@ public class PropGroupExceptionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestErrorOnGetProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
-    var prop3 = registry.bind(new TestErrorOnGetProp("key3", null));
+    var prop1 = registry.bind(new TestErrorOnGetProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnGetProp(KEY_2, null));
+    var prop3 = registry.bind(new TestErrorOnGetProp(KEY_3, null));
 
     AtomicReference<Throwable> capture = new AtomicReference<>();
     var supplier = Group.of(prop1, prop2, prop3);
     supplier.subscribe(ignore -> {}, capture::set);
 
-    source.put("key1", "1");
-    source.put("key2", "1");
-    source.put("key3", "1");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "1");
+    source.put(KEY_3, "1");
 
     // ACT / ASSERT
     await().until(supplier::get, equalTo(Tuple.of(1, 1, 1)));
 
-    source.put("key1", "2");
+    source.put(KEY_1, "2");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(2)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(2)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
 
-    source.put("key2", "3");
+    source.put(KEY_2, "3");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(3)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(3)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
 
-    source.put("key3", "4");
+    source.put(KEY_3, "4");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(4)));
     assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(4)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);

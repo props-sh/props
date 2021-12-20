@@ -48,6 +48,8 @@ import sh.props.textfixtures.TestSource;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class SourceDeserializerTest {
+
+  public static final String A_DURATION = "a.duration";
   static Path propFile;
   static Source[] sources;
 
@@ -90,7 +92,7 @@ class SourceDeserializerTest {
         equalTo(1L));
     assertThat(
         "Expecting the prop to be overwritten via extended-types.properties",
-        registry.get("a.duration", Cast.asDuration()),
+        registry.get(A_DURATION, Cast.asDuration()),
         equalTo(Duration.ofDays(2)));
   }
 
@@ -125,13 +127,13 @@ class SourceDeserializerTest {
 
     assertThat(
         "Expecting a value from extended-types.properties",
-        registry.get("a.duration", Cast.asDuration()),
+        registry.get(A_DURATION, Cast.asDuration()),
         equalTo(Duration.ofDays(2)));
 
-    source.put("a.duration", "P3D");
+    source.put(A_DURATION, "P3D");
     assertThat(
         "Expecting a value from memory",
-        registry.get("a.duration", Cast.asDuration()),
+        registry.get(A_DURATION, Cast.asDuration()),
         equalTo(Duration.ofDays(3)));
   }
 
@@ -170,7 +172,7 @@ class SourceDeserializerTest {
         equalTo(1L));
     assertThat(
         "Expecting the prop to be overwritten via extended-types.properties",
-        registry.get("a.duration", Cast.asDuration()),
+        registry.get(A_DURATION, Cast.asDuration()),
         equalTo(Duration.ofDays(2)));
   }
 

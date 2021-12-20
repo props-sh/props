@@ -46,7 +46,12 @@ import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "checkstyle:VariableDeclarationUsageDistance"})
 public class PropGroupAsyncTest extends AwaitAssertionTest {
-  public static final int HOW_MANY_TIMES = 10;
+  private static final int HOW_MANY_TIMES = 10;
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
+  private static final String KEY_3 = "key3";
+  private static final String KEY_4 = "key4";
+  private static final String KEY_5 = "key5";
 
   @RepeatedTest(value = HOW_MANY_TIMES)
   void pair() {
@@ -55,8 +60,8 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
 
     StoreAllValuesConsumer<Pair<Integer, Integer>> consumer = spy(new StoreAllValuesConsumer<>());
     var prop = Group.of(prop1, prop2);
@@ -65,14 +70,14 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
     var expected = Tuple.of(1, 2);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
 
     // ASSERT
     await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    assertThat("Last notification should be a complete pair", last, equalTo(expected));
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
@@ -82,9 +87,9 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
 
     StoreAllValuesConsumer<Triple<Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());
@@ -94,15 +99,15 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
     var expected = Tuple.of(1, 2, 3);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
 
     // ASSERT
     await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    assertThat("Last notification should be a complete triple", last, equalTo(expected));
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
@@ -112,10 +117,10 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
 
     StoreAllValuesConsumer<Quad<Integer, Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());
@@ -125,16 +130,16 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
     var expected = Tuple.of(1, 2, 3, 4);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
 
     // ASSERT
     await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    assertThat("Last notification should be a complete quad", last, equalTo(expected));
   }
 
   @RepeatedTest(value = HOW_MANY_TIMES)
@@ -144,11 +149,11 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestIntProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
-    var prop3 = registry.bind(new TestIntProp("key3", null));
-    var prop4 = registry.bind(new TestIntProp("key4", null));
-    var prop5 = registry.bind(new TestIntProp("key5", null));
+    var prop1 = registry.bind(new TestIntProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
+    var prop3 = registry.bind(new TestIntProp(KEY_3, null));
+    var prop4 = registry.bind(new TestIntProp(KEY_4, null));
+    var prop5 = registry.bind(new TestIntProp(KEY_5, null));
 
     StoreAllValuesConsumer<Quintuple<Integer, Integer, Integer, Integer, Integer>> consumer =
         spy(new StoreAllValuesConsumer<>());
@@ -158,16 +163,16 @@ public class PropGroupAsyncTest extends AwaitAssertionTest {
     var expected = Tuple.of(1, 2, 3, 4, 5);
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
-    source.put("key3", "3");
-    source.put("key4", "4");
-    source.put("key5", "5");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
+    source.put(KEY_3, "3");
+    source.put(KEY_4, "4");
+    source.put(KEY_5, "5");
 
     // ASSERT
     await().until(consumer::get, hasItem(expected));
 
     var last = consumer.getLast();
-    assertThat("Last notification should be a complete value", last, equalTo(expected));
+    assertThat("Last notification should be a complete quintuple", last, equalTo(expected));
   }
 }

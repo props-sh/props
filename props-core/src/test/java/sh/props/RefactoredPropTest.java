@@ -51,6 +51,8 @@ import sh.props.textfixtures.TestStringProp;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class RefactoredPropTest extends AwaitAssertionTest {
+  private static final String KEY_1 = "key1";
+  private static final String KEY_2 = "key2";
 
   @Test
   void valueIsReturnedFromRefactoredProp() {
@@ -59,8 +61,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestStringProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
 
     DummyConsumer<Integer> initialized = spy(new DummyConsumer<>());
     prop2.subscribe(initialized, (ignore) -> {});
@@ -71,8 +73,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
     refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
-    source.put("key2", "2");
+    source.put(KEY_1, "1");
+    source.put(KEY_2, "2");
 
     // wait until the second prop is initialized
     verify(initialized, timeout(1_000)).accept(2);
@@ -92,8 +94,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestStringProp("key1", null));
-    var prop2 = registry.bind(new TestIntProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp(KEY_1, null));
+    var prop2 = registry.bind(new TestIntProp(KEY_2, null));
 
     DummyConsumer<Integer> consumer = spy(new DummyConsumer<>());
     var refactoredProp = new RefactoredProp<>(prop1, prop2, Integer::parseInt);
@@ -101,7 +103,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
     refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
+    source.put(KEY_1, "1");
 
     // ASSERT
     verify(consumer, timeout(1_000)).accept(1);
@@ -118,8 +120,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestStringProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnGetProp(KEY_2, null));
 
     DummyConsumer<Throwable> errorReceived = spy(new DummyConsumer<>());
     prop2.subscribe((ignore) -> {}, errorReceived);
@@ -131,10 +133,10 @@ class RefactoredPropTest extends AwaitAssertionTest {
     supplier.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key1", "1");
+    source.put(KEY_1, "1");
     await().until(prop1::get, equalTo("1"));
 
-    source.put("key2", "2");
+    source.put(KEY_2, "2");
     // wait until the second prop is initialized
     verify(errorReceived, timeout(1_000)).accept(any());
 
@@ -152,8 +154,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestStringProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnGetProp(KEY_2, null));
 
     DummyConsumer<Throwable> errorReceived = spy(new DummyConsumer<>());
     prop2.subscribe((ignore) -> {}, errorReceived);
@@ -164,7 +166,7 @@ class RefactoredPropTest extends AwaitAssertionTest {
     refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key2", "2");
+    source.put(KEY_2, "2");
     // wait until the second prop is initialized
     verify(errorReceived, timeout(1_000)).accept(any());
 
@@ -181,8 +183,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestStringProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
+    var prop1 = registry.bind(new TestStringProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnGetProp(KEY_2, null));
 
     DummyConsumer<Throwable> errorReceived = spy(new DummyConsumer<>());
     prop2.subscribe((ignore) -> {}, errorReceived);
@@ -194,11 +196,11 @@ class RefactoredPropTest extends AwaitAssertionTest {
     refactoredProp.subscribe(consumer, (ignore) -> {});
 
     // ACT
-    source.put("key2", "2");
+    source.put(KEY_2, "2");
     // wait until the second prop is initialized
     verify(errorReceived, timeout(1_000)).accept(any());
 
-    source.put("key1", "1");
+    source.put(KEY_1, "1");
 
     // ASSERT
     Assertions.assertThrows(ValueCannotBeReadException.class, prop2::get);
@@ -212,8 +214,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop1 = registry.bind(new TestErrorOnSetProp("key1", null));
-    var prop2 = registry.bind(new TestErrorOnGetProp("key2", null));
+    var prop1 = registry.bind(new TestErrorOnSetProp(KEY_1, null));
+    var prop2 = registry.bind(new TestErrorOnGetProp(KEY_2, null));
 
     AtomicReference<Throwable> errorCapture1 = new AtomicReference<>();
     prop1.subscribe(ignored -> {}, errorCapture1::set);
@@ -228,8 +230,8 @@ class RefactoredPropTest extends AwaitAssertionTest {
 
     // ACT
     // initialize both keys in error state
-    source.put("key1", "2");
-    source.put("key2", "3");
+    source.put(KEY_1, "2");
+    source.put(KEY_2, "3");
 
     // ASSERT
     await().until(errorCapture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(3)));

@@ -44,6 +44,7 @@ import sh.props.textfixtures.TestErrorOnSetProp;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class CustomPropTest {
+  private static final String KEY = "key";
 
   @Test
   void secretProp() {
@@ -56,7 +57,7 @@ class CustomPropTest {
         new CustomPropBuilder<>(registry, Cast.asString())
             .defaultValue("A_SECRET")
             .secret(true)
-            .build("key");
+            .build(KEY);
 
     // ACT / ASSERT
     assertThat(prop.get(), equalTo("A_SECRET"));
@@ -71,9 +72,7 @@ class CustomPropTest {
     Registry registry = new RegistryBuilder(source).build();
 
     var prop =
-        new CustomPropBuilder<>(registry, Cast.asString())
-            .description("a_description")
-            .build("key");
+        new CustomPropBuilder<>(registry, Cast.asString()).description("a_description").build(KEY);
 
     // ACT / ASSERT
     assertThat(prop.description(), equalTo("a_description"));
@@ -86,12 +85,12 @@ class CustomPropTest {
 
     Registry registry = new RegistryBuilder(source).build();
 
-    var prop = new CustomPropBuilder<>(registry, Cast.asString()).required(true).build("key");
+    var prop = new CustomPropBuilder<>(registry, Cast.asString()).required(true).build(KEY);
 
     // ACT / ASSERT
     assertThrows(ValueCannotBeReadException.class, prop::get);
 
-    source.put("key", "value");
+    source.put(KEY, "value");
     await().until(prop::get, equalTo("value"));
   }
 
@@ -105,13 +104,13 @@ class CustomPropTest {
 
     AtomicReference<Throwable> capture = new AtomicReference<>();
 
-    var prop = registry.bind(new TestErrorOnSetProp("key", 0));
+    var prop = registry.bind(new TestErrorOnSetProp(KEY, 0));
     prop.subscribe((ignore) -> {}, capture::set);
 
     // ACT / ASSERT
     assertThat(prop.get(), equalTo(0));
 
-    source.put("key", "2");
+    source.put(KEY, "2");
     await().until(capture::get, instanceOf(ValueCannotBeSetException.class));
   }
 }

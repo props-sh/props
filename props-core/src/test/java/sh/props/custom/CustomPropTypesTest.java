@@ -43,18 +43,19 @@ import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestFileUtil;
 
 @SuppressWarnings("NullAway")
-class CustomPropsTest {
+class CustomPropTypesTest {
+  private static final String KEY = "key";
 
   @Test
   void booleanProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "true");
+    source.put(KEY, "true");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new BooleanProp("key"));
+    var prop = registry.bind(new BooleanProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(true));
@@ -64,12 +65,12 @@ class CustomPropsTest {
   void chronoUnitProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "HALF_DAYS");
+    source.put(KEY, "HALF_DAYS");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ChronoUnitProp("key"));
+    var prop = registry.bind(new ChronoUnitProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(ChronoUnit.HALF_DAYS));
@@ -79,12 +80,12 @@ class CustomPropsTest {
   void dateProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "2007-12-03T10:15:30.010+01:00");
+    source.put(KEY, "2007-12-03T10:15:30.010+01:00");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new DateProp("key"));
+    var prop = registry.bind(new DateProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Date.from(Instant.ofEpochMilli(1_196_673_330_010L))));
@@ -94,12 +95,12 @@ class CustomPropsTest {
   void doubleProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "3.14d");
+    source.put(KEY, "3.14d");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new DoubleProp("key"));
+    var prop = registry.bind(new DoubleProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(3.14d));
@@ -109,12 +110,12 @@ class CustomPropsTest {
   void durationProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "PT3H25M45S");
+    source.put(KEY, "PT3H25M45S");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new DurationProp("key"));
+    var prop = registry.bind(new DurationProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Duration.ofSeconds(12345)));
@@ -124,12 +125,12 @@ class CustomPropsTest {
   void floatProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "3.14f");
+    source.put(KEY, "3.14f");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new FloatProp("key"));
+    var prop = registry.bind(new FloatProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(3.14f));
@@ -139,12 +140,12 @@ class CustomPropsTest {
   void instantProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "2007-12-03T10:15:30.010+01:00");
+    source.put(KEY, "2007-12-03T10:15:30.010+01:00");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new InstantProp("key"));
+    var prop = registry.bind(new InstantProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Instant.ofEpochMilli(1_196_673_330_010L)));
@@ -154,12 +155,12 @@ class CustomPropsTest {
   void integerProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "123");
+    source.put(KEY, "123");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new IntegerProp("key"));
+    var prop = registry.bind(new IntegerProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(123));
@@ -169,12 +170,12 @@ class CustomPropsTest {
   void listOfDoublesProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "1d,2d");
+    source.put(KEY, "1d,2d");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfDoublesProp("key"));
+    var prop = registry.bind(new ListOfDoublesProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1d, 2d)));
@@ -184,12 +185,12 @@ class CustomPropsTest {
   void listOfFloatsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "1f,2f");
+    source.put(KEY, "1f,2f");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfFloatsProp("key"));
+    var prop = registry.bind(new ListOfFloatsProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1f, 2f)));
@@ -199,12 +200,12 @@ class CustomPropsTest {
   void listOfIntegersProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "1,2,3");
+    source.put(KEY, "1,2,3");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfIntegersProp("key"));
+    var prop = registry.bind(new ListOfIntegersProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1, 2, 3)));
@@ -214,12 +215,12 @@ class CustomPropsTest {
   void listOfLongsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "1L,2L,3L");
+    source.put(KEY, "1L,2L,3L");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfLongsProp("key"));
+    var prop = registry.bind(new ListOfLongsProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of(1L, 2L, 3L)));
@@ -229,12 +230,12 @@ class CustomPropsTest {
   void listOfLongsPropWithSpaces() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", " 1L, 2L ,3L ");
+    source.put(KEY, " 1L, 2L ,3L ");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfLongsProp("key"));
+    var prop = registry.bind(new ListOfLongsProp(KEY));
 
     // ASSERT
     assertThat(
@@ -247,12 +248,12 @@ class CustomPropsTest {
   void listOfStringsProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "one,two");
+    source.put(KEY, "one,two");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new ListOfStringsProp("key"));
+    var prop = registry.bind(new ListOfStringsProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(List.of("one", "two")));
@@ -262,12 +263,12 @@ class CustomPropsTest {
   void longProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "123456789012L");
+    source.put(KEY, "123456789012L");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new LongProp("key"));
+    var prop = registry.bind(new LongProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(123456789012L));
@@ -277,12 +278,12 @@ class CustomPropsTest {
   void numericDurationProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "123456789012L");
+    source.put(KEY, "123456789012L");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new NumericDurationProp("key"));
+    var prop = registry.bind(new NumericDurationProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(Duration.of(123456789012L, ChronoUnit.SECONDS)));
@@ -294,12 +295,12 @@ class CustomPropsTest {
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
     Path tempFile = TestFileUtil.createTempFilePath("input.properties");
-    source.put("key", tempFile.toString());
+    source.put(KEY, tempFile.toString());
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new PathProp("key"));
+    var prop = registry.bind(new PathProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo(tempFile));
@@ -309,12 +310,12 @@ class CustomPropsTest {
   void stringProp() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
-    source.put("key", "a string");
+    source.put(KEY, "a string");
 
     Registry registry = new RegistryBuilder(source).build();
 
     // ACT
-    var prop = registry.bind(new StringProp("key"));
+    var prop = registry.bind(new StringProp(KEY));
 
     // ASSERT
     assertThat(prop.get(), equalTo("a string"));
