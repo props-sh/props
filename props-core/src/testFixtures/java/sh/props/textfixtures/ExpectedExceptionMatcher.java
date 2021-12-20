@@ -31,6 +31,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 /** Hamcrest matcher for testing that a {@link Throwable} contains the expected error message. */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class ExpectedExceptionMatcher extends TypeSafeMatcher<Throwable> {
   private final String message;
 

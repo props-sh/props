@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import sh.props.annotations.Nullable;
 
 /** Test-only implementation. */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class StoreAllValuesConsumer<T> implements Consumer<T> {
 
   private final LinkedHashSet<T> store = new LinkedHashSet<>();
