@@ -1,5 +1,7 @@
 # props: A library for reading layered application settings in Java
 
+[![Known Vulnerabilities](https://snyk.io/test/github/props-sh/props/badge.svg)](https://snyk.io/test/github/props-sh/props)
+
 This library manages properties and secrets from multiple sources, giving users a unified API for
 loading type safe system, environment, classpath and file based properties while also deciding which
 source takes precedence and how often the values should be refreshed.
