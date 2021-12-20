@@ -30,7 +30,6 @@ import java.util.Map;
 import sh.props.OnDemandSource;
 import sh.props.annotations.Nullable;
 
-@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class TestOnDemandSource extends OnDemandSource {
 
   private final Map<String, String> backingData;

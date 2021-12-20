@@ -35,7 +35,6 @@ import java.util.logging.Logger;
  * This implementation triggers a {@link Source#refresh()} operation and ensures a single concurrent
  * execution, logging any encountered exceptions.
  */
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 class Trigger implements Runnable {
 
   private static final Logger log = Logger.getLogger(Trigger.class.getName());

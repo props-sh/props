@@ -39,7 +39,6 @@ import sh.props.tuples.Tuple;
  * <p>This class is subject to future change, if for example we decide to add a different algorithm
  * for deciding the effective value from a set of layers.
  */
-@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 class RegistryStoreImpl implements RegistryStore {
 
   protected final ConcurrentHashMap<String, Pair<String, Layer>> effectiveValues =

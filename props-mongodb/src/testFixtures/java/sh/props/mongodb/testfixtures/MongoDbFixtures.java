@@ -34,6 +34,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Random;
 import org.bson.Document;
 
@@ -102,7 +103,7 @@ public class MongoDbFixtures {
     byte[] data = new byte[7];
     new Random().nextBytes(data);
     String encoded = Base64.getMimeEncoder().encodeToString(data);
-    return encoded.replaceAll("(?i)[^a-z0-9]+", "").toLowerCase();
+    return encoded.replaceAll("(?i)[^a-z0-9]+", "").toLowerCase(Locale.getDefault());
   }
 
   /**

@@ -34,7 +34,6 @@ import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Triple;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 class PropGroupTriple<T, U, V> extends AbstractPropGroup<Triple<T, U, V>> {
   private final Prop<T> first;
   private final Prop<U> second;

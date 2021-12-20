@@ -38,7 +38,6 @@ import sh.props.annotations.Nullable;
  * @param <V> the type of the third object
  * @param <W> the type of the fourth object
  */
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class Quad<T, U, V, W> extends Triple<T, U, V> {
 
   @Nullable public final W fourth;

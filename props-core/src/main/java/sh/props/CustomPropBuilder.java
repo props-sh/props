@@ -35,7 +35,7 @@ import sh.props.converters.Converter;
  *
  * @param <T> the type of the prop
  */
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize", "PMD.AvoidFieldNameMatchingMethodName"})
+@SuppressWarnings({"PMD.AvoidFieldNameMatchingMethodName"})
 public class CustomPropBuilder<T> {
 
   private final Registry registry;

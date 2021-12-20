@@ -47,7 +47,6 @@ import sh.props.converters.Converter;
  * <p>This functionality is useful for triggering a single {@link Source#get()}, which can be an
  * expensive operation, and notifying multiple layers.
  */
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public abstract class Source implements Supplier<Map<String, String>>, LoadOnDemand {
 
   protected final List<Consumer<Map<String, String>>> layers = new ArrayList<>();

@@ -44,7 +44,6 @@ import sh.props.sources.InMemory;
 @SuppressWarnings({
   "NullAway",
   "checkstyle:MissingJavadocMethod",
-  "PMD.BeanMembersShouldSerialize",
   "PMD.JUnit4TestShouldUseBeforeAnnotation"
 })
 @Fork(value = 1, warmups = 1)

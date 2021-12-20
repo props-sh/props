@@ -34,7 +34,6 @@ import sh.props.exceptions.MultiValueReadException;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 class PropGroupPair<T, U> extends AbstractPropGroup<Pair<T, U>> {
   private final Prop<T> first;
   private final Prop<U> second;

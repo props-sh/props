@@ -37,7 +37,6 @@ import sh.props.annotations.Nullable;
  * @param <U> the type of the second object
  * @param <V> the type of the third object
  */
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class Triple<T, U, V> extends Pair<T, U> {
 
   @Nullable public final V third;

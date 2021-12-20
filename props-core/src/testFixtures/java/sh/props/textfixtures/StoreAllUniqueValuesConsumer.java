@@ -35,7 +35,6 @@ import sh.props.annotations.Nullable;
  * Test-only implementation that accepts values and deduplicates them, also keeping track of the
  * order in which it received the values.
  */
-@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 public class StoreAllUniqueValuesConsumer<T> implements Consumer<T> {
 
   private final Set<T> store = new LinkedHashSet<>();

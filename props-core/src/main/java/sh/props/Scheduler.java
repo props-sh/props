@@ -31,7 +31,6 @@ import java.time.Duration;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 public class Scheduler {
 
   protected final ScheduledExecutorService executor;

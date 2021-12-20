@@ -227,7 +227,9 @@ subprojects {
     pmd {
         isConsoleOutput = true
         rulesMinimumPriority.set(4)
-        ruleSets = listOf("category/java/errorprone.xml", "category/java/bestpractices.xml")
+        ruleSets = listOf(
+            "config/pmd/rules.xml",
+        )
     }
 
     // IntelliJ IDE

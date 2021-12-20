@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /** Creates daemon {@link Thread}s. */
-@SuppressWarnings({"PMD.BeanMembersShouldSerialize"})
 class DaemonThreadFactory implements ThreadFactory {
 
   private final ThreadFactory factory;
