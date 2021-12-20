@@ -235,6 +235,7 @@ subprojects {
     }
 
     // Code Coverage
+    // https://docs.gradle.org/current/userguide/jacoco_plugin.html
     apply(plugin = "jacoco")
     jacoco {
         reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
