@@ -148,7 +148,7 @@ public class FileWatchSvc implements Runnable {
                 })
 
             // resolve the passed relative path to an absolute path
-            .map(path -> ((Path) key.watchable()).resolve(path))
+            .map(((Path) key.watchable())::resolve)
 
             // ensure each path only appears once
             // we don't care for duplicate events on the same file
