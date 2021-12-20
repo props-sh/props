@@ -36,6 +36,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import sh.props.annotations.Nullable;
@@ -74,15 +75,16 @@ public class SourceDeserializer {
    * @return an (id, options) pair
    */
   static Pair<String, String> processSourceConfig(String line) {
-    line = line.trim();
-    int pos = line.indexOf('=');
+    String trimmed = line.trim();
+    int pos = trimmed.indexOf('=');
     if (pos == -1) {
       // the options part was not specified
-      return Tuple.of(line.toLowerCase(), null);
+      return Tuple.of(trimmed.toLowerCase(Locale.getDefault()), null);
     }
 
     // return the (id, options) pair
-    return Tuple.of(line.substring(0, pos).toLowerCase(), line.substring(pos + 1));
+    return Tuple.of(
+        trimmed.substring(0, pos).toLowerCase(Locale.getDefault()), trimmed.substring(pos + 1));
   }
 
   /**
@@ -178,10 +180,12 @@ public class SourceDeserializer {
       assertNotNull(factory, "source factory");
 
       // register the source class and ensure the operation succeeded
-      var prev = deserializers.putIfAbsent(key.toLowerCase(), factory);
+      var prev = deserializers.putIfAbsent(key.toLowerCase(Locale.getDefault()), factory);
       if (prev != null) {
         throw new IllegalArgumentException(
-            key.toLowerCase() + " is already registered for " + prev.getClass().getSimpleName());
+            key.toLowerCase(Locale.getDefault())
+                + " is already registered for "
+                + prev.getClass().getSimpleName());
       }
       return this;
     }

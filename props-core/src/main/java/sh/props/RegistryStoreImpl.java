@@ -39,6 +39,7 @@ import sh.props.tuples.Tuple;
  * <p>This class is subject to future change, if for example we decide to add a different algorithm
  * for deciding the effective value from a set of layers.
  */
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 class RegistryStoreImpl implements RegistryStore {
 
   protected final ConcurrentHashMap<String, Pair<String, Layer>> effectiveValues =
@@ -81,7 +82,8 @@ class RegistryStoreImpl implements RegistryStore {
    */
   private static boolean equalInValueButNotLayer(
       Pair<String, Layer> pair, Pair<String, Layer> valueLayer) {
-    return Objects.equals(valueLayer.first, pair.first) && valueLayer.second != pair.second;
+    return Objects.equals(valueLayer.first, pair.first)
+        && !Objects.equals(valueLayer.second, pair.second);
   }
 
   /**

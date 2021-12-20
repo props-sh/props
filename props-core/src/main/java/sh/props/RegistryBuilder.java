@@ -56,7 +56,7 @@ public class RegistryBuilder {
     if (sources != null) {
       // if any sources are specified, add them
       for (Source source : sources) {
-        withSource(source);
+        this.sources.addFirst(Tuple.of(source, null));
       }
     }
   }

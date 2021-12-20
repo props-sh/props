@@ -32,18 +32,23 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 import static sh.props.Utilities.assertNotNull;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
+import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.nio.file.Watchable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sh.props.annotations.Nullable;
 
 /**
  * {@link WatchService} adapter that allows sourced which are based on files on disk to be refreshed
@@ -122,13 +127,15 @@ public class FileWatchSvc implements Runnable {
   /** Main file-watching logic. */
   @Override
   public void run() {
-    WatchKey key = null;
-    try {
-      while ((key = this.watcher.take()) != null) {
-        WatchKey current = key;
+    while (true) {
+      try (CloseableWatchKey key = takeNextKey()) {
+        if (key == null) {
+          // no more keys to process
+          break;
+        }
 
         // process all events for the given key
-        current.pollEvents().stream()
+        key.pollEvents().stream()
 
             // ignore overflows
             .filter(event -> event.kind() != OVERFLOW)
@@ -142,7 +149,7 @@ public class FileWatchSvc implements Runnable {
                 })
 
             // resolve the passed relative path to an absolute path
-            .map(path -> ((Path) current.watchable()).resolve(path))
+            .map(path -> ((Path) key.watchable()).resolve(path))
 
             // ensure each path only appears once
             // we don't care for duplicate events on the same file
@@ -158,20 +165,30 @@ public class FileWatchSvc implements Runnable {
             // we can execute the run synchronously since in turn it
             // generates a CompletableFuture
             .forEach(Trigger::run);
-
-        // finally, reset the key so that it may be reused
-        key.reset();
-      }
-
-    } catch (InterruptedException e) {
-      log.log(Level.WARNING, e, () -> "Interrupted while waiting for new events");
-
-      if (key != null) {
-        // best effort to reset the WatchKey
-        // in case we can recover from the interruption
-        key.reset();
       }
     }
+  }
+
+  /**
+   * Helper method that ensures the key is always closed.
+   *
+   * @return an auto-closeable {@link WatchKey}
+   */
+  @Nullable
+  private CloseableWatchKey takeNextKey() {
+    try {
+      WatchKey key = this.watcher.take();
+      if (key == null) {
+        return null;
+      }
+
+      return new CloseableWatchKey(key);
+    } catch (InterruptedException e) {
+      log.log(Level.WARNING, e, () -> "Interrupted while waiting for new events");
+    } catch (ClosedWatchServiceException e) {
+      log.log(Level.WARNING, e, () -> "The watch service has been closed");
+    }
+    return null;
   }
 
   /**
@@ -182,6 +199,45 @@ public class FileWatchSvc implements Runnable {
   public FileWatchSvc start() {
     this.executor.execute(this);
     return this;
+  }
+
+  /** Wraps {@link WatchKey}, also implementing {@link Closeable}. */
+  private static class CloseableWatchKey implements WatchKey, Closeable {
+    final WatchKey key;
+
+    private CloseableWatchKey(WatchKey key) {
+      this.key = key;
+    }
+
+    @Override
+    public void close() {
+      reset();
+    }
+
+    @Override
+    public boolean isValid() {
+      return key.isValid();
+    }
+
+    @Override
+    public List<WatchEvent<?>> pollEvents() {
+      return key.pollEvents();
+    }
+
+    @Override
+    public boolean reset() {
+      return key.reset();
+    }
+
+    @Override
+    public Watchable watchable() {
+      return key.watchable();
+    }
+
+    @Override
+    public void cancel() {
+      key.cancel();
+    }
   }
 
   /** Static holder for the default instance, ensuring lazy initialization. */
