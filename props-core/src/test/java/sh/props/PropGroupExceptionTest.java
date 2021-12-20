@@ -42,7 +42,7 @@ import sh.props.textfixtures.TestErrorOnGetProp;
 import sh.props.textfixtures.TestErrorOnSetProp;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings({"NullAway"})
+@SuppressWarnings("NullAway") // NullAway does not support awaitility
 class PropGroupExceptionTest {
 
   private static final String SPECIFIC_EXCEPTION_MESSAGE = "Expecting a specific error message";

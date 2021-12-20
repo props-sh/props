@@ -49,7 +49,6 @@ import sh.props.textfixtures.TestErrorOnSetProp;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.textfixtures.TestStringProp;
 
-@SuppressWarnings({"NullAway"})
 class RefactoredPropTest extends AwaitAssertionTest {
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";

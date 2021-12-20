@@ -45,7 +45,6 @@ import sh.props.custom.BooleanProp;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestFileUtil;
 
-@SuppressWarnings({"NullAway"})
 class SourcesTest extends AwaitAssertionTest {
   private static final String KEY = "key";
   private static final String A_BOOLEAN = "a.boolean";
@@ -65,6 +64,7 @@ class SourcesTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway") // NullAway does not support JUnit assumptions
   void environment() {
     // ARRANGE
     var source = new Environment();
@@ -133,6 +133,7 @@ class SourcesTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway") // NullAway does not support JUnit assumptions
   void systemProperties() {
     // ARRANGE
     var source = new SystemProperties();

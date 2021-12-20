@@ -45,7 +45,6 @@ import sh.props.custom.BooleanProp;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestFileUtil;
 
-@SuppressWarnings({"NullAway"})
 class RefreshedSourcesTest extends AwaitAssertionTest {
   private static final String A_BOOLEAN = "a.boolean";
 

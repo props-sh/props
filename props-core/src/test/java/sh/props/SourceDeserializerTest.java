@@ -46,7 +46,6 @@ import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestFileUtil;
 import sh.props.textfixtures.TestSource;
 
-@SuppressWarnings({"NullAway"})
 class SourceDeserializerTest {
 
   public static final String A_DURATION = "a.duration";
@@ -100,6 +99,7 @@ class SourceDeserializerTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway") // NullAway does not support JUnit assumptions
   void readEnvironment() {
     // ARRANGE
     var maybeEnvVar = System.getenv().entrySet().stream().findFirst();
@@ -143,6 +143,7 @@ class SourceDeserializerTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway") // NullAway does not support JUnit assumptions
   void readSystemProperties() {
     // ARRANGE
     var maybeSystemPropKey = System.getProperties().stringPropertyNames().stream().findFirst();

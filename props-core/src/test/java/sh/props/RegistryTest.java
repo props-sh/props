@@ -38,7 +38,6 @@ import sh.props.sources.InMemory;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestIntProp;
 
-@SuppressWarnings({"NullAway"})
 class RegistryTest extends AwaitAssertionTest {
   private static final String KEY = "key";
   private static final String VALUE_1 = "value1";
@@ -235,6 +234,7 @@ class RegistryTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway") // explicitly sending nulls to emulate bad user input
   void getFromLayer() {
     // ARRANGE
     var source1 = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
@@ -266,6 +266,7 @@ class RegistryTest extends AwaitAssertionTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway") // explicitly sending nulls to emulate bad user input
   void nullSafetyChecks() {
     // ARRANGE
     var source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
