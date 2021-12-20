@@ -36,7 +36,7 @@ import org.junit.jupiter.api.RepeatedTest;
 import sh.props.group.Group;
 import sh.props.sources.InMemory;
 import sh.props.textfixtures.AwaitAssertionTest;
-import sh.props.textfixtures.StoreAllValuesConsumer;
+import sh.props.textfixtures.StoreAllUniqueValuesConsumer;
 import sh.props.textfixtures.TestIntProp;
 import sh.props.tuples.Pair;
 import sh.props.tuples.Quad;
@@ -63,7 +63,8 @@ class PropGroupAsyncTest extends AwaitAssertionTest {
     var prop1 = registry.bind(new TestIntProp(KEY_1, null));
     var prop2 = registry.bind(new TestIntProp(KEY_2, null));
 
-    StoreAllValuesConsumer<Pair<Integer, Integer>> consumer = spy(new StoreAllValuesConsumer<>());
+    StoreAllUniqueValuesConsumer<Pair<Integer, Integer>> consumer =
+        spy(new StoreAllUniqueValuesConsumer<>());
     var prop = Group.of(prop1, prop2);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -91,8 +92,8 @@ class PropGroupAsyncTest extends AwaitAssertionTest {
     var prop2 = registry.bind(new TestIntProp(KEY_2, null));
     var prop3 = registry.bind(new TestIntProp(KEY_3, null));
 
-    StoreAllValuesConsumer<Triple<Integer, Integer, Integer>> consumer =
-        spy(new StoreAllValuesConsumer<>());
+    StoreAllUniqueValuesConsumer<Triple<Integer, Integer, Integer>> consumer =
+        spy(new StoreAllUniqueValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -122,8 +123,8 @@ class PropGroupAsyncTest extends AwaitAssertionTest {
     var prop3 = registry.bind(new TestIntProp(KEY_3, null));
     var prop4 = registry.bind(new TestIntProp(KEY_4, null));
 
-    StoreAllValuesConsumer<Quad<Integer, Integer, Integer, Integer>> consumer =
-        spy(new StoreAllValuesConsumer<>());
+    StoreAllUniqueValuesConsumer<Quad<Integer, Integer, Integer, Integer>> consumer =
+        spy(new StoreAllUniqueValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4);
     prop.subscribe(consumer, (ignored) -> {});
 
@@ -155,8 +156,8 @@ class PropGroupAsyncTest extends AwaitAssertionTest {
     var prop4 = registry.bind(new TestIntProp(KEY_4, null));
     var prop5 = registry.bind(new TestIntProp(KEY_5, null));
 
-    StoreAllValuesConsumer<Quintuple<Integer, Integer, Integer, Integer, Integer>> consumer =
-        spy(new StoreAllValuesConsumer<>());
+    StoreAllUniqueValuesConsumer<Quintuple<Integer, Integer, Integer, Integer, Integer>> consumer =
+        spy(new StoreAllUniqueValuesConsumer<>());
     var prop = Group.of(prop1, prop2, prop3, prop4, prop5);
     prop.subscribe(consumer, (ignored) -> {});
 
