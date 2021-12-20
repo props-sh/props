@@ -12,6 +12,7 @@ plugins {
     id("com.diffplug.spotless")
     id("net.ltgt.errorprone")
     `maven-publish`
+    id("org.sonarqube")
 }
 
 group = project.group
@@ -23,6 +24,7 @@ buildscript {
         // mavenLocal()
         mavenCentral()
     }
+
     dependencies {
         "classpath"(
             group = "com.google.googlejavaformat",
@@ -30,11 +32,22 @@ buildscript {
             version = "1.13.0"
         )
     }
+
     allprojects {
         repositories {
             // uncomment if you need to use the local Maven cache
             // mavenLocal()
         }
+    }
+}
+
+
+// SonarQube
+sonarqube {
+    properties {
+        property("sonar.projectKey", "props-sh_props")
+        property("sonar.organization", "props-sh")
+        property("sonar.host.url", "https://sonarcloud.io")
     }
 }
 
