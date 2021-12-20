@@ -74,8 +74,7 @@ class MongoDbStoreIntTest {
 
   @Container
   private static final MongoDBContainer mongoDBContainer =
-      new MongoDBContainer(
-              DockerImageName.parse(System.getProperty("testcontainers:org.mongodb.mongo")))
+      new MongoDBContainer(DockerImageName.parse(System.getProperty("testcontainers:mongo")))
           .withExposedPorts(27017);
 
   private MongoClient mongoClient;

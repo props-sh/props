@@ -48,7 +48,7 @@ dependencyResolutionManagement {
             alias("guava").to("com.google.guava:guava:31.0.1-jre")
         }
         create("testcontainers") {
-            version("org.mongodb.mongo", "mongo:5.0.4-focal")
+            version("mongo", "mongo:5.0.5-focal")
         }
     }
 }
