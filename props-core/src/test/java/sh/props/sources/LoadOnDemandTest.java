@@ -80,16 +80,18 @@ class LoadOnDemandTest extends AwaitAssertionTest {
     var prop = registry.builder(asString()).build(KEY_1);
 
     // ACT / ASSERT
-    assertThat(registry.get("UNSET_KEY"), nullValue());
-    assertThat(registry.get(KEY_1), equalTo(VALUE_1));
-    assertThat(registry.get(KEY_2), equalTo(VALUE_2));
+    assertThat("Expecting no value for undefined keys", registry.get("UNSET_KEY"), nullValue());
+    assertThat("Expecting key to be set", registry.get(KEY_1), equalTo(VALUE_1));
+    assertThat("Expecting key to be set", registry.get(KEY_2), equalTo(VALUE_2));
 
     data.put(KEY_1, VALUE_3);
     source.refresh();
+    // expecting value to be updated
     await().until(prop::get, equalTo(VALUE_3));
 
     data.remove(KEY_1);
     source.refresh();
+    // expecting value to be updated
     await().until(prop::get, nullValue());
   }
 }

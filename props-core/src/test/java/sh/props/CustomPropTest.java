@@ -60,8 +60,9 @@ class CustomPropTest {
             .build(KEY);
 
     // ACT / ASSERT
-    assertThat(prop.get(), equalTo("A_SECRET"));
-    assertThat(prop.toString(), not(containsString("A_SECRET")));
+    assertThat("Expecting value to resolve", prop.get(), equalTo("A_SECRET"));
+    assertThat(
+        "Expecting the secret to not be exposed", prop.toString(), not(containsString("A_SECRET")));
   }
 
   @Test
@@ -75,7 +76,7 @@ class CustomPropTest {
         new CustomPropBuilder<>(registry, Cast.asString()).description("a_description").build(KEY);
 
     // ACT / ASSERT
-    assertThat(prop.description(), equalTo("a_description"));
+    assertThat("Expecting a description", prop.description(), equalTo("a_description"));
   }
 
   @Test
@@ -108,7 +109,7 @@ class CustomPropTest {
     prop.subscribe((ignore) -> {}, capture::set);
 
     // ACT / ASSERT
-    assertThat(prop.get(), equalTo(0));
+    assertThat("Expecting a non-error state", prop.get(), equalTo(0));
 
     source.put(KEY, "2");
     await().until(capture::get, instanceOf(ValueCannotBeSetException.class));

@@ -14,7 +14,7 @@ pluginManagement {
         id("net.ltgt.errorprone").version("2.0.2")
         id("me.champeau.jmh").version("0.6.6")
         id("org.sonarqube").version("3.3")
-        id("pmd").version("6.21.0")
+        id("pmd").version("6.41.0")
     }
 }
 

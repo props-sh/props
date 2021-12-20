@@ -44,6 +44,8 @@ import sh.props.tuples.Tuple;
 
 @SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
 class PropGroupExceptionTest {
+
+  private static final String SPECIFIC_EXCEPTION_MESSAGE = "Expecting a specific error message";
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
   private static final String KEY_3 = "key3";
@@ -70,12 +72,18 @@ class PropGroupExceptionTest {
 
     source.put(KEY_1, "2");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(2)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(2)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnGetProp.errorMessage(2)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
 
     source.put(KEY_2, "3");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(3)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(3)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnGetProp.errorMessage(3)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
   }
 
@@ -101,12 +109,18 @@ class PropGroupExceptionTest {
 
     source.put(KEY_2, "2");
     await().until(capture::get, hasExceptionMessage(TestErrorOnSetProp.errorMessage(2)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnSetProp.errorMessage(2)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnSetProp.errorMessage(2)));
     assertThrows(ValueCannotBeSetException.class, supplier::get);
 
     source.put(KEY_1, "3");
     await().until(capture::get, hasExceptionMessage(TestErrorOnSetProp.errorMessage(3)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnSetProp.errorMessage(3)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnSetProp.errorMessage(3)));
     assertThrows(ValueCannotBeSetException.class, supplier::get);
   }
 
@@ -134,17 +148,26 @@ class PropGroupExceptionTest {
 
     source.put(KEY_1, "2");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(2)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(2)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnGetProp.errorMessage(2)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
 
     source.put(KEY_2, "3");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(3)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(3)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnGetProp.errorMessage(3)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
 
     source.put(KEY_3, "4");
     await().until(capture::get, hasExceptionMessage(TestErrorOnGetProp.errorMessage(4)));
-    assertThat(capture.get().getMessage(), equalTo(TestErrorOnGetProp.errorMessage(4)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        capture.get().getMessage(),
+        equalTo(TestErrorOnGetProp.errorMessage(4)));
     assertThrows(ValueCannotBeReadException.class, supplier::get);
   }
 }

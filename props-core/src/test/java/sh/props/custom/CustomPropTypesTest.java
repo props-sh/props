@@ -45,6 +45,7 @@ import sh.props.textfixtures.TestFileUtil;
 @SuppressWarnings("NullAway")
 class CustomPropTypesTest {
   private static final String KEY = "key";
+  private static final String SPECIFIC_EXCEPTION_MESSAGE = "Expecting a specific value";
 
   @Test
   void booleanProp() {
@@ -58,7 +59,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new BooleanProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(true));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(true));
   }
 
   @Test
@@ -73,7 +74,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new ChronoUnitProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(ChronoUnit.HALF_DAYS));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(ChronoUnit.HALF_DAYS));
   }
 
   @Test
@@ -88,7 +89,10 @@ class CustomPropTypesTest {
     var prop = registry.bind(new DateProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(Date.from(Instant.ofEpochMilli(1_196_673_330_010L))));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        prop.get(),
+        equalTo(Date.from(Instant.ofEpochMilli(1_196_673_330_010L))));
   }
 
   @Test
@@ -103,7 +107,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new DoubleProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(3.14d));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(3.14d));
   }
 
   @Test
@@ -118,7 +122,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new DurationProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(Duration.ofSeconds(12345)));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(Duration.ofSeconds(12345)));
   }
 
   @Test
@@ -133,7 +137,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new FloatProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(3.14f));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(3.14f));
   }
 
   @Test
@@ -148,7 +152,8 @@ class CustomPropTypesTest {
     var prop = registry.bind(new InstantProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(Instant.ofEpochMilli(1_196_673_330_010L)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(Instant.ofEpochMilli(1_196_673_330_010L)));
   }
 
   @Test
@@ -163,7 +168,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new IntegerProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(123));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(123));
   }
 
   @Test
@@ -178,7 +183,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new ListOfDoublesProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(List.of(1d, 2d)));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(List.of(1d, 2d)));
   }
 
   @Test
@@ -193,7 +198,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new ListOfFloatsProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(List.of(1f, 2f)));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(List.of(1f, 2f)));
   }
 
   @Test
@@ -208,7 +213,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new ListOfIntegersProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(List.of(1, 2, 3)));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(List.of(1, 2, 3)));
   }
 
   @Test
@@ -223,7 +228,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new ListOfLongsProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(List.of(1L, 2L, 3L)));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(List.of(1L, 2L, 3L)));
   }
 
   @Test
@@ -256,7 +261,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new ListOfStringsProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(List.of("one", "two")));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(List.of("one", "two")));
   }
 
   @Test
@@ -271,7 +276,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new LongProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(123456789012L));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(123456789012L));
   }
 
   @Test
@@ -286,7 +291,10 @@ class CustomPropTypesTest {
     var prop = registry.bind(new NumericDurationProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(Duration.of(123456789012L, ChronoUnit.SECONDS)));
+    assertThat(
+        SPECIFIC_EXCEPTION_MESSAGE,
+        prop.get(),
+        equalTo(Duration.of(123456789012L, ChronoUnit.SECONDS)));
   }
 
   @Test
@@ -303,7 +311,7 @@ class CustomPropTypesTest {
     var prop = registry.bind(new PathProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo(tempFile));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo(tempFile));
   }
 
   @Test
@@ -318,6 +326,6 @@ class CustomPropTypesTest {
     var prop = registry.bind(new StringProp(KEY));
 
     // ASSERT
-    assertThat(prop.get(), equalTo("a string"));
+    assertThat(SPECIFIC_EXCEPTION_MESSAGE, prop.get(), equalTo("a string"));
   }
 }

@@ -57,7 +57,10 @@ class TemplatedPropSyncTest {
     var templatedProp = TemplatedProp.of("I am expecting %s", prop1);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by a single prop",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
@@ -78,7 +81,10 @@ class TemplatedPropSyncTest {
     var templatedProp = TemplatedProp.of("I am expecting %s and %s", prop1, prop2);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by two props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
@@ -101,7 +107,10 @@ class TemplatedPropSyncTest {
     var templatedProp = TemplatedProp.of("I am expecting %s, %s, and %s", prop1, prop2, prop3);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by three props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
@@ -127,7 +136,10 @@ class TemplatedPropSyncTest {
         TemplatedProp.of("I am expecting %s, %s, %s, and %s", prop1, prop2, prop3, prop4);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by four props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 
   @Test
@@ -156,6 +168,9 @@ class TemplatedPropSyncTest {
             "I am expecting %s, %s, %s, %s, and %s", prop1, prop2, prop3, prop4, prop5);
 
     // ASSERT
-    assertThat(templatedProp.get(), equalTo(expected));
+    assertThat(
+        "Expecting the template to be correctly rendered when populated by five props",
+        templatedProp.get(),
+        equalTo(expected));
   }
 }

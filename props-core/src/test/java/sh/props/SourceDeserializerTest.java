@@ -88,7 +88,7 @@ class SourceDeserializerTest {
     Registry registry = new RegistryBuilder(sources).build();
 
     // ASSERT
-    assertThat(registry.layers, hasSize(4));
+    assertThat("Expecting four layers", registry.layers, hasSize(4));
     assertThat(
         "Expecting the prop to be defined via standard-types.properties",
         registry.get("a.long", Cast.asLong()),
@@ -106,15 +106,17 @@ class SourceDeserializerTest {
     Assumptions.assumeTrue(
         maybeEnvVar.isPresent(), () -> "At least one env var is needed for this test to run");
 
+    var envVar = maybeEnvVar.get();
+
     // ACT
     Registry registry = new RegistryBuilder(sources).build();
 
-    var envVar = maybeEnvVar.get();
-    assertThat(registry.get(envVar.getKey()), equalTo(envVar.getValue()));
-
     // ASSERT
-    assertThat(registry.layers, hasSize(4));
-    assertThat(registry.get(envVar.getKey()), equalTo(envVar.getValue()));
+    assertThat("Expecting four layers", registry.layers, hasSize(4));
+    assertThat(
+        "Expecting the registry to correctly load values from the Environment",
+        registry.get(envVar.getKey()),
+        equalTo(envVar.getValue()));
   }
 
   @Test
@@ -126,7 +128,7 @@ class SourceDeserializerTest {
     Registry registry = new RegistryBuilder(sources).withSource(source).build();
 
     // ASSERT
-    assertThat(registry.layers, hasSize(5));
+    assertThat("Expecting five layers", registry.layers, hasSize(5));
 
     assertThat(
         "Expecting a value from extended-types.properties",
@@ -153,8 +155,11 @@ class SourceDeserializerTest {
     Registry registry = new RegistryBuilder(sources).build();
 
     // ASSERT
-    assertThat(registry.layers, hasSize(4));
-    assertThat(registry.get(sysPropKey), equalTo(System.getProperty(sysPropKey)));
+    assertThat("Expecting four layers", registry.layers, hasSize(4));
+    assertThat(
+        "Expecting the Registry to correctly load values form the System",
+        registry.get(sysPropKey),
+        equalTo(System.getProperty(sysPropKey)));
   }
 
   @Test

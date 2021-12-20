@@ -57,7 +57,10 @@ class RegistryTest extends AwaitAssertionTest {
     source.refresh();
 
     // ASSERT
-    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_2));
+    assertThat(
+        "Expecting the registry to have an updated value for the key",
+        registry.get(KEY, Cast.asString()),
+        equalTo(VALUE_2));
   }
 
   @Test
@@ -72,7 +75,10 @@ class RegistryTest extends AwaitAssertionTest {
     source.put(KEY, VALUE_2);
 
     // ASSERT
-    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_1));
+    assertThat(
+        "Expecting the registry to not have updated the value",
+        registry.get(KEY, Cast.asString()),
+        equalTo(VALUE_1));
   }
 
   @Test
@@ -99,7 +105,10 @@ class RegistryTest extends AwaitAssertionTest {
     registry.bind(prop);
 
     // ASSERT
-    assertThat(prop.get(), equalTo(1));
+    assertThat(
+        "Expecting a prop to get its original value, when bound to a Registry",
+        prop.get(),
+        equalTo(1));
   }
 
   @Test
@@ -119,6 +128,7 @@ class RegistryTest extends AwaitAssertionTest {
     source.refresh();
 
     // ASSERT
+    // expecting a Prop to eventually receive a value update
     await().until(prop::get, equalTo(2));
   }
 
@@ -134,7 +144,10 @@ class RegistryTest extends AwaitAssertionTest {
     source.put(KEY, VALUE_2);
 
     // ASSERT
-    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_2));
+    assertThat(
+        "Expecting the Registry to automatically update values",
+        registry.get(KEY, Cast.asString()),
+        equalTo(VALUE_2));
   }
 
   @Test
@@ -149,7 +162,10 @@ class RegistryTest extends AwaitAssertionTest {
     source.put(KEY, VALUE_2);
 
     // ASSERT
-    assertThat(registry.get(KEY, Cast.asString()), equalTo(VALUE_1));
+    assertThat(
+        "Expecting the Registry to not be aware of Source updates, before they are advertised",
+        registry.get(KEY, Cast.asString()),
+        equalTo(VALUE_1));
   }
 
   @Test
@@ -158,19 +174,19 @@ class RegistryTest extends AwaitAssertionTest {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);
 
-    AtomicInteger localValue = new AtomicInteger(0);
-
     Registry registry = new RegistryBuilder(source).build();
 
     var prop = new TestIntProp(KEY, null);
     registry.bind(prop);
 
+    AtomicInteger localValue = new AtomicInteger(0);
     prop.subscribe(localValue::set, (ignored) -> {});
 
     // ACT
     source.put(KEY, "2");
 
     // ASSERT
+    // expecting Prop subscribers to receive value updates
     await().until(localValue::get, equalTo(2));
   }
 
@@ -196,6 +212,7 @@ class RegistryTest extends AwaitAssertionTest {
     source.put(KEY, "2");
 
     // ASSERT
+    // expecting all bound Props to receive value updates
     await().until(localValue1::get, equalTo(2));
     await().until(localValue2::get, equalTo(2));
   }
@@ -210,9 +227,10 @@ class RegistryTest extends AwaitAssertionTest {
     var prop = registry.builder(Cast.asInteger()).defaultValue(1).build(KEY);
 
     // ACT / ASSERT
-    assertThat(prop.get(), equalTo(1));
+    assertThat("Expecting the prop to use its default value", prop.get(), equalTo(1));
 
     source.put(KEY, "2");
+    // expecting the Prop to use its set value, after a value update
     await().until(prop::get, equalTo(2));
   }
 
@@ -228,11 +246,23 @@ class RegistryTest extends AwaitAssertionTest {
     source2.put(KEY, "2");
 
     // ACT // ASSERT
-    assertThat("Effective value expected", registry.get(KEY, Cast.asInteger()), equalTo(2));
-    assertThat("Effective value expected", registry.get(KEY, Cast.asInteger(), null), equalTo(2));
+    assertThat(
+        "Expecting values to be returned from the effective (Layer) owner",
+        registry.get(KEY, Cast.asInteger()),
+        equalTo(2));
+    assertThat(
+        "Expecting values to be returned from the effective (Layer) owner",
+        registry.get(KEY, Cast.asInteger(), null),
+        equalTo(2));
 
-    assertThat("Value from mem1 expected", registry.get(KEY, Cast.asInteger(), "mem1"), equalTo(1));
-    assertThat("Value from mem2 expected", registry.get(KEY, Cast.asInteger(), "mem2"), equalTo(2));
+    assertThat(
+        "Expecting values to be returned from the desired Layer",
+        registry.get(KEY, Cast.asInteger(), "mem1"),
+        equalTo(1));
+    assertThat(
+        "Expecting values to be returned from the desired Layer",
+        registry.get(KEY, Cast.asInteger(), "mem2"),
+        equalTo(2));
   }
 
   @Test

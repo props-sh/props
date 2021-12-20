@@ -82,9 +82,9 @@ class RefactoredPropTest extends AwaitAssertionTest {
     // ASSERT
     verify(consumer, timeout(1_000)).accept(2);
 
-    assertThat(prop1.get(), equalTo("1"));
-    assertThat(prop2.get(), equalTo(2));
-    assertThat(refactoredProp.get(), equalTo(2));
+    assertThat("Expecting original prop value to be set", prop1.get(), equalTo("1"));
+    assertThat("Expecting refactored prop value to be set", prop2.get(), equalTo(2));
+    assertThat("Expecting the refactored value to be returned", refactoredProp.get(), equalTo(2));
   }
 
   @Test
@@ -108,9 +108,9 @@ class RefactoredPropTest extends AwaitAssertionTest {
     // ASSERT
     verify(consumer, timeout(1_000)).accept(1);
 
-    assertThat(prop1.get(), equalTo("1"));
-    assertThat(prop2.get(), equalTo(null));
-    assertThat(refactoredProp.get(), equalTo(1));
+    assertThat("Expecting original prop value to be set", prop1.get(), equalTo("1"));
+    assertThat("Expecting refactored prop value to not be set", prop2.get(), equalTo(null));
+    assertThat("Expecting the original value to be returned", refactoredProp.get(), equalTo(1));
   }
 
   @Test

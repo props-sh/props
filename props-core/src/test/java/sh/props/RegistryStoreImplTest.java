@@ -42,12 +42,12 @@ class RegistryStoreImplTest {
 
   private static void assertValueIs(String result, String value) {
     if (value == null) {
-      assertThat(result, nullValue());
+      assertThat("In case of null values, the result should be null", result, nullValue());
       return;
     }
 
-    assertThat(result, notNullValue());
-    assertThat(result, equalTo(value));
+    assertThat("Expecting the result to be set", result, notNullValue());
+    assertThat("Expecting the correct value", result, equalTo(value));
   }
 
   @BeforeEach
