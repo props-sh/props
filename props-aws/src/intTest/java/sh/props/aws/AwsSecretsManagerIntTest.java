@@ -53,7 +53,7 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerAsyncClient;
 import software.amazon.awssdk.services.secretsmanager.model.CreateSecretRequest;
 import software.amazon.awssdk.services.secretsmanager.model.DeleteSecretRequest;
 
-@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
+@SuppressWarnings({"NullAway"})
 class AwsSecretsManagerIntTest {
   private static final String SECRET_VALUE = UUID.randomUUID().toString();
   // ensure we have two random secret names

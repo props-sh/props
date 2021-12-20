@@ -10,6 +10,13 @@
   <!-- Rules and rulesets -->
   <rule ref="category/java/bestpractices.xml"/>
 
+  <rule ref="category/java/bestpractices.xml/JUnitTestContainsTooManyAsserts">
+    <properties>
+      <!-- We don't to be overly restrictive, but also encourage good practices. -->
+      <property name="maximumAsserts" value="5"/>
+    </properties>
+  </rule>
+
   <rule ref="category/java/errorprone.xml">
     <exclude name="BeanMembersShouldSerialize"/>
   </rule>

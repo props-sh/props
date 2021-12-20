@@ -60,7 +60,6 @@ import sh.props.RegistryBuilder;
 @Testcontainers
 @SuppressWarnings({
   "NullAway",
-  "PMD.JUnitTestContainsTooManyAsserts",
 })
 class MongoDbStoreIntTest {
 

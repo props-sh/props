@@ -46,7 +46,7 @@ import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestFileUtil;
 import sh.props.textfixtures.TestSource;
 
-@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
+@SuppressWarnings({"NullAway"})
 class SourceDeserializerTest {
 
   public static final String A_DURATION = "a.duration";

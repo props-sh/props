@@ -45,7 +45,7 @@ import sh.props.custom.BooleanProp;
 import sh.props.textfixtures.AwaitAssertionTest;
 import sh.props.textfixtures.TestFileUtil;
 
-@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
+@SuppressWarnings({"NullAway"})
 class SourcesTest extends AwaitAssertionTest {
   private static final String KEY = "key";
   private static final String A_BOOLEAN = "a.boolean";

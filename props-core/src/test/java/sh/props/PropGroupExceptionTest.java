@@ -42,7 +42,7 @@ import sh.props.textfixtures.TestErrorOnGetProp;
 import sh.props.textfixtures.TestErrorOnSetProp;
 import sh.props.tuples.Tuple;
 
-@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
+@SuppressWarnings({"NullAway"})
 class PropGroupExceptionTest {
 
   private static final String SPECIFIC_EXCEPTION_MESSAGE = "Expecting a specific error message";
@@ -125,6 +125,8 @@ class PropGroupExceptionTest {
   }
 
   @Test
+  // breaking this test down to avoid multiple assertions, would not provide a net positive benefit
+  @SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
   void triple() {
     // ARRANGE
     InMemory source = new InMemory(UPDATE_REGISTRY_ON_EVERY_WRITE);

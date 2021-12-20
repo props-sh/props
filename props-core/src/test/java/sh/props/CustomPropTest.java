@@ -42,7 +42,7 @@ import sh.props.exceptions.ValueCannotBeSetException;
 import sh.props.sources.InMemory;
 import sh.props.textfixtures.TestErrorOnSetProp;
 
-@SuppressWarnings({"NullAway", "PMD.JUnitTestContainsTooManyAsserts"})
+@SuppressWarnings({"NullAway"})
 class CustomPropTest {
   private static final String KEY = "key";
 

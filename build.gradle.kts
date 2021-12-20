@@ -200,6 +200,7 @@ subprojects {
             disableWarningsInGeneratedCode.set(true)
 
             option("NullAway:AnnotatedPackages", "sh.props")
+//            option("NullAway:excludedPaths", ".*/src/test/java/.*")
             // The check defaults to a warning, bump it up to an error for the main sources
             error("NullAway")
         }
