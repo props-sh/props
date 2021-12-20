@@ -253,16 +253,16 @@ subprojects {
         dependsOn(tasks.test) // tests are required to run before generating the report
         dependsOn(tasks.named<Test>("integrationTest")) // tests are required to run before generating the report
 
-        executionData.setFrom(fileTree(project.buildDir) {
+        executionData.setFrom(fileTree(project.projectDir) {
             include("**/build/jacoco/*.exec")
         })
 
         sourceDirectories.setFrom(fileTree(project.projectDir) {
-            include("**/src/main/java")
+            include("**/src/main/java/**")
         })
 
-        classDirectories.setFrom(fileTree(project.buildDir) {
-            include("classes")
+        classDirectories.setFrom(fileTree(project.projectDir) {
+            include("**/build/classes")
         })
 
         reports {
