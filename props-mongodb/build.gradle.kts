@@ -19,6 +19,7 @@ dependencies {
 // specify the Testcontainers MongoDB container image version to use in integration tests
 tasks.getByName<Test>("integrationTest") {
     val version = rootProject.testcontainers.versions.mongo.get()
+
     systemProperty(
         "testcontainers:mongo",
         "mongo:${version}"
