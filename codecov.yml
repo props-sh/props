@@ -1,10 +1,24 @@
 codecov:
-  require_ci_to_pass: false
+  require_ci_to_pass: true
 
 coverage:
   precision: 2
   round: down
   range: "70...100"
+  status:
+    project:
+      default:
+        # basic
+        target: auto
+        threshold: 10%
+        base: auto
+        paths:
+          - "**/src/main"
+        branches:
+          - main
+        if_ci_failed: error #success, failure, error, ignore
+        informational: false
+        only_pulls: true
 
 parsers:
   gcov:
