@@ -2,6 +2,7 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/props-sh/props/badge.svg)](https://snyk.io/test/github/props-sh/props)
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=props-sh_props)](https://sonarcloud.io/summary/new_code?id=props-sh_props)
+[![codecov](https://codecov.io/gh/props-sh/props/branch/main/graph/badge.svg?token=RMUOVHFHKG)](https://codecov.io/gh/props-sh/props)
 
 This library manages properties and secrets from multiple sources, giving users a unified API for
 loading type safe system, environment, classpath and file based properties while also deciding which
