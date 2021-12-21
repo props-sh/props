@@ -50,6 +50,7 @@ sonarqube {
         property("sonar.projectKey", "props-sh_props")
         property("sonar.organization", "props-sh")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "**/build/reports/jacoco/report.xml")
     }
 }
 
