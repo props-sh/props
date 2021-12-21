@@ -9,6 +9,13 @@ This library manages properties and secrets from multiple sources, giving users 
 loading type safe system, environment, classpath and file based properties while also deciding which
 source takes precedence and how often the values should be refreshed.
 
+The repository hosts a number of projects:
+
+- `props-core`: the core logic of the project, has not third-party dependencies and it is
+  self-contained
+- `props-aws`: a `Source` backed by `AWS Secrets Manager`
+- `props-mongodb`: a `Source` backed by a MongoDB database collection
+
 # Features
 
 - Access values once or repeatedly
