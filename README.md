@@ -1,7 +1,8 @@
 # props: A library for reading layered application settings in Java
 
 [![Known Vulnerabilities](https://snyk.io/test/github/props-sh/props/badge.svg)](https://snyk.io/test/github/props-sh/props)
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=props-sh_props)](https://sonarcloud.io/summary/new_code?id=props-sh_props)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=props-sh_props&metric=bugs)](https://sonarcloud.io/summary/new_code?id=props-sh_props)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=props-sh_props&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=props-sh_props)
 [![codecov](https://codecov.io/gh/props-sh/props/branch/main/graph/badge.svg?token=RMUOVHFHKG)](https://codecov.io/gh/props-sh/props)
 [![javadoc](https://javadoc.io/badge2/sh.props/props-core/javadoc.svg)](https://javadoc.io/doc/sh.props/props-core)
 
