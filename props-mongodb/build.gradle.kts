@@ -13,7 +13,7 @@ dependencies {
     intTestImplementation(platform("org.testcontainers:testcontainers-bom:1.16.2"))
     intTestImplementation("org.testcontainers:mongodb")
     intTestImplementation("org.testcontainers:junit-jupiter")
-    intTestImplementation("ch.qos.logback:logback-core:1.2.9")
+    intTestImplementation("ch.qos.logback:logback-core:1.2.10")
 }
 
 // specify the Testcontainers MongoDB container image version to use in integration tests
