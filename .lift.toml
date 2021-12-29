@@ -1,4 +1,4 @@
-jdk11 = true
+jdkVersion = 11
 build = "gradlew assemble"
 ignoreFiles = """
 build/
