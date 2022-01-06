@@ -73,7 +73,7 @@ available version.
 
 # License
 
-Copyright (c) 2021 Mihai Bojin
+Copyright (c) 2021-2022 Mihai Bojin
 
 Licensed under the MIT License
 
