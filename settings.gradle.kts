@@ -44,7 +44,7 @@ dependencyResolutionManagement {
                 .versionRef("junit")
             alias("org-hamcrest-core").to("org.hamcrest:hamcrest-core:2.2")
             alias("org-mockito-core").to("org.mockito:mockito-core:4.3.1")
-            alias("org-awaitility-awaitility").to("org.awaitility:awaitility:4.1.1")
+            alias("org-awaitility-awaitility").to("org.awaitility:awaitility:4.2.0")
 
             alias("guava").to("com.google.guava:guava:31.1-jre")
         }
