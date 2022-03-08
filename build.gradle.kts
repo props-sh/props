@@ -31,7 +31,7 @@ buildscript {
         "classpath"(
             group = "com.google.googlejavaformat",
             name = "google-java-format",
-            version = "1.14.0"
+            version = "1.15.0"
         )
     }
 
