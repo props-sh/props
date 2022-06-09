@@ -44,7 +44,7 @@ jobs:
 
       - name: Store the build report
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: '[props-sh] build report'
           path: ./**/build/reports
