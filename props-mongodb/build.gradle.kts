@@ -6,8 +6,8 @@ plugins {
 dependencies {
     implementation(project(":props-core"))
 
-    implementation("org.mongodb:mongodb-driver-sync:4.5.1")
-    testFixturesImplementation("org.mongodb:mongodb-driver-sync:4.5.1")
+    implementation("org.mongodb:mongodb-driver-sync:4.7.0")
+    testFixturesImplementation("org.mongodb:mongodb-driver-sync:4.7.0")
     intTestImplementation(testFixtures(project(":props-mongodb")))
 
     intTestImplementation(platform("org.testcontainers:testcontainers-bom:1.17.3"))
