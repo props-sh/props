@@ -10,7 +10,7 @@ dependencies {
     testFixturesImplementation("org.mongodb:mongodb-driver-sync:4.5.1")
     intTestImplementation(testFixtures(project(":props-mongodb")))
 
-    intTestImplementation(platform("org.testcontainers:testcontainers-bom:1.16.3"))
+    intTestImplementation(platform("org.testcontainers:testcontainers-bom:1.17.3"))
     intTestImplementation("org.testcontainers:mongodb")
     intTestImplementation("org.testcontainers:junit-jupiter")
     intTestImplementation("ch.qos.logback:logback-core:1.2.11")
